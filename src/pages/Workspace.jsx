@@ -1,10 +1,12 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import {
-  ArrowRight, ArrowUp, CircleCheck, CircleDashed, Copy, Download, LoaderCircle, MessageSquare, Paperclip, Play, Plus, Save,
-  Share2, ShieldCheck, Sparkles, Trash2, Undo2, Workflow,
+  ArrowRight, ArrowUp, Bot, ChevronDown, ChevronsLeft, CircleCheck, CircleDashed, Copy, Download, History, LoaderCircle, MessageSquare,
+  Play, Plus, Save, Share2, ShieldCheck, Sparkles, Trash2, Undo2, Workflow, X,
 } from 'lucide-react'
 import { useStore } from '../store/AppStore'
+import { DEPARTMENTS, deptById } from '../data/catalog'
+import { AttachButton, AttachmentList } from '../components/ui/Attachments'
 import { ACTIVITIES } from '../lib/mockOutputs'
 import { runProgress } from '../lib/runs'
 import { clockTime, cn, timeAgo, uid } from '../lib/utils'
@@ -18,6 +20,9 @@ import logo from '../assets/icn-logo.png'
 const MODE_KEY = 'icn.workspace.mode'
 const readMode = () => { try { return localStorage.getItem(MODE_KEY) === 'workflow' ? 'workflow' : 'chat' } catch { return 'chat' } }
 const writeMode = (m) => { try { localStorage.setItem(MODE_KEY, m) } catch { /* storage unavailable — mode resets on reload */ } }
+const HISTORY_KEY = 'icn.workspace.historyCollapsed'
+const readHistoryCollapsed = () => { try { return localStorage.getItem(HISTORY_KEY) === '1' } catch { return false } }
+const writeHistoryCollapsed = (v) => { try { localStorage.setItem(HISTORY_KEY, v ? '1' : '0') } catch { /* storage unavailable — resets on reload */ } }
 
 const SUGGESTIONS = [
   'ทำ Proposal ระบบ Smart Warehouse ให้ลูกค้า Siam Logistics',
@@ -55,10 +60,24 @@ function ModeToggle({ mode, onChange }) {
 
 function ThreadList({ threads, activeThread, onNew }) {
   const navigate = useNavigate()
+  const [collapsed, setCollapsedState] = useState(readHistoryCollapsed)
+  const setCollapsed = (v) => { setCollapsedState(v); writeHistoryCollapsed(v) }
+
+  if (collapsed) {
+    return (
+      <aside data-tour="ws-threads" className="hidden shrink-0 flex-col items-center gap-1 lg:flex">
+        <Button variant="ghost" size="icon" icon={History} onClick={() => setCollapsed(false)} aria-label="แสดงประวัติการสั่งงาน" title="แสดงประวัติการสั่งงาน" />
+        <Button variant="ghost" size="icon" icon={Plus} onClick={onNew} aria-label="แชตใหม่" title="แชตใหม่" />
+      </aside>
+    )
+  }
   return (
     <aside data-tour="ws-threads" className="hidden w-64 shrink-0 flex-col lg:flex">
       <Button icon={Plus} onClick={onNew} className="justify-center">แชตใหม่</Button>
-      <p className="mt-5 mb-1.5 px-2 text-[11px] font-medium text-slate-400">ประวัติการสั่งงาน</p>
+      <div className="mt-5 mb-1.5 flex items-center justify-between pl-2">
+        <p className="text-[11px] font-medium text-slate-400">ประวัติการสั่งงาน</p>
+        <Button variant="ghost" size="icon" icon={ChevronsLeft} onClick={() => setCollapsed(true)} aria-label="ซ่อนประวัติการสั่งงาน" title="ซ่อนประวัติการสั่งงาน" className="!size-6 text-slate-400" />
+      </div>
       <ul className="flex-1 space-y-0.5 overflow-y-auto">
         {threads.map((t) => (
           <li key={t.id}>
@@ -83,13 +102,16 @@ function Composer({ onSend, initialAgentId, mode }) {
   const { state } = useStore()
   const [text, setText] = useState('')
   const [agentId, setAgentId] = useState(initialAgentId ?? '')
+  const [files, setFiles] = useState([])
   const ref = useRef(null)
   useEffect(() => { setAgentId(initialAgentId ?? '') }, [initialAgentId])
   useEffect(() => { ref.current?.focus() }, [])
+  const agent = state.agents.find((a) => a.id === agentId)
   const send = () => {
     if (!text.trim()) return
-    onSend(text.trim(), agentId || undefined)
+    onSend(text.trim(), agentId || undefined, files)
     setText('')
+    setFiles([])
   }
   return (
     <div className="mx-auto w-full max-w-3xl">
@@ -100,15 +122,37 @@ function Composer({ onSend, initialAgentId, mode }) {
           placeholder="พิมพ์งานหรือคำถามที่ต้องการ…"
           className="block max-h-40 min-h-11 w-full resize-none bg-transparent px-3 py-2.5 text-[15px] placeholder:text-slate-400 focus:outline-none [field-sizing:content]"
         />
+        <AttachmentList files={files} onRemove={(id) => setFiles((fs) => fs.filter((f) => f.id !== id))} />
         <div className="flex items-center gap-1 px-1">
-          <Button variant="ghost" size="icon" icon={Paperclip} aria-label="แนบไฟล์" title="แนบไฟล์" />
-          <select
-            value={agentId} onChange={(e) => setAgentId(e.target.value)} aria-label="เลือกผู้ช่วย"
-            className="h-8 max-w-52 truncate rounded-lg border-0 bg-slate-100 px-2.5 text-xs text-slate-600 focus:ring-2 focus:ring-brand-200 focus:outline-none"
-          >
-            <option value="">ผู้ช่วย: อัตโนมัติ (แนะนำ)</option>
-            {state.agents.map((a) => <option key={a.id} value={a.id}>ผู้ช่วย: {a.name}</option>)}
-          </select>
+          <AttachButton onAdd={(added) => setFiles((fs) => [...fs, ...added])} />
+          {/* Quiet pill over a native select: compact when automatic, highlighted once an agent is picked. */}
+          <label className={cn(
+            'relative flex h-8 min-w-0 cursor-pointer items-center gap-1.5 rounded-full px-2.5 text-xs transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand-300',
+            agent ? 'bg-brand-50 text-brand-700' : 'text-slate-500 hover:bg-slate-100',
+          )}>
+            <Bot className="size-3.5 shrink-0" aria-hidden />
+            <span className="max-w-40 truncate">{agent ? agent.name : 'อัตโนมัติ'}</span>
+            <ChevronDown className="size-3 shrink-0" aria-hidden />
+            <select
+              value={agentId} onChange={(e) => setAgentId(e.target.value)} aria-label="เลือกผู้ช่วย"
+              className="absolute inset-0 cursor-pointer opacity-0"
+            >
+              <option value="">อัตโนมัติ — ระบบเลือกให้ (แนะนำ)</option>
+              {DEPARTMENTS.map((d) => {
+                const list = state.agents.filter((a) => deptById(a.dept).id === d.id)
+                return list.length > 0 && (
+                  <optgroup key={d.id} label={d.th}>
+                    {list.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
+                  </optgroup>
+                )
+              })}
+            </select>
+          </label>
+          {agent && (
+            <button type="button" onClick={() => setAgentId('')} aria-label="กลับไปเลือกผู้ช่วยอัตโนมัติ" title="กลับไปเลือกอัตโนมัติ" className="rounded-full p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700">
+              <X className="size-3.5" />
+            </button>
+          )}
           <button type="submit" disabled={!text.trim()} aria-label="ส่ง" className="ml-auto flex size-9 items-center justify-center rounded-full bg-brand-600 text-white transition hover:bg-brand-700 disabled:bg-slate-200 disabled:text-slate-400">
             <ArrowUp className="size-5" />
           </button>
@@ -236,7 +280,8 @@ function ChatView({ thread, onShowWorkflow, onSuggest }) {
     <div className="mx-auto max-w-3xl space-y-8 px-1 py-6">
       {thread.map((run) => (
         <div key={run.id} className="space-y-5">
-          <div className="flex justify-end">
+          <div className="flex flex-col items-end gap-1.5">
+            <AttachmentList files={run.attachments} className="flex max-w-[85%] flex-wrap justify-end gap-1.5" />
             <p className="max-w-[85%] rounded-2xl rounded-br-md bg-slate-100 px-4 py-2.5 text-[15px] text-slate-800">{run.prompt}</p>
           </div>
           <AssistantMessage run={run} onShowWorkflow={() => onShowWorkflow(run.id)} />
@@ -388,6 +433,7 @@ function WorkflowView({ run }) {
 export default function Workspace() {
   const { state, actions } = useStore()
   const [params, setParams] = useSearchParams()
+  const location = useLocation()
   const [mode, setModeState] = useState(readMode)
   const setMode = (m) => { setModeState(m); writeMode(m) }
   const handled = useRef(null)
@@ -405,15 +451,15 @@ export default function Workspace() {
   }, [state.runs])
 
   // Chat answers straight away; Workflow mode stops at the plan so the user can review it.
-  const send = (prompt, agentId, threadId) => {
-    const id = actions.planRun(prompt, agentId ? { agentId } : {}, state, { threadId, autoStart: mode === 'chat' })
+  const send = (prompt, agentId, threadId, attachments) => {
+    const id = actions.planRun(prompt, agentId ? { agentId } : {}, state, { threadId, autoStart: mode === 'chat', attachments })
     setParams({ run: id })
   }
 
   useEffect(() => {
     if (!q || handled.current === q) return
     handled.current = q
-    send(q)
+    send(q, undefined, undefined, location.state?.attachments) // files attached on the home page
   }) // runs after each render but acts only once per incoming prompt
 
   return (
@@ -431,7 +477,7 @@ export default function Workspace() {
             : <WorkflowView run={run} />}
         </div>
         <div className="pt-3">
-          <Composer mode={mode} initialAgentId={params.get('agent')} onSend={(p, agentId) => send(p, agentId, run?.threadId)} />
+          <Composer mode={mode} initialAgentId={params.get('agent')} onSend={(p, agentId, files) => send(p, agentId, run?.threadId, files)} />
         </div>
       </section>
     </div>

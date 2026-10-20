@@ -92,8 +92,8 @@ export function AppStoreProvider({ children }) {
       toast,
       dismissToast: (id) => dispatch({ type: 'dismissToast', id }),
       /** Plan a request without starting it, so the user can review which agents will run. */
-      planRun: (prompt, opts, ctx, { threadId, autoStart = false } = {}) => {
-        const run = createRun({ prompt, plan: planRequest(prompt, { ...ctx, ...opts }), owner: CURRENT_USER_ID, threadId })
+      planRun: (prompt, opts, ctx, { threadId, autoStart = false, attachments = [] } = {}) => {
+        const run = { ...createRun({ prompt, plan: planRequest(prompt, { ...ctx, ...opts }), owner: CURRENT_USER_ID, threadId }), attachments }
         dispatch({ type: 'addRun', run: autoStart ? startRun(run) : run })
         return run.id
       },
