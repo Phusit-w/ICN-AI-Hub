@@ -1,0 +1,39 @@
+@import "tailwindcss";
+
+/* ICN AI Hub design tokens — one brand hue on a neutral slate base. */
+@theme {
+  --font-sans: "Inter", "IBM Plex Sans Thai", ui-sans-serif, system-ui, sans-serif;
+
+  --color-brand-50: #eef2ff;
+  --color-brand-100: #e0e7ff;
+  --color-brand-200: #c7d2fe;
+  --color-brand-300: #a5b4fc;
+  --color-brand-400: #818cf8;
+  --color-brand-500: #6366f1;
+  --color-brand-600: #4f46e5;
+  --color-brand-700: #4338ca;
+  --color-brand-800: #3730a3;
+  --color-brand-900: #312e81;
+
+  --color-canvas: #f6f7f9;
+}
+
+@layer base {
+  html { -webkit-font-smoothing: antialiased; }
+  body { @apply bg-canvas text-slate-800; }
+  :focus-visible { @apply outline-2 outline-offset-2 outline-brand-500; }
+}
+
+@keyframes flow { to { stroke-dashoffset: -20; } }
+.flow-line { stroke-dasharray: 6 4; animation: flow 0.8s linear infinite; }
+
+@keyframes ring { 0% { box-shadow: 0 0 0 0 rgb(79 70 229 / 0.35); } 100% { box-shadow: 0 0 0 10px rgb(79 70 229 / 0); } }
+.pulse-ring { animation: ring 1.4s ease-out infinite; }
+
+@keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.rise { animation: rise 0.25s ease-out both; }
+
+.canvas-grid {
+  background-image: radial-gradient(circle, #d7dbe2 1px, transparent 1px);
+  background-size: 20px 20px;
+}
