@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { ArrowLeft, ArrowRight, Check, Copy, FileUp, Lock, Users, Building2, Rocket } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Check, Copy, FileUp, Lock, Users, Building2, Rocket, Settings2, Sparkles, X } from 'lucide-react'
 import { useStore } from '../store/AppStore'
 import { DATA_CLASSES, DEPARTMENTS, KNOWLEDGE, MODELS, OUTPUT_FORMATS, SHARE_LEVELS, TOOLS } from '../data/catalog'
-import { cn, uid } from '../lib/utils'
+import { cn } from '../lib/utils'
+import { agentFromForm, BLANK_FORM, draftForm, formFromAgent, INSTRUCTION_STARTERS } from '../lib/agentDraft'
 import { Card, PageHeader } from '../components/ui/Card'
 import Button from '../components/ui/Button'
 import Badge, { ModelBadge, ShareBadge, DeptBadge } from '../components/ui/Badge'
@@ -13,22 +14,71 @@ import EntityIcon from '../components/agents/EntityIcon'
 const STEPS = ['ข้อมูลพื้นฐาน', 'คำสั่งการทำงาน', 'Model & ข้อมูล', 'Knowledge & Skills', 'Tools & Output', 'การแชร์']
 const KINDS = ['research', 'document', 'sales', 'hr', 'it', 'accounting', 'data', 'image', 'review', 'coding']
 
-const INSTRUCTION_STARTERS = {
-  sales: 'คุณคือที่ปรึกษาฝ่ายขายของ ICN\n- วิเคราะห์ความต้องการลูกค้าจากข้อมูลที่ได้รับ\n- เสนอ Solution ที่เหมาะสมพร้อมเหตุผล\n- ห้ามให้ส่วนลดเกิน 15% โดยไม่ระบุว่าต้องขออนุมัติ',
-  hr: 'คุณคือผู้ช่วยฝ่ายบุคคลของ ICN\n- ตอบจากคู่มือพนักงานเท่านั้น และอ้างอิงเลขหมวด\n- ถ้าไม่แน่ใจ ให้แนะนำติดต่อ HR\n- ห้ามเปิดเผยข้อมูลส่วนบุคคลของพนักงานอื่น',
-  it: 'คุณคือ IT Support ของ ICN\n- แนะนำวิธีแก้ทีละขั้นตอนแบบเข้าใจง่าย\n- ถ้าแก้ไม่ได้ใน 3 ขั้นตอน ให้เปิด Ticket\n- ห้ามขอรหัสผ่านจากผู้ใช้',
-  accounting: 'คุณคือนักบัญชีของ ICN\n- ตรวจตัวเลขทุกครั้งก่อนสรุป\n- แสดงสูตรหรือที่มาของตัวเลข\n- ใช้ผังบัญชีของบริษัทเท่านั้น',
-  core: 'คุณคือผู้ช่วยของ ICN\n- ทำงานตามที่ได้รับมอบหมายอย่างกระชับและถูกต้อง\n- ระบุแหล่งที่มาของข้อมูลเสมอ',
-}
+/**
+ * Default way to create an agent: describe it in one box, the AI fills everything in,
+ * the user checks name, description, skills and sharing, then creates. Everything else lives in the wizard.
+ */
+function QuickCreate({ initial, onCreate, onAdvanced }) {
+  const { state } = useStore()
+  const [text, setText] = useState(initial)
+  const [form, setForm] = useState(() => (initial.trim() ? draftForm(initial, state.agents) : null))
+  const set = (patch) => setForm((f) => ({ ...f, ...patch }))
+  const fill = () => text.trim() && setForm(draftForm(text, state.agents))
 
-const blank = { name: '', description: '', dept: 'sales', kind: 'sales', instruction: '', model: 'auto', classification: 'internal', knowledge: [], uploads: [], skills: [], tools: [], format: 'Word document', language: 'TH', template: '', share: 'private', editors: 'me', review: true }
+  return (
+    <div className="mx-auto max-w-2xl pt-2 lg:pt-6">
+      <h1 className="text-2xl font-semibold tracking-tight text-slate-900">สร้างผู้ช่วย AI ของคุณ</h1>
+      <p className="mt-1 text-sm text-slate-500">บอกว่าอยากได้ผู้ช่วยแบบไหน AI จะกรอกรายละเอียดให้ คุณแค่ตรวจแล้วกดสร้าง</p>
+      <form onSubmit={(e) => { e.preventDefault(); fill() }} className="mt-5 rounded-2xl border border-slate-200 bg-white p-2 shadow-sm focus-within:border-brand-400 focus-within:ring-4 focus-within:ring-brand-100">
+        <textarea
+          value={text} onChange={(e) => setText(e.target.value)} rows={2} autoFocus={!form} aria-label="อยากได้ผู้ช่วยแบบไหน"
+          onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); fill() } }}
+          placeholder="เช่น ช่วยร่างอีเมลตอบลูกค้าที่ร้องเรียนเรื่องส่งของช้า ให้สุภาพและเสนอทางแก้"
+          className="block w-full resize-none bg-transparent px-3 py-2 text-[15px] placeholder:text-slate-400 focus:outline-none"
+        />
+        <div className="flex justify-end px-1">
+          <Button type="submit" variant={form ? 'secondary' : 'primary'} size="sm" icon={Sparkles} disabled={!text.trim()}>{form ? 'ให้ AI กรอกใหม่' : 'ให้ AI กรอกให้'}</Button>
+        </div>
+      </form>
 
-function fromSource(src) {
-  return {
-    ...blank, name: `${src.name} (Copy)`, description: src.description, dept: src.dept, kind: src.kind, instruction: src.instruction,
-    model: src.model, classification: src.classification, knowledge: src.knowledge, skills: src.skills, tools: src.tools,
-    format: src.output.format, language: src.output.language, template: src.output.template,
-  }
+      {form && (
+        <Card className="rise mt-5 space-y-5 p-5">
+          <div className="flex items-start gap-3">
+            <EntityIcon icon={form.kind} size="lg" />
+            <div className="min-w-0 flex-1 space-y-3">
+              <Field label="ชื่อ" htmlFor="q-name"><Input id="q-name" value={form.name} onChange={(e) => set({ name: e.target.value })} /></Field>
+              <Field label="ทำอะไร" htmlFor="q-desc"><Textarea id="q-desc" rows={2} value={form.description} onChange={(e) => set({ description: e.target.value })} /></Field>
+            </div>
+          </div>
+          <Field label={`ทักษะ (${form.skills.length})`} hint={`เริ่มจาก ${form.based} — กด × เพื่อเอาทักษะที่ไม่ต้องการออก`}>
+            <div className="flex flex-wrap gap-1.5">
+              {form.skills.map((id) => {
+                const sk = state.skills.find((x) => x.id === id)
+                return (
+                  <span key={id} className="inline-flex items-center gap-1 rounded-full bg-slate-100 py-0.5 pr-1 pl-2.5 text-xs text-slate-700">
+                    {sk?.name ?? id}
+                    <button type="button" onClick={() => set({ skills: form.skills.filter((x) => x !== id) })} aria-label={`เอา ${sk?.name ?? id} ออก`} className="rounded-full p-0.5 text-slate-400 hover:bg-slate-200 hover:text-slate-700"><X className="size-3" /></button>
+                  </span>
+                )
+              })}
+              {form.skills.length === 0 && <span className="text-xs text-slate-400">ไม่มี — เพิ่มได้ในตั้งค่าขั้นสูง</span>}
+            </div>
+          </Field>
+          <Field label="ใครใช้ได้บ้าง">
+            <div className="grid gap-2 sm:grid-cols-3">
+              {SHARE_LEVELS.map((sl) => (
+                <ChoiceCard key={sl.id} selected={form.share === sl.id} onClick={() => set({ share: sl.id })} icon={{ private: Lock, department: Users, company: Building2 }[sl.id]} title={sl.name} description={sl.th} />
+              ))}
+            </div>
+          </Field>
+          <div className="flex items-center justify-between border-t border-slate-100 pt-4">
+            <Button variant="ghost" size="sm" icon={Settings2} onClick={() => onAdvanced(form)}>ตั้งค่าขั้นสูง</Button>
+            <Button variant="primary" icon={Rocket} onClick={() => onCreate(form)} disabled={!form.name.trim() || !form.description.trim()}>สร้างผู้ช่วย</Button>
+          </div>
+        </Card>
+      )}
+    </div>
+  )
 }
 
 const toggleIn = (list, id) => (list.includes(id) ? list.filter((x) => x !== id) : [...list, id])
@@ -38,7 +88,9 @@ export default function CreateAgent() {
   const navigate = useNavigate()
   const [params] = useSearchParams()
   const source = state.agents.find((a) => a.id === params.get('from'))
-  const [form, setForm] = useState(() => (source ? fromSource(source) : blank))
+  const [form, setForm] = useState(() => (source ? { ...formFromAgent(source), name: `${source.name} (Copy)` } : BLANK_FORM))
+  // Copying an agent goes straight to the full wizard; a new agent starts from the one-page flow.
+  const [quick, setQuick] = useState(!source && params.get('advanced') !== '1')
   const [step, setStep] = useState(0)
   const [skillQuery, setSkillQuery] = useState('')
   const set = (patch) => setForm((f) => ({ ...f, ...patch }))
@@ -48,19 +100,15 @@ export default function CreateAgent() {
   const canFinish = valid.every(Boolean)
   const skillList = useMemo(() => state.skills.filter((s) => s.name.toLowerCase().includes(skillQuery.toLowerCase())), [state.skills, skillQuery])
 
-  const create = () => {
-    const agent = {
-      id: uid('agent'), name: form.name.trim(), description: form.description.trim(), dept: form.dept, kind: form.kind,
-      instruction: form.instruction, model: form.model, classification: form.classification,
-      knowledge: form.knowledge, skills: form.skills, tools: form.tools,
-      output: { format: form.format, language: form.language, template: form.template || 'Default' },
-      share: form.share, owner: state.userId, rating: 0, uses: 0, version: '1.0', updated: new Date().toISOString().slice(0, 10),
-      examples: [], versions: [{ v: '1.0', date: new Date().toISOString().slice(0, 10), by: state.userId, note: source ? `Clone จาก ${source.name}` : 'สร้างใหม่' }],
-      forkedFrom: source?.name,
-    }
+  const create = (f = form) => {
+    const agent = agentFromForm(f, { owner: state.userId, note: source ? `Clone จาก ${source.name}` : 'สร้างใหม่', forkedFrom: source?.name })
     actions.addAgent(agent)
-    actions.toast(`สร้าง ${agent.name} แล้ว${form.share === 'company' && form.review ? ' — ส่งให้ AI CoE รีวิวก่อนเผยแพร่ทั้งบริษัท' : ''}`)
+    actions.toast(`สร้าง ${agent.name} แล้ว${f.share === 'company' && f.review ? ' — ส่งให้ AI CoE รีวิวก่อนเผยแพร่ทั้งบริษัท' : ''}`)
     navigate(`/agents/${agent.id}`)
+  }
+
+  if (quick) {
+    return <QuickCreate initial={params.get('q') ?? ''} onCreate={create} onAdvanced={(f) => { setForm(f); setQuick(false) }} />
   }
 
   return (
@@ -253,7 +301,7 @@ export default function CreateAgent() {
             {step < STEPS.length - 1 ? (
               <Button variant="primary" onClick={() => setStep(step + 1)} disabled={!valid[step]}>ถัดไป <ArrowRight className="size-4" /></Button>
             ) : (
-              <Button variant="primary" icon={Rocket} onClick={create} disabled={!canFinish}>{source ? 'สร้างสำเนา' : 'สร้างผู้ช่วย'}</Button>
+              <Button variant="primary" icon={Rocket} onClick={() => create()} disabled={!canFinish}>{source ? 'สร้างสำเนา' : 'สร้างผู้ช่วย'}</Button>
             )}
           </div>
         </Card>

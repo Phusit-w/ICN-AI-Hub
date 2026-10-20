@@ -86,7 +86,8 @@ export function AppStoreProvider({ children }) {
     const toast = (message, opts = {}) => {
       const t = { id: uid('toast'), message, tone: 'success', ...opts }
       dispatch({ type: 'toast', toast: t })
-      setTimeout(() => dispatch({ type: 'dismissToast', id: t.id }), 3800)
+      // Toasts with a follow-up link stay longer so there's time to click it.
+      setTimeout(() => dispatch({ type: 'dismissToast', id: t.id }), t.action ? 7000 : 3800)
     }
     return {
       toast,
@@ -98,6 +99,8 @@ export function AppStoreProvider({ children }) {
         return run.id
       },
       startRun: (id) => dispatch({ type: 'updateRun', id, update: (r) => startRun(r) }),
+      /** Shallow-merge `patch` into a run, e.g. to record what it was saved as. */
+      annotateRun: (id, patch) => dispatch({ type: 'updateRun', id, update: (r) => ({ ...r, ...patch }) }),
       removeStep: (id, stepId) => dispatch({
         type: 'updateRun', id,
         update: (r) => {

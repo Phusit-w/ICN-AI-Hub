@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { createPortal } from 'react-dom'
+import { Link } from 'react-router-dom'
 import { CircleCheck, Info, X } from 'lucide-react'
 import { useStore } from '../../store/AppStore'
 import { cn } from '../../lib/utils'
@@ -43,7 +44,10 @@ export function Toaster() {
       {state.toasts.map((t) => (
         <div key={t.id} className="rise pointer-events-auto flex items-start gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-lg">
           {t.tone === 'success' ? <CircleCheck className="mt-0.5 size-5 shrink-0 text-emerald-500" /> : <Info className="mt-0.5 size-5 shrink-0 text-brand-500" />}
-          <p className="flex-1 text-sm text-slate-700">{t.message}</p>
+          <p className="flex-1 text-sm text-slate-700">
+            {t.message}
+            {t.action && <Link to={t.action.to} onClick={() => actions.dismissToast(t.id)} className="ml-1.5 font-medium text-brand-700 hover:underline">{t.action.label}</Link>}
+          </p>
           <button type="button" onClick={() => actions.dismissToast(t.id)} className="text-slate-400 hover:text-slate-600" aria-label="ปิด">
             <X className="size-4" />
           </button>

@@ -18,3 +18,9 @@ export function timeAgo(ts) {
 }
 
 export const clockTime = (ts) => new Date(ts).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+
+/** Crude relevance: how many words of `query` (2+ chars) appear in `text`. 0 means no match. */
+export function matchScore(text, query) {
+  const hay = text.toLowerCase()
+  return query.toLowerCase().split(/\s+/).filter((w) => w.length > 1).reduce((n, w) => n + (hay.includes(w) ? 1 : 0), 0)
+}

@@ -7,7 +7,7 @@ import AgentDetail from './pages/AgentDetail'
 import CreateAgent from './pages/CreateAgent'
 import SkillLibrary from './pages/SkillLibrary'
 import CreateSkill from './pages/CreateSkill'
-import WorkflowBuilder from './pages/WorkflowBuilder'
+import Workflows from './pages/Workflows'
 import Community from './pages/Community'
 import Governance from './pages/Governance'
 
@@ -22,7 +22,7 @@ export default function App() {
         <Route path="agents/:id" element={<AgentDetail />} />
         <Route path="skills" element={<SkillLibrary />} />
         <Route path="skills/new" element={<CreateSkill />} />
-        <Route path="workflows" element={<WorkflowBuilder />} />
+        <Route path="workflows" element={<Workflows />} />
         <Route path="community" element={<Community />} />
         <Route path="governance" element={<Governance />} />
         <Route path="*" element={<Navigate to="/" replace />} />

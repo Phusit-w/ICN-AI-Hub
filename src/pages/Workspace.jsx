@@ -2,19 +2,20 @@ import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import {
   ArrowRight, ArrowUp, Bot, ChevronDown, ChevronsLeft, CircleCheck, CircleDashed, Copy, Download, History, LoaderCircle, MessageSquare,
-  Play, Plus, Save, Share2, ShieldCheck, Sparkles, Trash2, Undo2, Workflow, X,
+  Play, Plus, Share2, ShieldCheck, Sparkles, Trash2, Undo2, Workflow, X,
 } from 'lucide-react'
 import { useStore } from '../store/AppStore'
 import { DEPARTMENTS, deptById } from '../data/catalog'
 import { AttachButton, AttachmentList } from '../components/ui/Attachments'
 import { ACTIVITIES } from '../lib/mockOutputs'
 import { runProgress } from '../lib/runs'
-import { clockTime, cn, timeAgo, uid } from '../lib/utils'
+import { clockTime, cn, timeAgo } from '../lib/utils'
 import { Card, CardHeader, ProgressBar } from '../components/ui/Card'
 import Button from '../components/ui/Button'
 import EntityIcon from '../components/agents/EntityIcon'
 import Pipeline from '../components/workflow/Pipeline'
 import ArtifactView from '../components/workflow/ArtifactView'
+import SaveForReuse from '../components/workflow/SaveForReuse'
 import logo from '../assets/icn-logo.png'
 
 const MODE_KEY = 'icn.workspace.mode'
@@ -98,18 +99,21 @@ function ThreadList({ threads, activeThread, onNew }) {
   )
 }
 
-function Composer({ onSend, initialAgentId, mode }) {
+function Composer({ onSend, initialAgentId, initialWorkflowId, mode }) {
   const { state } = useStore()
   const [text, setText] = useState('')
   const [agentId, setAgentId] = useState(initialAgentId ?? '')
+  const [workflowId, setWorkflowId] = useState(initialWorkflowId ?? '')
   const [files, setFiles] = useState([])
   const ref = useRef(null)
   useEffect(() => { setAgentId(initialAgentId ?? '') }, [initialAgentId])
+  useEffect(() => { setWorkflowId(initialWorkflowId ?? '') }, [initialWorkflowId])
   useEffect(() => { ref.current?.focus() }, [])
   const agent = state.agents.find((a) => a.id === agentId)
+  const workflow = state.workflows.find((w) => w.id === workflowId)
   const send = () => {
     if (!text.trim()) return
-    onSend(text.trim(), agentId || undefined, files)
+    onSend(text.trim(), workflow ? { workflowId } : agentId ? { agentId } : {}, files)
     setText('')
     setFiles([])
   }
@@ -119,12 +123,20 @@ function Composer({ onSend, initialAgentId, mode }) {
         <textarea
           ref={ref} value={text} onChange={(e) => setText(e.target.value)} rows={1} aria-label="ข้อความ"
           onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() } }}
-          placeholder="พิมพ์งานหรือคำถามที่ต้องการ…"
+          placeholder={workflow ? `พิมพ์ข้อมูลสำหรับสายงานนี้ เช่น ชื่อลูกค้า หรือรายละเอียดงาน…` : 'พิมพ์งานหรือคำถามที่ต้องการ…'}
           className="block max-h-40 min-h-11 w-full resize-none bg-transparent px-3 py-2.5 text-[15px] placeholder:text-slate-400 focus:outline-none [field-sizing:content]"
         />
         <AttachmentList files={files} onRemove={(id) => setFiles((fs) => fs.filter((f) => f.id !== id))} />
         <div className="flex items-center gap-1 px-1">
           <AttachButton onAdd={(added) => setFiles((fs) => [...fs, ...added])} />
+          {workflow ? (
+            // A Workflow chosen from the Workflows page replaces agent picking: its steps are fixed.
+            <span className="flex h-8 min-w-0 items-center gap-1.5 rounded-full bg-brand-50 pr-1 pl-2.5 text-xs text-brand-700">
+              <Workflow className="size-3.5 shrink-0" aria-hidden />
+              <span className="max-w-56 truncate">สายงาน: {workflow.name}</span>
+              <button type="button" onClick={() => setWorkflowId('')} aria-label="เลิกใช้สายงานนี้" title="เลิกใช้สายงานนี้" className="rounded-full p-1 hover:bg-brand-100"><X className="size-3" /></button>
+            </span>
+          ) : (<>
           {/* Quiet pill over a native select: compact when automatic, highlighted once an agent is picked. */}
           <label className={cn(
             'relative flex h-8 min-w-0 cursor-pointer items-center gap-1.5 rounded-full px-2.5 text-xs transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand-300',
@@ -153,6 +165,7 @@ function Composer({ onSend, initialAgentId, mode }) {
               <X className="size-3.5" />
             </button>
           )}
+          </>)}
           <button type="submit" disabled={!text.trim()} aria-label="ส่ง" className="ml-auto flex size-9 items-center justify-center rounded-full bg-brand-600 text-white transition hover:bg-brand-700 disabled:bg-slate-200 disabled:text-slate-400">
             <ArrowUp className="size-5" />
           </button>
@@ -248,6 +261,7 @@ function AssistantMessage({ run, onShowWorkflow }) {
               <Button size="sm" variant="ghost" icon={Copy} onClick={() => actions.toast('คัดลอกแล้ว')}>คัดลอก</Button>
               <Button size="sm" variant="ghost" icon={Share2} onClick={() => actions.toast('คัดลอกลิงก์สำหรับแชร์แล้ว')}>แชร์</Button>
               <Button size="sm" variant="ghost" icon={Workflow} onClick={onShowWorkflow}>ดูขั้นตอนการทำงาน</Button>
+              <SaveForReuse run={run} />
             </div>
           </>
         ))}
@@ -358,16 +372,6 @@ function WorkflowView({ run }) {
   const final = run.status === 'completed' ? finalStep(run) : null
   const shown = outputs.find((s) => s.id === selected) ?? final ?? outputs.at(-1)
 
-  const saveAsWorkflow = () => {
-    const work = run.steps.map((s, i) => ({ id: `n${i + 2}`, type: s.agentId ? 'agent' : s.skillId ? 'skill' : 'condition', ref: s.agentId ?? s.skillId, label: s.name, x: 290 + i * 250, y: 60 }))
-    const nodes = [{ id: 'n1', type: 'trigger', label: 'ผู้ใช้ส่งคำขอ', x: 40, y: 60 }, ...work, { id: 'n-out', type: 'output', label: 'ส่งผลลัพธ์', x: 290 + work.length * 250, y: 60 }]
-    const edges = nodes.slice(1).map((n, i) => ({ id: uid('e'), from: nodes[i].id, to: n.id }))
-    const wf = { id: uid('wf'), name: `สายงาน: ${run.title.slice(0, 40)}`, dept: 'sales', owner: run.owner, uses: 0, rating: 0, version: '0.1', description: run.prompt, nodes, edges }
-    actions.saveWorkflow(wf)
-    actions.toast('บันทึกเป็นสายงานแล้ว — ปรับแต่งต่อได้ในหน้าสร้างสายงาน')
-    navigate(`/workflows?id=${wf.id}`)
-  }
-
   return (
     <div className="space-y-5 py-2">
       <Card className="p-5">
@@ -384,7 +388,7 @@ function WorkflowView({ run }) {
                 <Button variant="primary" icon={Play} onClick={() => actions.startRun(run.id)} disabled={!run.steps.length}>เริ่มทำงาน</Button>
               </>
             )}
-            {run.status === 'completed' && !run.workflowId && !isChatRun(run) && <Button icon={Save} onClick={saveAsWorkflow}>บันทึกเป็นสายงาน</Button>}
+            {run.status === 'completed' && <SaveForReuse run={run} />}
           </div>
         </div>
         {run.status === 'planned' && <p className="mt-3 rounded-lg bg-slate-50 px-3.5 py-2.5 text-[13px] text-slate-600">ตรวจแผนด้านล่างก่อนเริ่ม — กด × เพื่อเอาขั้นตอนที่ไม่ต้องการออก</p>}
@@ -451,8 +455,9 @@ export default function Workspace() {
   }, [state.runs])
 
   // Chat answers straight away; Workflow mode stops at the plan so the user can review it.
-  const send = (prompt, agentId, threadId, attachments) => {
-    const id = actions.planRun(prompt, agentId ? { agentId } : {}, state, { threadId, autoStart: mode === 'chat', attachments })
+  // `pick` is { agentId } or { workflowId } when the user chose one, otherwise {} and the planner decides.
+  const send = (prompt, pick, threadId, attachments) => {
+    const id = actions.planRun(prompt, pick ?? {}, state, { threadId, autoStart: mode === 'chat', attachments })
     setParams({ run: id })
   }
 
@@ -477,7 +482,7 @@ export default function Workspace() {
             : <WorkflowView run={run} />}
         </div>
         <div className="pt-3">
-          <Composer mode={mode} initialAgentId={params.get('agent')} onSend={(p, agentId, files) => send(p, agentId, run?.threadId, files)} />
+          <Composer mode={mode} initialAgentId={params.get('agent')} initialWorkflowId={params.get('workflow')} onSend={(p, pick, files) => send(p, pick, run?.threadId, files)} />
         </div>
       </section>
     </div>
