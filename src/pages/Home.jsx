@@ -26,7 +26,7 @@ const graphemes = (s) => (typeof Intl.Segmenter === 'function'
   : Array.from(s))
 
 /** Types each phrase out, pauses, erases it, then moves to the next. Paused while `active` is false. */
-function useTypewriter(phrases, active) {
+export function useTypewriter(phrases, active) {
   const [shown, setShown] = useState('')
   useEffect(() => {
     if (!active) return undefined

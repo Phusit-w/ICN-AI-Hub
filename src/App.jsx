@@ -2,12 +2,12 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import AppShell from './components/layout/AppShell'
 import Home from './pages/Home'
 import Workspace from './pages/Workspace'
-import AgentLibrary from './pages/AgentLibrary'
+import AgentLibrary from './pages/AgentLibrary.prototype' // PROTOTYPE: swap back after picking a variant
 import AgentDetail from './pages/AgentDetail'
 import CreateAgent from './pages/CreateAgent'
 import SkillLibrary from './pages/SkillLibrary'
 import CreateSkill from './pages/CreateSkill'
-import WorkflowBuilder from './pages/WorkflowBuilder'
+import WorkflowBuilder from './pages/WorkflowLanding.prototype' // PROTOTYPE: swap back after picking a variant
 import Community from './pages/Community'
 import Governance from './pages/Governance'
 
