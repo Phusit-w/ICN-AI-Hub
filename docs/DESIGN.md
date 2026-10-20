@@ -136,7 +136,7 @@ Logic: `store/AppStore.jsx` (reducer + one clock for all runs) · `lib/runs.js` 
 | Type | Inter + IBM Plex Sans Thai; H1 24/600, section 15/600, body 14, meta 12, micro 11 | |
 | Radius | 8px control · 12px card · 16px modal | |
 | Elevation | border เป็นหลัก, shadow เฉพาะ hover/popover/modal | ดู enterprise ไม่ฟุ้ง |
-| Motion | flow-dash บนเส้นเชื่อมที่กำลังส่งงาน, pulse ring บน Agent ที่ทำงาน, rise 250ms | การเคลื่อนไหว = สถานะ ไม่ใช่ตกแต่ง |
+| Motion | flow-dash บนเส้นเชื่อมที่กำลังส่งงาน, pulse ring บน Agent ที่ทำงาน, rise 250ms · ข้อยกเว้น: ตัวอย่างพิมพ์ทีละตัวอักษรในช่องพิมพ์ที่ยังว่าง (สอนว่าพิมพ์อะไรได้ หยุดทันทีเมื่อผู้ใช้พิมพ์ และปิดเมื่อตั้ง reduce motion) | การเคลื่อนไหว = สถานะ ไม่ใช่ตกแต่ง |
 | Icon | lucide, 16–18px; Agent icon tile สี brand, Skill tile สีเทา | แยก Agent/Skill ได้ทันที |
 
 ## 8. Example dummy data (ดูไฟล์จริงใน `src/data/`)

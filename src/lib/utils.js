@@ -24,3 +24,10 @@ export function matchScore(text, query) {
   const hay = text.toLowerCase()
   return query.toLowerCase().split(/\s+/).filter((w) => w.length > 1).reduce((n, w) => n + (hay.includes(w) ? 1 : 0), 0)
 }
+
+/** `items` that match `query` at all, best match first (ties: original order). */
+export function rankByMatch(items, textOf, query) {
+  return items.map((item) => ({ item, s: matchScore(textOf(item), query) })).filter((x) => x.s > 0).sort((a, b) => b.s - a.s).map((x) => x.item)
+}
+
+export const truncate = (text, max) => (text.length > max ? `${text.slice(0, max)}…` : text)

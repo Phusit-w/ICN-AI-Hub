@@ -1,7 +1,7 @@
 // Agent "forms" are the editable shape behind the Create Agent page; these helpers fill one in
 // (from scratch, from an existing agent, or from a plain-language description) and turn it into an Agent.
 
-import { matchScore, uid } from './utils'
+import { rankByMatch, truncate, uid } from './utils'
 
 export const INSTRUCTION_STARTERS = {
   sales: 'คุณคือที่ปรึกษาฝ่ายขายของ ICN\n- วิเคราะห์ความต้องการลูกค้าจากข้อมูลที่ได้รับ\n- เสนอ Solution ที่เหมาะสมพร้อมเหตุผล\n- ห้ามให้ส่วนลดเกิน 15% โดยไม่ระบุว่าต้องขออนุมัติ',
@@ -10,6 +10,9 @@ export const INSTRUCTION_STARTERS = {
   accounting: 'คุณคือนักบัญชีของ ICN\n- ตรวจตัวเลขทุกครั้งก่อนสรุป\n- แสดงสูตรหรือที่มาของตัวเลข\n- ใช้ผังบัญชีของบริษัทเท่านั้น',
   core: 'คุณคือผู้ช่วยของ ICN\n- ทำงานตามที่ได้รับมอบหมายอย่างกระชับและถูกต้อง\n- ระบุแหล่งที่มาของข้อมูลเสมอ',
 }
+
+/** What an agent is searched and matched by. */
+export const agentSearchText = (a) => `${a.name} ${a.description} ${a.examples.join(' ')}`
 
 export const BLANK_FORM = { name: '', description: '', dept: 'sales', kind: 'sales', instruction: '', model: 'auto', classification: 'internal', knowledge: [], uploads: [], skills: [], tools: [], format: 'Word document', language: 'TH', template: '', share: 'private', editors: 'me', review: true }
 
@@ -22,21 +25,15 @@ export function formFromAgent(src) {
   }
 }
 
-const shortName = (text) => {
-  const t = text.trim().replace(/\s+/g, ' ')
-  return t.length > 36 ? `${t.slice(0, 36)}…` : t
-}
-
 /**
  * Mock "AI fill": starts from the existing agent closest to the description (or a core agent),
  * and turns the description into the name, summary and main instruction.
  */
 export function draftForm(text, agents) {
-  const best = agents.map((a) => ({ a, s: matchScore(`${a.name} ${a.description} ${a.examples.join(' ')}`, text) })).sort((x, y) => y.s - x.s)[0]
-  const base = best?.s > 0 ? best.a : agents.find((a) => a.id === 'agent-document') ?? agents[0]
+  const base = rankByMatch(agents, agentSearchText, text)[0] ?? agents.find((a) => a.id === 'agent-document') ?? agents[0]
   return {
     ...formFromAgent(base),
-    name: `ผู้ช่วย${shortName(text)}`,
+    name: `ผู้ช่วย${truncate(text.trim().replace(/\s+/g, ' '), 36)}`,
     description: text.trim(),
     instruction: `${INSTRUCTION_STARTERS[base.dept] ?? INSTRUCTION_STARTERS.core}\n- งานหลัก: ${text.trim()}`,
     based: base.name,

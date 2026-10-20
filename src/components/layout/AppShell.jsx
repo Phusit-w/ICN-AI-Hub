@@ -6,16 +6,13 @@ import {
 import { useStore } from '../../store/AppStore'
 import { userById } from '../../data/catalog'
 import { cn } from '../../lib/utils'
+import usePersistentState from '../../lib/usePersistentState'
 import { Avatar, Toaster } from '../ui/Overlay'
 import Button from '../ui/Button'
 import EntityIcon from '../agents/EntityIcon'
 import { SearchInput } from '../ui/Form'
 import { HelpButton } from './Help'
 import logo from '../../assets/icn-logo.png'
-
-const COLLAPSE_KEY = 'icn.sidebar.collapsed'
-const readCollapsed = () => { try { return localStorage.getItem(COLLAPSE_KEY) === '1' } catch { return false } }
-const writeCollapsed = (v) => { try { localStorage.setItem(COLLAPSE_KEY, v ? '1' : '0') } catch { /* storage unavailable — resets on reload */ } }
 
 const NAV = [
   { section: 'งานของฉัน', items: [
@@ -164,15 +161,12 @@ export default function AppShell() {
   const me = userById(state.userId)
   // The workspace has its own history panel, so the menu starts as an icon rail there to avoid two wide sidebars.
   // A toggle on that page is a one-off override; elsewhere it is remembered.
-  const [pref, setPref] = useState(readCollapsed)
-  const [override, setOverride] = useState(null)
+  const [rememberedCollapsed, setRememberedCollapsed] = usePersistentState('icn.sidebar.collapsed', false)
+  const [workspaceToggle, setWorkspaceToggle] = useState(null)
   const onWorkspace = pathname === '/workspace'
-  const collapsed = override ?? (onWorkspace || pref)
-  const toggle = () => {
-    if (onWorkspace) setOverride(!collapsed)
-    else { setPref(!collapsed); writeCollapsed(!collapsed) }
-  }
-  useEffect(() => { window.scrollTo(0, 0); setOverride(null) }, [pathname])
+  const collapsed = workspaceToggle ?? (onWorkspace || rememberedCollapsed)
+  const toggle = () => (onWorkspace ? setWorkspaceToggle(!collapsed) : setRememberedCollapsed(!collapsed))
+  useEffect(() => { window.scrollTo(0, 0); setWorkspaceToggle(null) }, [pathname])
 
   return (
     <div className={cn('min-h-screen transition-[padding] duration-200', collapsed ? 'lg:pl-16' : 'lg:pl-64')}>

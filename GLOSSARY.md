@@ -18,6 +18,10 @@ _Avoid_: Plugin, tool
 A saved chain of Agents and Skills that hand work to each other in a fixed order, and can be run again on new input.
 _Avoid_: Pipeline, flow, automation, template (a shared Workflow is used as-is, not copied from a template)
 
+**Favourite agent** (ผู้ช่วยประจำ):
+An Agent a user has starred so it stays at hand on Home, the Agents page and the composer.
+_Avoid_: Pinned agent, bookmark
+
 ### Doing work
 
 **Run** (งาน):

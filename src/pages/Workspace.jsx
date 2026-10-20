@@ -10,6 +10,7 @@ import { AttachButton, AttachmentList } from '../components/ui/Attachments'
 import { ACTIVITIES } from '../lib/mockOutputs'
 import { runProgress } from '../lib/runs'
 import { clockTime, cn, timeAgo } from '../lib/utils'
+import usePersistentState from '../lib/usePersistentState'
 import { Card, CardHeader, ProgressBar } from '../components/ui/Card'
 import Button from '../components/ui/Button'
 import EntityIcon from '../components/agents/EntityIcon'
@@ -17,13 +18,6 @@ import Pipeline from '../components/workflow/Pipeline'
 import ArtifactView from '../components/workflow/ArtifactView'
 import SaveForReuse from '../components/workflow/SaveForReuse'
 import logo from '../assets/icn-logo.png'
-
-const MODE_KEY = 'icn.workspace.mode'
-const readMode = () => { try { return localStorage.getItem(MODE_KEY) === 'workflow' ? 'workflow' : 'chat' } catch { return 'chat' } }
-const writeMode = (m) => { try { localStorage.setItem(MODE_KEY, m) } catch { /* storage unavailable — mode resets on reload */ } }
-const HISTORY_KEY = 'icn.workspace.historyCollapsed'
-const readHistoryCollapsed = () => { try { return localStorage.getItem(HISTORY_KEY) === '1' } catch { return false } }
-const writeHistoryCollapsed = (v) => { try { localStorage.setItem(HISTORY_KEY, v ? '1' : '0') } catch { /* storage unavailable — resets on reload */ } }
 
 const SUGGESTIONS = [
   'ทำ Proposal ระบบ Smart Warehouse ให้ลูกค้า Siam Logistics',
@@ -61,8 +55,7 @@ function ModeToggle({ mode, onChange }) {
 
 function ThreadList({ threads, activeThread, onNew }) {
   const navigate = useNavigate()
-  const [collapsed, setCollapsedState] = useState(readHistoryCollapsed)
-  const setCollapsed = (v) => { setCollapsedState(v); writeHistoryCollapsed(v) }
+  const [collapsed, setCollapsed] = usePersistentState('icn.workspace.historyCollapsed', false)
 
   if (collapsed) {
     return (
@@ -438,8 +431,7 @@ export default function Workspace() {
   const { state, actions } = useStore()
   const [params, setParams] = useSearchParams()
   const location = useLocation()
-  const [mode, setModeState] = useState(readMode)
-  const setMode = (m) => { setModeState(m); writeMode(m) }
+  const [mode, setMode] = usePersistentState('icn.workspace.mode', 'chat')
   const handled = useRef(null)
   const q = params.get('q')
 
@@ -454,10 +446,12 @@ export default function Workspace() {
     return [...byId.values()].sort((a, b) => b.latest.createdAt - a.latest.createdAt)
   }, [state.runs])
 
-  // Chat answers straight away; Workflow mode stops at the plan so the user can review it.
   // `pick` is { agentId } or { workflowId } when the user chose one, otherwise {} and the planner decides.
   const send = (prompt, pick, threadId, attachments) => {
-    const id = actions.planRun(prompt, pick ?? {}, state, { threadId, autoStart: mode === 'chat', attachments })
+    // Picking an agent or workflow already settles the plan, so it runs straight away in either mode;
+    // otherwise Workflow mode stops at the plan for review.
+    const picked = Boolean(pick?.agentId || pick?.workflowId)
+    const id = actions.planRun(prompt, pick ?? {}, state, { threadId, autoStart: mode === 'chat' || picked, attachments })
     setParams({ run: id })
   }
 

@@ -94,7 +94,8 @@ export function AppStoreProvider({ children }) {
       dismissToast: (id) => dispatch({ type: 'dismissToast', id }),
       /** Plan a request without starting it, so the user can review which agents will run. */
       planRun: (prompt, opts, ctx, { threadId, autoStart = false, attachments = [] } = {}) => {
-        const run = { ...createRun({ prompt, plan: planRequest(prompt, { ...ctx, ...opts }), owner: CURRENT_USER_ID, threadId }), attachments }
+        // `workflowPicked` separates "the user chose this workflow" from the planner matching one by keyword.
+        const run = { ...createRun({ prompt, plan: planRequest(prompt, { ...ctx, ...opts }), owner: CURRENT_USER_ID, threadId }), attachments, workflowPicked: Boolean(opts.workflowId) }
         dispatch({ type: 'addRun', run: autoStart ? startRun(run) : run })
         return run.id
       },

@@ -2,15 +2,18 @@
 // See GLOSSARY.md. Also builds linear Workflows from a list of agents (used by the Workflow drafter).
 
 import { agentFromForm, formFromAgent } from './agentDraft'
-import { uid } from './utils'
+import { truncate, uid } from './utils'
 
 // Review Agent is added to every multi-step plan automatically, so it doesn't count as the user's choice.
 const workers = (run) => run.steps.filter((s) => s.agentId && s.kind !== 'review')
 
+/** A run step as a workflow node reference. */
+export const stepRef = (s) => ({ type: s.agentId ? 'agent' : s.skillId ? 'skill' : 'condition', ref: s.agentId ?? s.skillId, label: s.name })
+
 /**
  * What a finished run can be saved as:
  * 'agent' when one agent did the work, 'workflow' when several did, null for plain chat answers.
- * Runs that already came from a Workflow, or were already saved, aren't offered again.
+ * Runs that followed an existing Workflow (picked or matched), or were already saved, aren't offered again.
  */
 export function reuseTarget(run) {
   if (run.status !== 'completed' || run.workflowId || run.savedAs) return null
@@ -18,7 +21,11 @@ export function reuseTarget(run) {
   return n === 0 ? null : n === 1 ? 'agent' : 'workflow'
 }
 
-const nameFrom = (text) => (text.length > 40 ? `${text.slice(0, 40)}…` : text)
+/** `thread` is every run of the conversation, oldest first; the first request names it. */
+export function defaultReuseName(thread, kind) {
+  const title = truncate(thread[0].title, 40)
+  return kind === 'agent' ? `ผู้ช่วย${title}` : `สายงาน: ${title}`
+}
 
 /** A left-to-right chain: trigger → each step → output. `refs` are `{ type: 'agent'|'skill', ref, label }`. */
 export function linearWorkflow({ name, description, dept, owner, refs }) {
@@ -28,24 +35,31 @@ export function linearWorkflow({ name, description, dept, owner, refs }) {
   return { id: uid('wf'), name, dept, owner, uses: 0, rating: 0, version: '0.1', description, nodes, edges }
 }
 
-export function defaultReuseName(run, kind) {
-  return kind === 'agent' ? `ผู้ช่วย${nameFrom(run.title)}` : `สายงาน: ${nameFrom(run.title)}`
+export function workflowFromRun(run, thread, { name, owner, dept }) {
+  return linearWorkflow({ name, description: thread[0].prompt, dept, owner, refs: run.steps.map(stepRef) })
 }
 
-export function workflowFromRun(run, { name, owner, dept }) {
-  const refs = run.steps.map((s) => ({ type: s.agentId ? 'agent' : s.skillId ? 'skill' : 'condition', ref: s.agentId ?? s.skillId, label: s.name }))
-  return linearWorkflow({ name, description: run.prompt, dept, owner, refs })
-}
-
-/** Copies the agent that did the work, with the request as its main instruction and the run's files as knowledge. */
-export function agentFromRun(run, { name, owner, agents }) {
+/**
+ * Copies the agent that did the work. The conversation's first request becomes its main job, later
+ * messages become refinements, the base agent's own rules stay underneath, and every file attached
+ * anywhere in the conversation becomes its knowledge.
+ */
+export function agentFromRun(run, thread, { name, owner, agents }) {
   const base = agents.find((a) => a.id === workers(run)[0].agentId)
+  const [first, ...followUps] = thread
+  const instruction = [
+    `งานหลัก: ${first.prompt}`,
+    ...followUps.map((r) => `- ปรับเพิ่มเติม: ${r.prompt}`),
+    '',
+    `กฎการทำงาน (จาก ${base.name}):`,
+    base.instruction,
+  ].join('\n')
   const form = {
     ...formFromAgent(base),
     name,
-    description: run.prompt,
-    instruction: `${base.instruction}\n\nงานหลัก (จากแชตที่บันทึกไว้): ${run.prompt}`,
-    uploads: (run.attachments ?? []).map((f) => f.name),
+    description: first.prompt,
+    instruction,
+    uploads: [...new Set(thread.flatMap((r) => (r.attachments ?? []).map((f) => f.name)))],
     share: 'private',
   }
   return agentFromForm(form, { owner, note: `บันทึกจากแชต โดยใช้ ${base.name} เป็นต้นแบบ`, forkedFrom: base.name })

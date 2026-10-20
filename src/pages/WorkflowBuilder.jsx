@@ -200,8 +200,8 @@ export default function WorkflowBuilder() {
   return (
     <div>
       <PageHeader
-        eyebrow="งานของฉัน" title="สร้างสายงานอัตโนมัติ (Workflow)"
-        subtitle="ต่อ Agent และ Skill เป็นสายงานอัตโนมัติ กำหนดเงื่อนไขให้ส่งงานกลับได้เมื่อข้อมูลไม่ครบ"
+        eyebrow="งานของฉัน" title="แก้สายงาน (Workflow)"
+        subtitle="ต่อ Agent และ Skill ให้ทำงานต่อกันเป็นสาย กำหนดเงื่อนไขให้ส่งงานกลับได้เมื่อข้อมูลไม่ครบ"
         actions={
           <>
             <Select value={params.get('id') ? draft.id : state.workflows.some((w) => w.id === draft.id) ? draft.id : 'new'} onChange={(e) => switchTo(e.target.value)} className="w-auto max-w-64" aria-label="เลือก Workflow">

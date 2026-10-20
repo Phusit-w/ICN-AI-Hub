@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowRight, Play, Plus, SlidersHorizontal, Sparkles, Star } from 'lucide-react'
+import { ArrowRight, Lightbulb, Play, Plus, SlidersHorizontal, Sparkles, Star } from 'lucide-react'
 import { useStore } from '../store/AppStore'
 import { deptById, modelById, userById } from '../data/catalog'
-import { cn, fmtCompact, matchScore } from '../lib/utils'
+import { cn, fmtCompact, matchScore, rankByMatch } from '../lib/utils'
+import { agentSearchText } from '../lib/agentDraft'
 import Button from '../components/ui/Button'
 import { DeptBadge, Rating } from '../components/ui/Badge'
 import { Select } from '../components/ui/Form'
@@ -19,15 +20,11 @@ const NEEDS = [
   { label: 'งานบัญชี / ปิดงบ', dept: 'accounting' },
 ]
 
-const DEPT_TINT = { core: 'from-brand-500 to-violet-500', sales: 'from-sky-500 to-cyan-400', hr: 'from-rose-400 to-pink-400', it: 'from-teal-500 to-emerald-400', accounting: 'from-amber-500 to-orange-400' }
-
 const SORTS = {
   popular: (a, b) => b.uses - a.uses,
   rating: (a, b) => b.rating - a.rating,
   newest: (a, b) => b.updated.localeCompare(a.updated),
 }
-
-const agentText = (a) => `${a.name} ${a.description} ${a.examples.join(' ')}`
 
 const UseButton = ({ agent, size = 'sm', className }) => (
   <Button variant="primary" size={size} icon={Play} to={`/workspace?agent=${agent.id}`} className={className}>ใช้งาน</Button>
@@ -35,15 +32,16 @@ const UseButton = ({ agent, size = 'sm', className }) => (
 
 function Recommendation({ agent, reason, best }) {
   return (
-    <div className={cn('flex flex-col overflow-hidden rounded-2xl border bg-white', best ? 'border-brand-300 shadow-md ring-4 ring-brand-50' : 'border-slate-200')}>
-      <div className={cn('relative flex h-16 items-end bg-gradient-to-br px-4', DEPT_TINT[deptById(agent.dept).id])}>
-        <EntityIcon icon={agent.kind} size="lg" className="translate-y-5 !bg-white shadow" />
-        {best && <span className="absolute top-2.5 right-3 inline-flex items-center gap-1 rounded-full bg-white/95 px-2 py-0.5 text-[11px] font-semibold text-brand-700"><Star className="size-3 fill-brand-500 text-brand-500" /> เหมาะที่สุด</span>}
+    <div className={cn('flex flex-col overflow-hidden rounded-xl border bg-white transition hover:shadow-sm', best ? 'border-2 border-brand-400' : 'border-slate-200')}>
+      <div className="flex items-start justify-between bg-brand-50 px-4 pt-4 pb-3">
+        <EntityIcon icon={agent.kind} size="lg" className="!bg-white" />
+        {best ? <span className="inline-flex items-center gap-1 rounded-full bg-brand-600 px-2 py-0.5 text-[11px] font-semibold text-white"><Star className="size-3 fill-white" /> เหมาะที่สุด</span> : <DeptBadge dept={agent.dept} />}
       </div>
-      <div className="flex flex-1 flex-col px-5 pt-8 pb-5">
+      <div className="flex flex-1 flex-col px-4 pt-3 pb-4">
         <Link to={`/agents/${agent.id}`} className="font-semibold text-slate-900 hover:text-brand-700">{agent.name}</Link>
+        {best && <div className="mt-0.5"><DeptBadge dept={agent.dept} /></div>}
         <p className="mt-1.5 line-clamp-2 flex-1 text-[13px] leading-relaxed text-slate-600">{agent.description}</p>
-        <p className="mt-3 rounded-lg bg-slate-50 px-3 py-2 text-xs text-slate-500">💡 {reason}</p>
+        <p className="mt-3 flex items-start gap-1.5 rounded-lg bg-slate-50 px-3 py-2 text-xs text-slate-500"><Lightbulb className="size-4 shrink-0 text-amber-500" aria-hidden />{reason}</p>
         <UseButton agent={agent} size="md" className="mt-4 w-full justify-center" />
       </div>
     </div>
@@ -52,7 +50,7 @@ function Recommendation({ agent, reason, best }) {
 
 function CreateFromSearch({ q }) {
   return (
-    <div className="rounded-2xl border border-dashed border-brand-300 bg-brand-50/50 p-6 text-center">
+    <div className="rounded-xl border border-dashed border-brand-300 bg-brand-50/50 p-6 text-center">
       <p className="text-sm text-slate-600">ยังไม่มีผู้ช่วยสำหรับ “{q}”</p>
       <Button variant="primary" icon={Sparkles} to={`/agents/new?q=${encodeURIComponent(q)}`} className="mt-3">สร้างผู้ช่วยสำหรับ “{q}”</Button>
       <p className="mt-2 text-xs text-slate-400">AI จะกรอกรายละเอียดให้ คุณแค่ตรวจแล้วกดสร้าง</p>
@@ -67,6 +65,7 @@ export default function AgentLibrary() {
   const [need, setNeed] = useState(null)
   const [showFilters, setShowFilters] = useState(false)
   const [location, setLocation] = useState('all')
+  const [share, setShare] = useState('all')
   const [sort, setSort] = useState('popular')
 
   const term = q.trim() || need?.q || ''
@@ -78,8 +77,8 @@ export default function AgentLibrary() {
       return { picks: state.agents.filter((a) => a.dept === need.dept).sort(SORTS.popular), reason: () => `ใช้บ่อยที่สุดใน${deptById(need.dept).th}` }
     }
     if (term) {
-      const ranked = state.agents.map((a) => ({ a, s: matchScore(agentText(a), term) })).filter((x) => x.s > 0).sort((x, y) => y.s - x.s || y.a.uses - x.a.uses)
-      return { picks: ranked.map((x) => x.a), reason: (a) => (a.examples[0] ? `เคยใช้ทำงานแบบ “${a.examples[0]}”` : 'ตรงกับงานที่คุณพิมพ์') }
+      const popularFirst = [...state.agents].sort(SORTS.popular)
+      return { picks: rankByMatch(popularFirst, agentSearchText, term), reason: (a) => (a.examples[0] ? `เคยใช้ทำงานแบบ “${a.examples[0]}”` : 'ตรงกับงานที่คุณพิมพ์') }
     }
     const mine = state.agents.filter((a) => a.dept === me.dept && !favorites.includes(a)).sort(SORTS.popular)
     return { picks: [...favorites, ...mine], reason: (a) => (favorites.includes(a) ? 'อยู่ในผู้ช่วยประจำของคุณ' : `นิยมใน${deptById(me.dept).th}`) }
@@ -87,10 +86,11 @@ export default function AgentLibrary() {
   const top = picks.slice(0, 3)
 
   const list = useMemo(() => state.agents
-    .filter((a) => !q.trim() || matchScore(agentText(a), q) > 0)
+    .filter((a) => !q.trim() || matchScore(agentSearchText(a), q) > 0)
     .filter((a) => !need?.dept || a.dept === need.dept)
     .filter((a) => location === 'all' || modelById(a.model).location === location)
-    .sort(SORTS[sort]), [state.agents, q, need, location, sort])
+    .filter((a) => share === 'all' || a.share === share)
+    .sort(SORTS[sort]), [state.agents, q, need, location, share, sort])
 
   const typedNoMatch = q.trim() && top.length === 0
 
@@ -113,6 +113,16 @@ export default function AgentLibrary() {
             >{n.label}</button>
           ))}
         </div>
+        {favorites.length > 0 && (
+          <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+            <span className="text-xs text-slate-400">ผู้ช่วยประจำของคุณ:</span>
+            {favorites.map((a) => (
+              <Link key={a.id} to={`/workspace?agent=${a.id}`} className="flex items-center gap-2 rounded-full border border-slate-200 bg-white py-1 pr-3 pl-1 text-sm text-slate-700 hover:border-brand-300">
+                <EntityIcon icon={a.kind} size="sm" className="!rounded-full" />{a.name}
+              </Link>
+            ))}
+          </div>
+        )}
       </section>
 
       <section className="mt-8">
@@ -138,6 +148,9 @@ export default function AgentLibrary() {
             <Select value={location} onChange={(e) => setLocation(e.target.value)} className="w-auto" aria-label="ประเภท Model">
               <option value="all">ทุก Model</option><option value="local">Local AI</option><option value="cloud">Cloud AI</option><option value="auto">Auto routing</option>
             </Select>
+            <Select value={share} onChange={(e) => setShare(e.target.value)} className="w-auto" aria-label="การแชร์">
+              <option value="all">ทุกระดับการแชร์</option><option value="company">ทั้งบริษัท</option><option value="department">ในแผนก</option><option value="private">เฉพาะฉัน</option>
+            </Select>
             <Select value={sort} onChange={(e) => setSort(e.target.value)} className="w-auto" aria-label="เรียงตาม">
               <option value="popular">ใช้บ่อยที่สุด</option><option value="rating">คะแนนสูงสุด</option><option value="newest">อัปเดตล่าสุด</option>
             </Select>
@@ -146,7 +159,7 @@ export default function AgentLibrary() {
         {list.length === 0 ? (
           !typedNoMatch && <p className="rounded-xl border border-dashed border-slate-200 p-6 text-center text-sm text-slate-400">ไม่มีผู้ช่วยตรงตัวกรองนี้</p>
         ) : (
-          <ul className="divide-y divide-slate-100 overflow-hidden rounded-2xl border border-slate-200 bg-white" data-tour="agent-card">
+          <ul className="divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-200 bg-white" data-tour="agent-card">
             {list.map((a) => (
               <li key={a.id} className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50">
                 <EntityIcon icon={a.kind} />
