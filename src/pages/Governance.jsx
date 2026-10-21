@@ -73,7 +73,7 @@ function UsageTab() {
             </div>
           ))}
         </div>
-        <p className="px-5 pb-5 text-xs text-slate-500">Cloud cost โต 50% ใน 6 เดือน — แนะนำย้ายงานทั่วไปไป Local</p>
+        <p className="px-5 pb-5 text-xs text-slate-500">Cloud cost เกือบเท่าตัวใน 3 เดือนตั้งแต่เปิดใช้ — แนะนำย้ายงานทั่วไปไป Local</p>
       </Card>
     </div>
   )
@@ -82,7 +82,7 @@ function UsageTab() {
 function DepartmentTab() {
   return (
     <Card>
-      <CardHeader title="Department usage" />
+      <CardHeader title="Department usage" subtitle={`ผู้ใช้ ${KPIS.users} คน จากพนักงานราว 60 คน`} />
       <div className="overflow-x-auto">
         <table className="w-full min-w-[560px] text-sm">
           <thead className="border-y border-slate-100 bg-slate-50/60 text-left text-xs text-slate-500">

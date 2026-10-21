@@ -163,7 +163,7 @@ export default function CreateSkill() {
             </Button>
             {test === 'done' && (
               <div className="rise mt-3 rounded-lg bg-emerald-50 p-3 text-xs leading-relaxed text-emerald-800">
-                ✓ ผลลัพธ์ตรงกับ Expected output<br />✓ ใช้เวลา 3.2 วินาที · ICN Llama 70B (Local)<br />✓ ไม่พบข้อมูลส่วนบุคคล
+                ✓ ผลลัพธ์ตรงกับ Expected output<br />✓ ใช้เวลา 3.2 วินาที · ICN Local AI<br />✓ ไม่พบข้อมูลส่วนบุคคล
               </div>
             )}
           </Card>

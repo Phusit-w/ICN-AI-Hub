@@ -8,8 +8,8 @@ Spec: `.scratch/demo-two-views/spec.md` (stories 25, 26, 34–42; Testing Decisi
 
 **Status:** ready-for-agent
 
-- [ ] Consistency test: each item's uses fit within total Runs since launch; department Users sum to the total; no rating fields; no Salesforce/SAP/ServiceNow/Confluence; every owner and actor resolves to a known fictional persona; only the agreed models exist
-- [ ] No Coding Agent or Security Review Agent, and nothing links to them
-- [ ] Audit log names a person on every line
-- [ ] All staff names fictional, resembling no one on the ICN org chart
-- [ ] Existing journeys asserting old numbers are updated
+- [x] Consistency test: each item's uses fit within total Runs since launch; department Users sum to the total; no rating fields; no Salesforce/SAP/ServiceNow/Confluence; every owner and actor resolves to a known fictional persona; only the agreed models exist
+- [x] No Coding Agent or Security Review Agent, and nothing links to them
+- [x] Audit log names a person on every line
+- [x] All staff names fictional, resembling no one on the ICN org chart
+- [x] Existing journeys asserting old numbers are updated

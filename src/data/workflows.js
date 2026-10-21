@@ -6,7 +6,7 @@ const chain = (ids) => ids.slice(1).map((to, i) => ({ id: `e-${ids[i]}-${to}`, f
 
 export const WORKFLOWS = [
   {
-    id: 'wf-sales-proposal', name: 'Sales Proposal Pipeline', dept: 'sales', owner: 'u-thanawat', uses: 1840, version: '2.1',
+    id: 'wf-sales-proposal', name: 'Sales Proposal Pipeline', dept: 'sales', owner: 'u-thanawat', uses: 112, version: '1.2',
     description: 'จาก Requirement ลูกค้า → Proposal พร้อมภาพประกอบ ตรวจครบก่อนส่ง',
     nodes: row([
       { id: 'n1', type: 'trigger', label: 'ผู้ใช้ส่งคำขอ' },
@@ -25,7 +25,7 @@ export const WORKFLOWS = [
     ],
   },
   {
-    id: 'wf-hr-onboarding', name: 'New Hire Onboarding', dept: 'hr', owner: 'u-arisa', uses: 420, version: '1.2',
+    id: 'wf-hr-onboarding', name: 'New Hire Onboarding', dept: 'hr', owner: 'u-arisa', uses: 53, version: '1.2',
     description: 'สร้างแผน Onboarding, สรุปสวัสดิการ และอีเมลต้อนรับพนักงานใหม่',
     nodes: row([
       { id: 'n1', type: 'trigger', label: 'มีพนักงานใหม่' },
@@ -38,13 +38,13 @@ export const WORKFLOWS = [
     edges: chain(['n1', 'n2', 'n3', 'n4', 'n5', 'n6']),
   },
   {
-    id: 'wf-it-incident', name: 'IT Incident Triage', dept: 'it', owner: 'u-somchai', uses: 3120, version: '2.0',
-    description: 'แก้ปัญหาเบื้องต้นอัตโนมัติ ถ้าแก้ไม่ได้เปิด Ticket พร้อมข้อมูลครบ',
+    id: 'wf-it-incident', name: 'IT Incident Triage', dept: 'it', owner: 'u-kittipong', uses: 70, version: '1.2',
+    description: 'แก้ปัญหาเบื้องต้นอัตโนมัติ ถ้าแก้ไม่ได้ร่างอีเมลแจ้ง IT พร้อมข้อมูลครบ',
     nodes: row([
       { id: 'n1', type: 'trigger', label: 'พนักงานแจ้งปัญหา' },
       { id: 'n2', type: 'agent', ref: 'agent-it-support' },
       { id: 'n3', type: 'condition', label: 'แก้ปัญหาได้แล้ว?' },
-      { id: 'n4', type: 'skill', ref: 'skill-ticket' },
+      { id: 'n4', type: 'skill', ref: 'skill-it-request' },
       { id: 'n5', type: 'output', label: 'แจ้งผลให้ผู้ใช้' },
     ]),
     edges: [
@@ -54,7 +54,7 @@ export const WORKFLOWS = [
     ],
   },
   {
-    id: 'wf-month-end', name: 'Month-end Close Report', dept: 'accounting', owner: 'u-nok', share: 'department', uses: 96, version: '1.4',
+    id: 'wf-month-end', name: 'Month-end Close Report', dept: 'accounting', owner: 'u-nok', share: 'department', uses: 25, version: '1.4',
     description: 'กระทบยอด → วิเคราะห์งบ → รายงานปิดงบประจำเดือน (ประมวลผลบน Local AI)',
     nodes: row([
       { id: 'n1', type: 'trigger', label: 'วันที่ 1 ของเดือน' },
@@ -67,7 +67,7 @@ export const WORKFLOWS = [
     edges: chain(['n1', 'n2', 'n3', 'n4', 'n5', 'n6']),
   },
   {
-    id: 'wf-market-report', name: 'Market Research Report', dept: 'core', owner: 'u-pranee', uses: 760, version: '1.0',
+    id: 'wf-market-report', name: 'Market Research Report', dept: 'core', owner: 'u-pranee', uses: 72, version: '1.0',
     description: 'ค้นคว้า วิเคราะห์ตัวเลข และทำรายงานพร้อม Infographic',
     nodes: row([
       { id: 'n1', type: 'trigger', label: 'ผู้ใช้ส่งหัวข้อ' },

@@ -18,7 +18,6 @@ export const USERS = {
   'u-kanya': { id: 'u-kanya', name: 'Kanya S.', title: 'Sales Manager', dept: 'sales' },
   'u-thanawat': { id: 'u-thanawat', name: 'Thanawat P.', title: 'Presales Lead', dept: 'sales' },
   'u-arisa': { id: 'u-arisa', name: 'Arisa M.', title: 'HR Business Partner', dept: 'hr' },
-  'u-somchai': { id: 'u-somchai', name: 'Somchai R.', title: 'IT Service Manager', dept: 'it' },
   'u-nok': { id: 'u-nok', name: 'Nok J.', title: 'Senior Accountant', dept: 'accounting' },
   'u-pranee': { id: 'u-pranee', name: 'Pranee T.', title: 'Data Analyst', dept: 'core' },
   'u-ploy': { id: 'u-ploy', name: 'Ploy K.', title: 'Bid Specialist', dept: 'bid' },
@@ -32,24 +31,22 @@ export const CURRENT_USER_ID = 'u-kanya'
 export const VIEW_PERSONAS = { user: CURRENT_USER_ID, admin: 'u-kittipong' }
 export const userById = (id) => USERS[id] ?? { id, name: 'Unknown', title: '', dept: 'core' }
 
+// Auto routing is all a User ever sees; it picks the internal model, or Claude when a job needs it.
+// Image generation is a capability of the internal server (the Image Generator tool), not a model to pick.
 export const MODELS = [
   { id: 'auto', name: 'Auto Routing', provider: 'ICN AI Router', location: 'auto', note: 'แนะนำ — ระบบเลือก Model ให้เองตามความลับของข้อมูลและต้นทุน' },
-  { id: 'icn-llama', name: 'ICN Llama 70B', provider: 'On-premise GPU', location: 'local', note: 'ข้อมูลไม่ออกนอกบริษัท เหมาะกับข้อมูลลับ' },
-  { id: 'typhoon', name: 'Typhoon Thai', provider: 'On-premise GPU', location: 'local', note: 'เก่งภาษาไทย ทำงานบน Server ภายใน' },
+  { id: 'icn-local', name: 'ICN Local AI', provider: 'On-premise GPU', location: 'local', note: 'เก่งภาษาไทย ข้อมูลไม่ออกนอกบริษัท เหมาะกับข้อมูลลับ' },
   { id: 'claude', name: 'Claude', provider: 'Anthropic · Cloud', location: 'cloud', note: 'วิเคราะห์เชิงลึกและเขียนเอกสารยาว' },
-  { id: 'gpt', name: 'GPT', provider: 'OpenAI · Cloud', location: 'cloud', note: 'งานทั่วไป ตอบเร็ว' },
-  { id: 'gemini', name: 'Gemini', provider: 'Google · Cloud', location: 'cloud', note: 'ค้นคว้าข้อมูลหลายรูปแบบ' },
-  { id: 'icn-image', name: 'ICN Image Gen', provider: 'On-premise GPU', location: 'local', note: 'สร้างภาพประกอบและไดอะแกรม' },
 ]
+/** The internal model on the on-premise GPU: where confidential work always runs. */
+export const LOCAL_MODEL_ID = 'icn-local'
 export const modelById = (id) => MODELS.find((m) => m.id === id) ?? MODELS[0]
 
 export const TOOLS = [
   { id: 'web-search', name: 'Web Search', desc: 'ค้นข้อมูลจากอินเทอร์เน็ต' },
-  { id: 'sharepoint', name: 'SharePoint / Drive', desc: 'อ่านไฟล์ในคลังเอกสารบริษัท' },
-  { id: 'crm', name: 'Salesforce CRM', desc: 'อ่านข้อมูลลูกค้าและ Opportunity' },
-  { id: 'sap', name: 'SAP ERP', desc: 'อ่าน PO / GR / Invoice' },
-  { id: 'servicenow', name: 'ServiceNow', desc: 'เปิดและติดตาม IT Ticket' },
-  { id: 'email', name: 'Email Draft', desc: 'ร่างอีเมล (ไม่ส่งอัตโนมัติ)' },
+  { id: 'shared-folder', name: 'Company Shared Folder', desc: 'อ่านไฟล์ในโฟลเดอร์กลางของบริษัท' },
+  { id: 'erp', name: 'Accounting System (ERP)', desc: 'อ่าน PO / GR / Invoice' },
+  { id: 'email', name: 'Company Email Draft', desc: 'ร่างอีเมลบริษัท (ไม่ส่งอัตโนมัติ)' },
   { id: 'doc-gen', name: 'Document Generator', desc: 'สร้างไฟล์ Word / PowerPoint' },
   { id: 'image-gen', name: 'Image Generator', desc: 'สร้างภาพและไดอะแกรม' },
   { id: 'code', name: 'Python Sandbox', desc: 'รันโค้ดวิเคราะห์ข้อมูลอย่างปลอดภัย' },
@@ -62,7 +59,7 @@ export const KNOWLEDGE = [
   { id: 'kb-cases', name: 'Customer Case Studies', type: 'Folder', size: '48 files', dept: 'sales' },
   { id: 'kb-handbook', name: 'Employee Handbook 2026', type: 'PDF', size: '3.4 MB', dept: 'hr' },
   { id: 'kb-jd', name: 'Job Description Library', type: 'Folder', size: '92 files', dept: 'hr' },
-  { id: 'kb-it', name: 'IT Knowledge Base', type: 'Confluence', size: '1,320 pages', dept: 'it' },
+  { id: 'kb-it', name: 'IT How-to Guides', type: 'Folder', size: '85 files', dept: 'it' },
   { id: 'kb-coa', name: 'Chart of Accounts', type: 'Excel', size: '640 KB', dept: 'accounting' },
   { id: 'kb-brand', name: 'ICN Brand Guideline', type: 'PDF', size: '18 MB', dept: 'core' },
   { id: 'kb-datasheets', name: 'Product Datasheets & Catalogs', type: 'Folder', size: '1,140 files', dept: 'bid' },

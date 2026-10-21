@@ -76,13 +76,13 @@ describe('Clean Workflow cards', () => {
     await app.click(screen.getByRole('link', { name: 'Market Research Report' }))
     expect(app.url()).toBe('/workflows?id=wf-market-report')
     expect(screen.getByText(/v1\.0/)).toBeInTheDocument()
-    expect(screen.getByText(/ใช้ 760 ครั้ง/)).toBeInTheDocument()
+    expect(screen.getByText(/ใช้ 72 ครั้ง/)).toBeInTheDocument()
   })
 
   it('a Workflow opened in the detailed builder also shows its numbers', () => {
     startJourney('/workflows?id=wf-sales-proposal', { view: 'admin' })
-    expect(screen.getByText(/v2\.1/)).toBeInTheDocument()
-    expect(screen.getByText(/ใช้ 1.8k ครั้ง/)).toBeInTheDocument()
+    expect(screen.getByText(/v1\.2/)).toBeInTheDocument()
+    expect(screen.getByText(/ใช้ 112 ครั้ง/)).toBeInTheDocument()
   })
 
   it('the page has at most one primary button', () => {

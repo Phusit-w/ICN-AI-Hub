@@ -1,7 +1,7 @@
 // Simulated orchestration engine: turns a request into a plan of agent steps
 // and advances it over time. Pure functions — the store drives the clock.
 
-import { modelById } from '../data/catalog'
+import { LOCAL_MODEL_ID, modelById } from '../data/catalog'
 import { TASKS, outputFor } from './mockOutputs'
 import { uid } from './utils'
 
@@ -10,13 +10,15 @@ const DURATION = { research: 5200, sales: 4600, document: 5600, image: 4200, rev
 const SENSITIVE = /(เงินเดือน|salary|บัตรประชาชน|confidential|ลับ|ปิดงบ|invoice|ใบแจ้งหนี้|resume|เรซูเม่|ประวัติพนักงาน)/i
 export const isSensitive = (text) => SENSITIVE.test(text)
 
+// Kinds of work Auto routing sends to Claude when the data may leave the company.
+const CLOUD_KINDS = ['research', 'review', 'sales', 'document']
+
 // Confidential work never leaves the company; otherwise "auto" picks the best-fit model.
 export function resolveModel(agent, sensitive) {
-  if (agent.kind === 'image') return 'icn-image'
   const preferred = modelById(agent.model)
-  if (sensitive || agent.classification === 'confidential') return preferred.location === 'local' ? preferred.id : 'icn-llama'
+  if (sensitive || agent.classification === 'confidential') return preferred.location === 'local' ? preferred.id : LOCAL_MODEL_ID
   if (agent.model !== 'auto') return agent.model
-  return { research: 'gemini', review: 'claude', sales: 'claude', document: 'claude' }[agent.kind] ?? 'icn-llama'
+  return CLOUD_KINDS.includes(agent.kind) ? 'claude' : LOCAL_MODEL_ID
 }
 
 function makeStep({ agent, skill, label, kind, nodeId, sensitive }) {
@@ -80,7 +82,6 @@ const AGENT_RULES = [
   [/วิเคราะห์|ยอดขาย|ตัวเลข|data|excel|กราฟ/i, 'agent-data'],
   [/นโยบาย|ระเบียบ|สวัสดิการ|วันลา/i, 'agent-hr-policy'],
   [/งบประมาณ|budget/i, 'agent-budget'],
-  [/โค้ด|code|sql|script/i, 'agent-coding'],
   [/แปล|translate/i, 'agent-translate'],
   [/สรุป|รายงาน|เอกสาร|report|word/i, 'agent-document'],
   [/ภาพ|รูป|image|diagram|ไดอะแกรม|infographic/i, 'agent-image'],

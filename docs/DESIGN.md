@@ -134,7 +134,7 @@ Object ทุกตัวมีชุด metadata เดียวกัน: Owne
 
 Logic: `store/AppStore.jsx` (reducer + one clock for all runs) · `lib/runs.js` (`threadsOf` สำหรับประวัติการคุย, planner: chat หรือ Plan, model router, step engine with loop-back) · `lib/reuse.js` (บันทึกไว้ใช้ซ้ำ) · `lib/sharing.js` (ตัวกรองยอดนิยม / แชร์ให้ฉัน) · `lib/routes.js` (ลิงก์ไปแท็บทักษะ) · `lib/agentDraft.js`, `lib/skillDraft.js` (AI กรอกฟอร์มสร้าง) · `lib/mockOutputs.js`
 
-Tests: `test/journeys/` — whole-app journey tests (Vitest + Testing Library) ที่ตรวจ click budget และเป้าหมายของทุกขั้นในทัวร์
+Tests: `test/journeys/` — whole-app journey tests (Vitest + Testing Library) ที่ตรวจ click budget และเป้าหมายของทุกขั้นในทัวร์ · `test/mock-data.test.js` — ตรวจว่าข้อมูลจำลองเล่าเรื่องเดียวกัน (3 เดือนหลังเปิดใช้, ~25 User)
 
 ## 7. Design system
 
@@ -152,17 +152,18 @@ Tests: `test/journeys/` — whole-app journey tests (Vitest + Testing Library) �
 
 ## 8. Example dummy data (ดูไฟล์จริงใน `src/data/`)
 
-- `catalog.js` — 5 departments, 7 users, 7 models (3 Local / 3 Cloud / Auto), 9 tools, 8 knowledge sources, share levels, data classes
-- `agents.js` — 16 agents · `skills.js` — 16 skills · `workflows.js` — 5 node-graph workflows · `governance.js` — KPIs, usage, policies, permissions, audit log
+- เรื่องเดียวทั้งเดโม: ICN เปิดใช้มาราว 3 เดือน (ตั้งแต่ 1 ส.ค. 2026) มี User ~25 คนจากพนักงาน ~60 คน — แต่ละรายการใช้ไปหลักสิบถึงหลักร้อยครั้ง เวอร์ชันส่วนใหญ่ 1.x · `test/mock-data.test.js` คุมให้ตัวเลขสอดคล้องกัน
+- `catalog.js` — 9 departments, 10 users (IT มี 1 คน), 3 models (Auto / ICN Local AI / Claude), 7 tools ทั่วไป (ไม่มีชื่อแบรนด์), 14 knowledge sources, share levels, data classes
+- `agents.js` — 27 agents · `skills.js` — 18 skills · `workflows.js` — 5 node-graph workflows · `governance.js` — วันเปิดใช้, KPIs, ค่าใช้จ่ายรายเดือนตั้งแต่เปิดใช้, usage, policies, permissions, audit log
 - Seeded runs: 2 running (เดินช้าตลอดเดโม), 4 completed
 
 ```js
 // agent example
 { id: 'agent-sales-proposal', name: 'Sales Proposal Agent', dept: 'sales', model: 'auto',
   skills: ['skill-requirement', 'skill-proposal-template', 'skill-pricing'],
-  knowledge: ['kb-price', 'kb-cases'], tools: ['crm'],
+  knowledge: ['kb-price', 'kb-cases'], tools: ['shared-folder'],
   output: { format: 'Word document', language: 'TH', template: 'Sales Proposal v3' },
-  share: 'company', owner: 'u-thanawat', feedback: { up: 34, down: 3 }, uses: 4870, version: '3.0' }
+  share: 'company', owner: 'u-thanawat', feedback: { up: 34, down: 3 }, uses: 181, version: '1.3' }
 ```
 
 ## 9. ตัวอย่างต่อแผนก
@@ -170,8 +171,8 @@ Tests: `test/journeys/` — whole-app journey tests (Vitest + Testing Library) �
 | Dept | Agents | Skills | Workflow |
 |---|---|---|---|
 | **Sales** | Sales Proposal Agent, Customer Insight Agent (Local, Confidential) | Requirement Analysis, Proposal Template, Pricing Calculator | **Sales Proposal Pipeline**: Research → Sales Proposal → Document → Image → Review → ◇ข้อมูลครบ? (ไม่ → กลับ Research) → Output |
-| **HR** | HR Policy Agent (Typhoon Thai, Local), Recruitment Screening, Onboarding | HR Policy Lookup, Company Report Format | **New Hire Onboarding**: Trigger → HR Policy → Onboarding → Report Format skill → Review → ส่งหัวหน้างาน |
-| **IT** | IT Support Agent, Security Review Agent | ServiceNow Ticket, PDPA & Compliance, Secure Code Review | **IT Incident Triage**: IT Support → ◇แก้ได้แล้ว? (ยัง → Ticket skill) → แจ้งผู้ใช้ |
+| **HR** | HR Policy Agent (ICN Local AI), Recruitment Screening, Onboarding | HR Policy Lookup, Company Report Format | **New Hire Onboarding**: Trigger → HR Policy → Onboarding → Report Format skill → Review → ส่งหัวหน้างาน |
+| **IT** (1 คน) | IT Support Agent | IT Request Email, PDPA & Compliance | **IT Incident Triage**: IT Support → ◇แก้ได้แล้ว? (ยัง → ร่างอีเมลแจ้ง IT) → แจ้งผู้ใช้ |
 | **Accounting** | Invoice Reconciliation Agent, Budget Analysis Agent (Local ทั้งหมด) | 3-Way Match, Data Analysis, ICN Chart Style | **Month-end Close**: Invoice Recon → Budget → Document → Review → ส่ง CFO |
 
 ## 10. Prototype scope (2–4 สัปดาห์)

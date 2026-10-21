@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { ArrowLeft, ArrowRight, Check, Copy, FileUp, Lock, Rocket, X } from 'lucide-react'
 import { isAdminView, useStore } from '../store/AppStore'
-import { DATA_CLASSES, DEPARTMENTS, KNOWLEDGE, MODELS, OUTPUT_FORMATS, TOOLS } from '../data/catalog'
+import { DATA_CLASSES, DEPARTMENTS, KNOWLEDGE, LOCAL_MODEL_ID, MODELS, OUTPUT_FORMATS, TOOLS } from '../data/catalog'
 import { cn } from '../lib/utils'
 import { agentFromForm, BLANK_FORM, draftForm, formFromAgent, INSTRUCTION_STARTERS } from '../lib/agentDraft'
 import { Card, PageHeader } from '../components/ui/Card'
@@ -13,7 +13,7 @@ import EntityIcon from '../components/agents/EntityIcon'
 import QuickCreate from '../components/ui/QuickCreate'
 
 const STEPS = ['ข้อมูลพื้นฐาน', 'คำสั่งการทำงาน', 'Model & ข้อมูล', 'Knowledge & Skills', 'Tools & Output', 'การแชร์']
-const KINDS = ['research', 'document', 'sales', 'hr', 'it', 'accounting', 'data', 'image', 'review', 'coding']
+const KINDS = ['research', 'document', 'sales', 'hr', 'it', 'accounting', 'data', 'image', 'review']
 
 /**
  * Default way to create an agent: describe it in one box, the AI fills everything in,
@@ -186,13 +186,13 @@ export default function CreateAgent() {
                   <div className="grid gap-2 sm:grid-cols-3">
                     {DATA_CLASSES.map((c) => (
                       <ChoiceCard key={c.id} selected={form.classification === c.id} title={c.name} description={c.th}
-                        onClick={() => set({ classification: c.id, model: c.id === 'confidential' && MODELS.find((m) => m.id === form.model).location === 'cloud' ? 'icn-llama' : form.model })} />
+                        onClick={() => set({ classification: c.id, model: c.id === 'confidential' && MODELS.find((m) => m.id === form.model).location === 'cloud' ? LOCAL_MODEL_ID : form.model })} />
                     ))}
                   </div>
                 </Field>
                 <Field label="Model" hint="Knowledge, Skill และ Workflow ไม่ผูกกับ Model — เปลี่ยนภายหลังได้ทุกเมื่อ">
                   <div className="grid gap-2 md:grid-cols-2">
-                    {MODELS.filter((m) => m.id !== 'icn-image' || form.kind === 'image').map((m) => {
+                    {MODELS.map((m) => {
                       const blocked = confidential && m.location === 'cloud'
                       return (
                         <div key={m.id} className={cn(blocked && 'pointer-events-none opacity-40')} title={blocked ? 'ข้อมูลลับใช้ Cloud ไม่ได้' : undefined}>

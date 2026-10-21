@@ -1,41 +1,40 @@
 // Mock metrics for the Admin / Governance dashboard (October 2026, month-to-date).
-// Sized for ~25 active users of ~60 staff on one on-premise GPU server: local cost is the electricity share,
-// cloud cost is pay-per-use API for the few jobs that need it.
+// ICN opened the hub on LAUNCH_DATE: about 3 months in, ~25 Users of ~60 staff on one on-premise GPU server.
+// Local cost is the electricity share; cloud cost is pay-per-use Claude for the few jobs that need it.
+
+export const LAUNCH_DATE = '2026-08-01'
 
 export const KPIS = {
-  tasks: 1480, tasksDelta: 12.4,
+  users: 25,
+  tasks: 1480, tasksDelta: 12.1,
   costMtd: 4600, costBudget: 8000,
   localShare: 82,
   hoursSaved: 310,
   policyBlocks: 9,
 }
 
+// The two models that do the work; Auto routing picks between them.
 export const MODEL_USAGE = [
-  { model: 'ICN Llama 70B', location: 'local', requests: 1450, cost: 620 },
-  { model: 'Typhoon Thai', location: 'local', requests: 520, cost: 210 },
-  { model: 'ICN Image Gen', location: 'local', requests: 140, cost: 90 },
-  { model: 'Claude', location: 'cloud', requests: 180, cost: 1650 },
-  { model: 'GPT', location: 'cloud', requests: 120, cost: 1050 },
-  { model: 'Gemini', location: 'cloud', requests: 90, cost: 980 },
+  { model: 'ICN Local AI', location: 'local', requests: 1720, cost: 900 },
+  { model: 'Claude', location: 'cloud', requests: 380, cost: 3700 },
 ]
 
+// The months since launch: cost in thousand baht, `runs` the Runs that month (October is month-to-date).
 export const MONTHLY_COST = [
-  { month: 'May', local: 0.8, cloud: 2.4 },
-  { month: 'Jun', local: 0.9, cloud: 2.7 },
-  { month: 'Jul', local: 1.0, cloud: 3.0 },
-  { month: 'Aug', local: 1.0, cloud: 3.1 },
-  { month: 'Sep', local: 1.1, cloud: 3.3 },
-  { month: 'Oct', local: 1.0, cloud: 3.6 },
+  { month: 'Aug', local: 0.5, cloud: 1.9, runs: 860 },
+  { month: 'Sep', local: 0.8, cloud: 3.0, runs: 1320 },
+  { month: 'Oct', local: 0.9, cloud: 3.7, runs: 1480 },
 ]
 
-// Only the departments that use AI day to day; `budget` is the monthly cost cap in baht.
+// Departments using AI this month; `budget` is the monthly cost cap in baht. IT is a one-person team.
 export const DEPT_USAGE = [
-  { dept: 'project', users: 8, tasks: 480, cost: 1150, budget: 2000, topAgent: 'Progress Report Agent' },
+  { dept: 'project', users: 7, tasks: 440, cost: 1030, budget: 2000, topAgent: 'Progress Report Agent' },
   { dept: 'sales', users: 5, tasks: 330, cost: 1800, budget: 2000, topAgent: 'Sales Proposal Agent' },
   { dept: 'bid', users: 4, tasks: 260, cost: 560, budget: 1200, topAgent: 'SOC Check Agent' },
   { dept: 'maintenance', users: 4, tasks: 220, cost: 480, budget: 1000, topAgent: 'Equipment Manual Agent' },
   { dept: 'accounting', users: 2, tasks: 110, cost: 280, budget: 800, topAgent: 'Invoice Extraction Agent' },
   { dept: 'hr', users: 2, tasks: 80, cost: 330, budget: 1000, topAgent: 'Quotation Compare Agent' },
+  { dept: 'it', users: 1, tasks: 40, cost: 120, budget: 500, topAgent: 'IT Support Agent' },
 ]
 
 export const ROLES = ['User', 'Admin']
@@ -59,9 +58,9 @@ export const POLICIES = [
 ]
 
 export const AUDIT_LOG = [
-  { time: '14:32', user: 'Nok J.', action: 'ส่งงานที่มีข้อมูล Confidential', result: 'Routed → ICN Llama 70B (Local)', tone: 'info' },
-  { time: '14:05', user: 'Thanawat P.', action: 'ขอแชร์ Sales Proposal Agent v3.0 ระดับบริษัท', result: 'อนุมัติโดย Kittipong W.', tone: 'success' },
-  { time: '13:48', user: 'Unknown device', action: 'พยายามส่งไฟล์เงินเดือนไป Cloud Model', result: 'Blocked by policy p3', tone: 'danger' },
-  { time: '11:20', user: 'Somchai R.', action: 'เพิ่ม ServiceNow Tool ให้ IT Support Agent', result: 'บันทึกเวอร์ชัน 2.6', tone: 'neutral' },
-  { time: '09:02', user: 'System', action: 'Sales ใช้งบไป 90% ของเดือน', result: 'แจ้งเตือนแอดมิน', tone: 'warning' },
+  { time: '14:32', user: 'Nok J.', action: 'ส่งงานที่มีข้อมูล Confidential', result: 'Routed → ICN Local AI', tone: 'info' },
+  { time: '14:05', user: 'Thanawat P.', action: 'ขอแชร์ Sales Proposal Agent v1.3 ระดับบริษัท', result: 'อนุมัติโดย Kittipong W.', tone: 'success' },
+  { time: '13:48', user: 'Wichai N.', action: 'พยายามส่งไฟล์เงินเดือนไป Cloud Model', result: 'Blocked by policy p3', tone: 'danger' },
+  { time: '11:20', user: 'Kittipong W.', action: 'เพิ่ม Company Email Draft ให้ IT Support Agent', result: 'บันทึกเวอร์ชัน 1.3', tone: 'neutral' },
+  { time: '09:02', user: 'Kittipong W.', action: 'ได้รับแจ้ง: งบฝ่าย Sales ใช้ไปแล้ว 90% ของเดือน', result: 'แจ้งเตือนแอดมิน', tone: 'warning' },
 ]
