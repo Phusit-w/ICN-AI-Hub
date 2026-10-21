@@ -3,6 +3,7 @@ import { ArrowLeft, Copy, FileText, History, Lock, Play, Workflow, Wrench, BookO
 import { useStore } from '../store/AppStore'
 import { DATA_CLASSES, deptById, knowledgeById, modelById, toolById, userById } from '../data/catalog'
 import { fmt } from '../lib/utils'
+import { skillLink } from '../lib/routes'
 import { Card, CardHeader, EmptyState } from '../components/ui/Card'
 import Button from '../components/ui/Button'
 import Badge, { DeptBadge, ModelBadge, Rating, ShareBadge } from '../components/ui/Badge'
@@ -84,11 +85,11 @@ export default function AgentDetail() {
             </details>
           </Section>
 
-          <Section title="ทักษะที่ใช้" icon={Puzzle} action={<Button size="sm" variant="ghost" to="/skills">คลังทักษะ</Button>}>
+          <Section title="ทักษะที่ใช้" icon={Puzzle} action={<Button size="sm" variant="ghost" to={skillLink()}>คลังทักษะ</Button>}>
             {skills.length ? (
               <div className="grid gap-2 sm:grid-cols-2">
                 {skills.map((s) => (
-                  <Link key={s.id} to={`/skills?open=${s.id}`} className="flex items-start gap-3 rounded-lg border border-slate-200 p-3 hover:border-slate-300">
+                  <Link key={s.id} to={skillLink(s.id)} className="flex items-start gap-3 rounded-lg border border-slate-200 p-3 hover:border-slate-300">
                     <EntityIcon icon={s.icon} size="sm" tone="skill" />
                     <div className="min-w-0">
                       <div className="text-sm font-medium text-slate-800">{s.name}</div>

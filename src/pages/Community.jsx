@@ -4,6 +4,7 @@ import { Award, GitFork, History, TrendingUp } from 'lucide-react'
 import { useStore } from '../store/AppStore'
 import { userById } from '../data/catalog'
 import { fmt, fmtCompact, uid } from '../lib/utils'
+import { skillLink } from '../lib/routes'
 import { Card, CardHeader, PageHeader, StatCard } from '../components/ui/Card'
 import Button from '../components/ui/Button'
 import { DeptBadge, Rating } from '../components/ui/Badge'
@@ -40,7 +41,7 @@ export default function Community() {
 
   const rows = {
     agents: state.agents.filter((a) => a.share !== 'private').map((a) => ({ ...a, icon: a.kind, to: `/agents/${a.id}` })),
-    skills: state.skills.map((s) => ({ ...s, to: `/skills?open=${s.id}`, skill: true })),
+    skills: state.skills.map((s) => ({ ...s, to: skillLink(s.id), skill: true })),
     workflows: state.workflows.map((w) => ({ ...w, icon: 'condition', to: `/workflows?id=${w.id}`, skill: true })),
   }[tab].sort((a, b) => b.uses - a.uses)
 
@@ -51,7 +52,7 @@ export default function Community() {
       delete copy.to
       actions.addSkill(copy)
       actions.toast(`Fork “${item.name}” เป็น Skill ส่วนตัวแล้ว`)
-      return navigate(`/skills?open=${copy.id}`)
+      return navigate(skillLink(copy.id))
     }
     const copy = { ...structuredClone(state.workflows.find((w) => w.id === item.id)), id: uid('wf'), name: `${item.name} (Fork)`, owner: state.userId, uses: 0 }
     actions.saveWorkflow(copy)

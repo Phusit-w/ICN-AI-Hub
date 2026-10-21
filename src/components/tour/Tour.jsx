@@ -50,7 +50,7 @@ export function TourProvider({ children }) {
   const direction = useRef(1)
   const nextBtn = useRef(null)
   const navigate = useNavigate()
-  const { pathname } = useLocation()
+  const { pathname, search } = useLocation()
   const step = TOUR_STEPS[index]
 
   const end = useCallback(() => { setIndex(-1); setRect(null) }, [])
@@ -65,7 +65,8 @@ export function TourProvider({ children }) {
   // Open the step's page, wait for its element, spotlight it; skip steps that never become visible.
   useEffect(() => {
     if (!step) return
-    if (pathname !== step.route) { navigate(step.route); return }
+    // A step on a tab (e.g. '/agents?tab=skills') matches the query too; other steps match the path only.
+    if ((step.route.includes('?') ? pathname + search : pathname) !== step.route) { navigate(step.route); return }
     let tries = 0
     let timer
     const look = () => {
@@ -81,7 +82,7 @@ export function TourProvider({ children }) {
     }
     look()
     return () => clearTimeout(timer)
-  }, [step, index, pathname, navigate, moveTo])
+  }, [step, index, pathname, search, navigate, moveTo])
 
   // Live content and resizing move the target, so keep the spotlight on it.
   const located = rect !== null

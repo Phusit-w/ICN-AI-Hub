@@ -5,6 +5,7 @@ import { useStore } from '../store/AppStore'
 import { SKILL_CATEGORIES } from '../data/skills'
 import { SHARE_LEVELS, TOOLS } from '../data/catalog'
 import { uid } from '../lib/utils'
+import { skillLink } from '../lib/routes'
 import { Card, CardHeader, PageHeader } from '../components/ui/Card'
 import Button from '../components/ui/Button'
 import Badge from '../components/ui/Badge'
@@ -29,7 +30,7 @@ export default function CreateSkill() {
     const skill = { id: uid('skill'), ...f, name: f.name.trim(), owner: state.userId, rating: 0, uses: 0, version: '1.0', versions: [{ v: '1.0', date: new Date().toISOString().slice(0, 10), by: state.userId, note: 'สร้างใหม่' }] }
     actions.addSkill(skill)
     actions.toast(`สร้าง Skill “${skill.name}” แล้ว — นำไปใส่ใน Agent ได้เลย`)
-    navigate(`/skills?open=${skill.id}`)
+    navigate(skillLink(skill.id))
   }
 
   return (
