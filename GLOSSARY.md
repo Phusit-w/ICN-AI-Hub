@@ -43,3 +43,21 @@ _Avoid_: Output, result, message
 **Save for reuse** (บันทึกไว้ใช้ซ้ำ):
 Turning a finished Run into something the user can use again: an Agent when one Agent did the work, a Workflow when several did.
 _Avoid_: Save as workflow, save as agent
+
+**Feedback** (👍/👎):
+A user's verdict on one Artifact, helpful or not, with an optional reason when not; summed per Agent for its maker and the Admin.
+_Avoid_: Rating, stars, score
+
+### People
+
+**User** (ผู้ใช้ทั่วไป):
+Any employee. Uses Agents and Workflows, creates their own, and shares them with their department.
+_Avoid_: Employee role, Agent Creator, Department Admin (a department's champion is a User who built that department's Agents)
+
+**Admin** (แอดมิน):
+The one or two people who run the platform: see usage and cost, set data policies, and approve sharing with the whole company.
+_Avoid_: Platform Admin, AI CoE, reviewer
+
+**Company sharing request** (คำขอแชร์ทั้งบริษัท):
+A User's request to share an Agent, Skill or Workflow with everyone; it is shared only after an Admin approves it.
+_Avoid_: Review, publish
