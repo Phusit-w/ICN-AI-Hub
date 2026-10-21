@@ -92,11 +92,16 @@ export function AppStoreProvider({ children }) {
     return {
       toast,
       dismissToast: (id) => dispatch({ type: 'dismissToast', id }),
-      /** Plan a request without starting it, so the user can review which agents will run. */
+      /**
+       * Plan a request; by default it waits so the user can review which agents will run.
+       * `autoStart` is a boolean or a predicate on the plan, for callers whose decision depends on what was planned.
+       */
       planRun: (prompt, opts, ctx, { threadId, autoStart = false, attachments = [] } = {}) => {
+        const plan = planRequest(prompt, { ...ctx, ...opts })
         // `workflowPicked` separates "the user chose this workflow" from the planner matching one by keyword.
-        const run = { ...createRun({ prompt, plan: planRequest(prompt, { ...ctx, ...opts }), owner: CURRENT_USER_ID, threadId }), attachments, workflowPicked: Boolean(opts.workflowId) }
-        dispatch({ type: 'addRun', run: autoStart ? startRun(run) : run })
+        const run = { ...createRun({ prompt, plan, owner: CURRENT_USER_ID, threadId }), attachments, workflowPicked: Boolean(opts.workflowId) }
+        const start = typeof autoStart === 'function' ? autoStart(plan) : autoStart
+        dispatch({ type: 'addRun', run: start ? startRun(run) : run })
         return run.id
       },
       startRun: (id) => dispatch({ type: 'updateRun', id, update: (r) => startRun(r) }),
