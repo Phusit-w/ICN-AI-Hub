@@ -32,9 +32,9 @@ export function PageHeader({ title, subtitle, actions, eyebrow }) {
   )
 }
 
-export function StatCard({ label, value, hint, icon: Icon, trend }) {
+export function StatCard({ label, value, hint, icon: Icon, trend, ...props }) {
   return (
-    <Card className="p-4">
+    <Card className="p-4" {...props}>
       <div className="flex items-center justify-between text-xs font-medium text-slate-500">
         {label}
         {Icon && <Icon className="size-4 text-slate-400" aria-hidden />}
