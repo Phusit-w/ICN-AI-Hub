@@ -7,11 +7,12 @@ import EntityIcon from './EntityIcon'
 /**
  * "ผู้ช่วยของแผนกคุณ": the agents the user's department already uses, ready on day one,
  * so nobody has to build an agent or a skill before getting value. One click fills one into the composer.
+ * `exclude`: agent ids already shown elsewhere on the screen (the "ใช้ซ้ำ" row), so no agent shows twice.
  */
-export default function DepartmentAgents({ pick, onPick, max = 4 }) {
+export default function DepartmentAgents({ pick, onPick, exclude = [], max = 4 }) {
   const { state } = useStore()
   const dept = deptById(userById(state.userId).dept)
-  const agents = state.agents.filter((a) => a.dept === dept.id).sort((a, b) => b.uses - a.uses).slice(0, max)
+  const agents = state.agents.filter((a) => a.dept === dept.id && !exclude.includes(a.id)).sort((a, b) => b.uses - a.uses).slice(0, max)
   if (agents.length === 0) return null
   return (
     <section aria-labelledby="dept-agents-title" className="text-left">

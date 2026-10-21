@@ -316,6 +316,7 @@ function NewChat({ pick, onPickChange, onSend }) {
   const { state } = useStore()
   const me = userById(state.userId)
   const hasRuns = state.runs.some((r) => r.owner === state.userId)
+  const reuse = reuseItems(state)
   return (
     <div className="min-h-0 flex-1 overflow-y-auto">
       <div className="mx-auto max-w-3xl space-y-8 px-1 pt-2 pb-6 lg:pt-6">
@@ -334,8 +335,8 @@ function NewChat({ pick, onPickChange, onSend }) {
             </ul>
           )}
         </section>
-        <DepartmentAgents pick={pick} onPick={onPickChange} />
-        <ReuseRow items={reuseItems(state)} pick={pick} onPick={onPickChange} hasFavorites={state.favorites.length > 0} />
+        <DepartmentAgents pick={pick} onPick={onPickChange} exclude={reuse.filter((it) => it.kind === 'agent').map((it) => it.item.id)} />
+        <ReuseRow items={reuse} pick={pick} onPick={onPickChange} hasFavorites={state.favorites.length > 0} />
       </div>
     </div>
   )

@@ -19,6 +19,16 @@ describe('Navigation: new chat plus a three-item menu', () => {
     expect(screen.getAllByRole('link', { name: 'แชตใหม่' })[0]).toHaveAttribute('aria-current', 'page')
   })
 
+  it('on new chat, an Agent in "ใช้ซ้ำ" is not shown again under "ผู้ช่วยของแผนกคุณ"', () => {
+    startJourney('/')
+    const names = (region) => within(region).getAllByRole('button').map((b) => b.textContent.replace(/^ผู้ช่วย |^สายงาน /, ''))
+    const reuse = names(screen.getByRole('region', { name: 'ใช้ซ้ำ' }))
+    const dept = screen.queryByRole('region', { name: /ผู้ช่วยของแผนกคุณ/ })
+    if (dept) for (const b of within(dept).getAllByRole('button')) {
+      expect(reuse.some((n) => b.textContent.startsWith(n))).toBe(false)
+    }
+  })
+
   it('the Agents page recommends only once the user says what the job is', async () => {
     const app = startJourney('/agents')
     expect(screen.queryByRole('heading', { name: 'แนะนำสำหรับงานนี้' })).toBeNull()
