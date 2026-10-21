@@ -1,8 +1,8 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import {
-  ArrowRight, ArrowUp, Bot, ChevronDown, ChevronsLeft, CircleCheck, CircleDashed, Copy, Download, History, LoaderCircle, MessageSquare,
-  Play, Plus, Share2, ShieldCheck, Sparkles, Trash2, Undo2, Workflow, X,
+  ArrowRight, ArrowUp, Bot, ChevronDown, ChevronsLeft, CircleCheck, CircleDashed, Copy, Download, History, ListChecks, LoaderCircle,
+  Play, Plus, Share2, ShieldCheck, Sparkles, Undo2, Workflow, X,
 } from 'lucide-react'
 import { useStore } from '../store/AppStore'
 import { DEPARTMENTS, deptById } from '../data/catalog'
@@ -11,7 +11,7 @@ import { ACTIVITIES } from '../lib/mockOutputs'
 import { runProgress } from '../lib/runs'
 import { clockTime, cn, timeAgo } from '../lib/utils'
 import usePersistentState from '../lib/usePersistentState'
-import { Card, CardHeader, ProgressBar } from '../components/ui/Card'
+import { ProgressBar } from '../components/ui/Card'
 import Button from '../components/ui/Button'
 import EntityIcon from '../components/agents/EntityIcon'
 import Pipeline from '../components/workflow/Pipeline'
@@ -26,31 +26,13 @@ const SUGGESTIONS = [
   'VPN ต่อไม่ได้ตั้งแต่เช้า',
 ]
 
-const isChatRun = (run) => run.steps.length === 1 && run.steps[0].kind === 'chat'
+/** A Run, or the plan for one, that is a single chat answer rather than work for several Agents. */
+const isChat = (run) => run.steps.length === 1 && run.steps[0].kind === 'chat'
 
 /** The deliverable to show first: the document if there is one, otherwise the last real output. */
 function finalStep(run) {
   const outputs = run.steps.filter((s) => s.output)
   return outputs.find((s) => s.output.type === 'doc') ?? outputs.filter((s) => s.output.type !== 'checklist').at(-1) ?? outputs.at(-1)
-}
-
-function ModeToggle({ mode, onChange }) {
-  const opts = [
-    { value: 'chat', label: 'แชต', icon: MessageSquare },
-    { value: 'workflow', label: 'Workflow', icon: Workflow },
-  ]
-  return (
-    <div className="inline-flex rounded-lg bg-slate-100 p-1" role="tablist" aria-label="รูปแบบการแสดงผล">
-      {opts.map((o) => (
-        <button
-          key={o.value} type="button" role="tab" aria-selected={mode === o.value} onClick={() => onChange(o.value)}
-          className={cn('flex items-center gap-1.5 rounded-md px-3 py-1 text-[13px] font-medium transition', mode === o.value ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-800')}
-        >
-          <o.icon className="size-3.5" />{o.label}
-        </button>
-      ))}
-    </div>
-  )
 }
 
 function ThreadList({ threads, activeThread, onNew }) {
@@ -92,7 +74,7 @@ function ThreadList({ threads, activeThread, onNew }) {
   )
 }
 
-function Composer({ onSend, initialAgentId, initialWorkflowId, mode }) {
+function Composer({ onSend, initialAgentId, initialWorkflowId }) {
   const { state } = useStore()
   const [text, setText] = useState('')
   const [agentId, setAgentId] = useState(initialAgentId ?? '')
@@ -165,13 +147,14 @@ function Composer({ onSend, initialAgentId, initialWorkflowId, mode }) {
         </div>
       </form>
       <p className="mt-1.5 text-center text-[11px] text-slate-400">
-        {mode === 'workflow' ? 'โหมด Workflow: ระบบจะเสนอแผนให้ตรวจก่อนเริ่มทำงาน' : 'Enter เพื่อส่ง · Shift+Enter ขึ้นบรรทัดใหม่'} · ข้อมูลลับประมวลผลบน AI ภายในบริษัท
+        Enter เพื่อส่ง · Shift+Enter ขึ้นบรรทัดใหม่ · ข้อมูลลับประมวลผลบน AI ภายในบริษัท
       </p>
     </div>
   )
 }
 
-function StepChips({ steps }) {
+/** One chip per step. With `onRemove` (a Plan not started yet) each chip gets a × to take that step out. */
+function StepChips({ steps, onRemove }) {
   const icon = { completed: CircleCheck, processing: LoaderCircle, returned: Undo2, waiting: CircleDashed }
   return (
     <div className="flex flex-wrap items-center gap-1.5">
@@ -185,6 +168,11 @@ function StepChips({ steps }) {
               { completed: 'border-emerald-200 bg-emerald-50 text-emerald-700', processing: 'border-brand-200 bg-brand-50 text-brand-700', returned: 'border-amber-200 bg-amber-50 text-amber-700' }[s.status] ?? 'border-slate-200 bg-white text-slate-500',
             )}>
               <Icon className={cn('size-3', s.status === 'processing' && 'animate-spin')} aria-hidden />{s.name.replace(' Agent', '')}
+              {onRemove && (
+                <button type="button" onClick={() => onRemove(s.id)} aria-label={`ลบ ${s.name} ออกจากแผน`} title="เอาขั้นตอนนี้ออก" className="-mr-1 rounded-full p-0.5 text-slate-400 hover:bg-slate-100 hover:text-rose-500">
+                  <X className="size-3" />
+                </button>
+              )}
             </span>
           </Fragment>
         )
@@ -193,9 +181,9 @@ function StepChips({ steps }) {
   )
 }
 
-function AssistantMessage({ run, onShowWorkflow }) {
+function AssistantMessage({ run, onShowSteps }) {
   const { actions } = useStore()
-  const chat = isChatRun(run)
+  const chat = isChat(run)
   const current = run.steps[run.current]
   const final = run.status === 'completed' ? finalStep(run) : null
   const loops = run.steps.reduce((n, s) => n + (s.kind === 'condition' || s.kind === 'review' ? s.loops : 0), 0)
@@ -210,11 +198,11 @@ function AssistantMessage({ run, onShowWorkflow }) {
 
         {run.status === 'planned' && (
           <>
-            <p className="text-[15px] text-slate-700">งานนี้จะให้ทีมผู้ช่วย AI ทำ {run.steps.length} ขั้นตอน ตามลำดับนี้:</p>
-            <StepChips steps={run.steps} />
+            <p className="text-[15px] text-slate-700">แผนงาน: ให้ผู้ช่วย AI ทำ {run.steps.length} ขั้นตอน ตามลำดับนี้</p>
+            <StepChips steps={run.steps} onRemove={run.steps.length > 1 ? (stepId) => actions.removeStep(run.id, stepId) : undefined} />
             <div className="flex flex-wrap gap-2">
               <Button variant="primary" icon={Play} onClick={() => actions.startRun(run.id)}>เริ่มเลย</Button>
-              <Button variant="ghost" icon={Workflow} onClick={onShowWorkflow}>ดูหรือแก้แผน</Button>
+              <Button variant="ghost" icon={ListChecks} onClick={onShowSteps}>ดูขั้นตอน</Button>
             </div>
           </>
         )}
@@ -230,8 +218,8 @@ function AssistantMessage({ run, onShowWorkflow }) {
               <LoaderCircle className="size-4 shrink-0 animate-spin text-brand-500" />
               <span><b className="font-medium text-slate-800">{current?.name}</b> กำลังทำ: {current?.task}…</span>
             </p>
-            <button type="button" onClick={onShowWorkflow} className="inline-flex items-center gap-1 text-xs font-medium text-brand-700 hover:underline">
-              ดูแอนิเมชันการทำงานของผู้ช่วยแต่ละตัว <ArrowRight className="size-3" />
+            <button type="button" onClick={onShowSteps} className="inline-flex items-center gap-1 text-xs font-medium text-brand-700 hover:underline">
+              ดูขั้นตอน <ArrowRight className="size-3" aria-hidden />
             </button>
           </>
         ))}
@@ -253,7 +241,7 @@ function AssistantMessage({ run, onShowWorkflow }) {
               <Button size="sm" variant="ghost" icon={Download} onClick={() => actions.toast('ดาวน์โหลดไฟล์เรียบร้อย (จำลอง)')}>ดาวน์โหลด</Button>
               <Button size="sm" variant="ghost" icon={Copy} onClick={() => actions.toast('คัดลอกแล้ว')}>คัดลอก</Button>
               <Button size="sm" variant="ghost" icon={Share2} onClick={() => actions.toast('คัดลอกลิงก์สำหรับแชร์แล้ว')}>แชร์</Button>
-              <Button size="sm" variant="ghost" icon={Workflow} onClick={onShowWorkflow}>ดูขั้นตอนการทำงาน</Button>
+              <Button size="sm" variant="ghost" icon={ListChecks} onClick={onShowSteps}>ดูขั้นตอน</Button>
               <SaveForReuse run={run} />
             </div>
           </>
@@ -263,7 +251,7 @@ function AssistantMessage({ run, onShowWorkflow }) {
   )
 }
 
-function ChatView({ thread, onShowWorkflow, onSuggest }) {
+function ChatView({ thread, onShowSteps, onSuggest }) {
   const bottom = useRef(null)
   const last = thread.at(-1)
   const progressKey = last ? `${last.id}:${last.status}:${last.current}` : ''
@@ -291,7 +279,7 @@ function ChatView({ thread, onShowWorkflow, onSuggest }) {
             <AttachmentList files={run.attachments} className="flex max-w-[85%] flex-wrap justify-end gap-1.5" />
             <p className="max-w-[85%] rounded-2xl rounded-br-md bg-slate-100 px-4 py-2.5 text-[15px] text-slate-800">{run.prompt}</p>
           </div>
-          <AssistantMessage run={run} onShowWorkflow={() => onShowWorkflow(run.id)} />
+          <AssistantMessage run={run} onShowSteps={() => onShowSteps(run.id)} />
         </div>
       ))}
       <div ref={bottom} />
@@ -343,87 +331,55 @@ function LiveActivity({ run }) {
 
 const EVENT_DOT = { info: 'bg-brand-400', success: 'bg-emerald-400', warning: 'bg-amber-400' }
 
-function WorkflowView({ run }) {
-  const { actions } = useStore()
-  const navigate = useNavigate()
+/**
+ * The step view, beside the Thread: which Agent did what and how work was handed on.
+ * Starting or editing the Plan stays in the Thread, so this panel only shows. Full screen on a phone.
+ */
+function StepsPanel({ run, onClose }) {
   const [selected, setSelected] = useState(null)
-
-  if (!run) {
-    return (
-      <div className="mx-auto max-w-3xl py-10">
-        <Card className="p-8">
-          <h2 className="text-lg font-semibold text-slate-900">โหมด Workflow คืออะไร</h2>
-          <p className="mt-1 text-sm text-slate-500">ดูเบื้องหลังว่าผู้ช่วย AI แต่ละตัวทำอะไร ส่งงานต่อให้ใคร และตรวจงานกันอย่างไร — แบบเรียลไทม์</p>
-          <div className="mt-5"><StepGuide status="none" /></div>
-          <p className="mt-5 text-sm text-slate-600">พิมพ์งานที่ช่องด้านล่าง ระบบจะเสนอแผนให้ตรวจก่อนเริ่ม</p>
-        </Card>
-      </div>
-    )
-  }
-
-  const outputs = run.steps.filter((s) => s.output)
-  const final = run.status === 'completed' ? finalStep(run) : null
-  const shown = outputs.find((s) => s.id === selected) ?? final ?? outputs.at(-1)
+  const shown = run.steps.find((s) => s.id === selected && s.output)
 
   return (
-    <div className="space-y-5 py-2">
-      <Card className="p-5">
-        <StepGuide status={run.status} />
-        <div className="mt-4 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-          <div className="min-w-0">
-            <h1 className="text-lg font-semibold text-slate-900">{run.title}</h1>
-            <p className="mt-0.5 text-xs text-slate-500">{timeAgo(run.createdAt)} · {run.reason}</p>
-          </div>
-          <div className="flex shrink-0 flex-wrap gap-2">
-            {run.status === 'planned' && (
-              <>
-                <Button variant="ghost" icon={Trash2} onClick={() => { actions.discardRun(run.id); navigate('/workspace') }}>ยกเลิก</Button>
-                <Button variant="primary" icon={Play} onClick={() => actions.startRun(run.id)} disabled={!run.steps.length}>เริ่มทำงาน</Button>
-              </>
-            )}
-            {run.status === 'completed' && <SaveForReuse run={run} />}
-          </div>
+    <aside
+      aria-label="ขั้นตอนการทำงาน"
+      className="fixed inset-0 z-40 overflow-y-auto bg-white p-4 lg:static lg:z-auto lg:w-96 lg:shrink-0 lg:border-l lg:border-slate-200 lg:bg-transparent lg:p-0 lg:pl-6"
+    >
+      <div className="flex items-center justify-between gap-2 pb-3">
+        <h2 className="text-sm font-semibold text-slate-900">ขั้นตอนการทำงาน</h2>
+        <Button variant="ghost" size="icon" icon={X} onClick={onClose} aria-label="ปิดขั้นตอน" title="ปิดขั้นตอน" />
+      </div>
+      <div className="space-y-6 pb-4">
+        <div className="space-y-3">
+          <StepGuide status={run.status} />
+          <p className="text-xs text-slate-500">{run.reason}</p>
+          {run.status === 'running' && (
+            <div className="flex items-center gap-3"><ProgressBar value={runProgress(run)} className="flex-1" /><span className="text-xs font-medium text-slate-500">{Math.round(runProgress(run) * 100)}%</span></div>
+          )}
         </div>
-        {run.status === 'planned' && <p className="mt-3 rounded-lg bg-slate-50 px-3.5 py-2.5 text-[13px] text-slate-600">ตรวจแผนด้านล่างก่อนเริ่ม — กด × เพื่อเอาขั้นตอนที่ไม่ต้องการออก</p>}
-        {run.status === 'running' && (
-          <div className="mt-4 flex items-center gap-3"><ProgressBar value={runProgress(run)} className="flex-1" /><span className="text-xs font-medium text-slate-500">{Math.round(runProgress(run) * 100)}%</span></div>
+        <Pipeline vertical steps={run.steps} selectedId={shown?.id} onSelect={setSelected} />
+        {shown && (
+          <section key={shown.id} className="rise">
+            <h3 className="mb-2 text-xs font-medium text-slate-500">ผลงานของ {shown.name}</h3>
+            <ArtifactView artifact={shown.output} />
+          </section>
         )}
-        <div className="mt-5">
-          <Pipeline steps={run.steps} onRemove={run.status === 'planned' && run.steps.length > 1 ? (id) => actions.removeStep(run.id, id) : undefined} selectedId={shown?.id} onSelect={setSelected} />
-        </div>
-      </Card>
-
-      {run.status !== 'planned' && (
-        <div className="grid gap-5 lg:grid-cols-5">
-          <Card className="lg:col-span-2">
-            <CardHeader title="ใครทำอะไรอยู่" subtitle="การส่งต่องานระหว่างผู้ช่วย" />
-            <div className="space-y-4 px-5 pb-5">
-              <LiveActivity run={run} />
-              <ol className="relative space-y-3 border-l border-slate-200 pl-4">
-                {[...run.events].reverse().map((e, i) => (
-                  <li key={i} className="relative">
-                    <span className={cn('absolute top-1.5 -left-[21px] size-2 rounded-full ring-4 ring-white', EVENT_DOT[e.tone])} />
-                    <p className="text-[13px] leading-snug text-slate-700">{e.text}</p>
-                    <p className="text-[11px] text-slate-400">{clockTime(e.at)}</p>
-                  </li>
-                ))}
-              </ol>
-            </div>
-          </Card>
-          <Card className="lg:col-span-3">
-            <CardHeader title={final && shown?.id === final.id ? 'ผลงานสุดท้าย' : 'ผลงานแต่ละขั้น'} subtitle={outputs.length ? 'คลิกที่ผู้ช่วยด้านบนเพื่อดูผลงานของขั้นนั้น' : 'ผลงานจะแสดงที่นี่เมื่อผู้ช่วยทำเสร็จ'} />
-            <div className="px-5 pb-5">
-              {shown ? <div className="rise" key={shown.id}><ArtifactView artifact={shown.output} /></div> : (
-                <div className="flex h-40 items-center justify-center rounded-lg border border-dashed border-slate-200 text-sm text-slate-400"><LoaderCircle className="mr-2 size-4 animate-spin" /> กำลังเตรียมผลงานชิ้นแรก…</div>
-              )}
-              {run.status === 'completed' && (
-                <div className="mt-4 flex gap-2"><Button variant="primary" icon={Download} onClick={() => actions.toast('ดาวน์โหลดไฟล์เรียบร้อย (จำลอง)')}>ดาวน์โหลด</Button><Button icon={Share2} onClick={() => actions.toast('คัดลอกลิงก์สำหรับแชร์แล้ว')}>แชร์</Button></div>
-              )}
-            </div>
-          </Card>
-        </div>
-      )}
-    </div>
+        <LiveActivity run={run} />
+        {run.events.length > 0 && (
+          <section>
+            <h3 className="mb-3 text-xs font-medium text-slate-500">การส่งต่องานระหว่างผู้ช่วย</h3>
+            <ol className="relative space-y-3 border-l border-slate-200 pl-4">
+              {[...run.events].reverse().map((e, i) => (
+                <li key={i} className="relative">
+                  <span className={cn('absolute top-1.5 -left-[21px] size-2 rounded-full ring-4 ring-white', EVENT_DOT[e.tone])} />
+                  <p className="text-[13px] leading-snug text-slate-700">{e.text}</p>
+                  <p className="text-[11px] text-slate-400">{clockTime(e.at)}</p>
+                </li>
+              ))}
+            </ol>
+          </section>
+        )}
+      </div>
+    </aside>
   )
 }
 
@@ -431,7 +387,7 @@ export default function Workspace() {
   const { state, actions } = useStore()
   const [params, setParams] = useSearchParams()
   const location = useLocation()
-  const [mode, setMode] = usePersistentState('icn.workspace.mode', 'chat')
+  const [stepsRunId, setStepsRunId] = useState(null) // the Run whose steps are open in the side panel
   const handled = useRef(null)
   const q = params.get('q')
 
@@ -448,12 +404,13 @@ export default function Workspace() {
 
   // `pick` is { agentId } or { workflowId } when the user chose one, otherwise {} and the planner decides.
   const send = (prompt, pick, threadId, attachments) => {
-    // Picking an agent or workflow already settles the plan, so it runs straight away in either mode;
-    // otherwise Workflow mode stops at the plan for review.
+    // One rule: a chat answer, or an Agent or Workflow the user picked, starts straight away.
+    // Several Agents the system chose itself (even a Workflow matched by keyword) wait at the Plan for "เริ่มเลย".
     const picked = Boolean(pick?.agentId || pick?.workflowId)
-    const id = actions.planRun(prompt, pick ?? {}, state, { threadId, autoStart: mode === 'chat' || picked, attachments })
+    const id = actions.planRun(prompt, pick ?? {}, state, { threadId, attachments, autoStart: (plan) => picked || isChat(plan) })
     setParams({ run: id })
   }
+  const stepsRun = thread.find((r) => r.id === stepsRunId) // closes by itself when the user leaves the Thread
 
   useEffect(() => {
     if (!q || handled.current === q) return
@@ -468,17 +425,15 @@ export default function Workspace() {
         <div className="flex items-center gap-3 pb-3">
           <Button size="sm" icon={Plus} onClick={() => setParams({})} className="lg:hidden">แชตใหม่</Button>
           <p className="hidden min-w-0 truncate text-sm font-medium text-slate-700 sm:block">{run ? thread[0]?.title : 'แชตใหม่'}</p>
-          <div className="ml-auto" data-tour="ws-mode"><ModeToggle mode={mode} onChange={setMode} /></div>
         </div>
-        <div key={mode} className="min-h-0 flex-1 overflow-y-auto">
-          {mode === 'chat'
-            ? <ChatView thread={thread} onSuggest={(s) => send(s)} onShowWorkflow={(id) => { setMode('workflow'); setParams({ run: id }) }} />
-            : <WorkflowView run={run} />}
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          <ChatView thread={thread} onSuggest={(s) => send(s)} onShowSteps={setStepsRunId} />
         </div>
         <div className="pt-3">
-          <Composer mode={mode} initialAgentId={params.get('agent')} initialWorkflowId={params.get('workflow')} onSend={(p, pick, files) => send(p, pick, run?.threadId, files)} />
+          <Composer initialAgentId={params.get('agent')} initialWorkflowId={params.get('workflow')} onSend={(p, pick, files) => send(p, pick, run?.threadId, files)} />
         </div>
       </section>
+      {stepsRun && <StepsPanel key={stepsRun.id} run={stepsRun} onClose={() => setStepsRunId(null)} />}
     </div>
   )
 }

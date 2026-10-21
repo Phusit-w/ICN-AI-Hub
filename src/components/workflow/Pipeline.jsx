@@ -5,14 +5,16 @@ import { ModelBadge, StatusPill } from '../ui/Badge'
 import { ProgressBar } from '../ui/Card'
 import { cn } from '../../lib/utils'
 
-function Connector({ active, done }) {
+function Connector({ active, done, vertical }) {
   return (
-    <div className="flex shrink-0 items-center justify-center py-1 lg:w-8 lg:py-0" aria-hidden>
-      <svg className="hidden lg:block" width="32" height="12" viewBox="0 0 32 12">
-        <line x1="0" y1="6" x2="26" y2="6" strokeWidth="2" className={cn(active ? 'flow-line stroke-brand-500' : done ? 'stroke-emerald-400' : 'stroke-slate-300')} />
-        <path d="M24 2 L30 6 L24 10" fill="none" strokeWidth="2" className={cn(active ? 'stroke-brand-500' : done ? 'stroke-emerald-400' : 'stroke-slate-300')} />
-      </svg>
-      <ArrowRight className={cn('size-4 rotate-90 lg:hidden', active ? 'text-brand-500' : done ? 'text-emerald-400' : 'text-slate-300')} />
+    <div className={cn('flex shrink-0 items-center justify-center py-1', !vertical && 'lg:w-8 lg:py-0')} aria-hidden>
+      {!vertical && (
+        <svg className="hidden lg:block" width="32" height="12" viewBox="0 0 32 12">
+          <line x1="0" y1="6" x2="26" y2="6" strokeWidth="2" className={cn(active ? 'flow-line stroke-brand-500' : done ? 'stroke-emerald-400' : 'stroke-slate-300')} />
+          <path d="M24 2 L30 6 L24 10" fill="none" strokeWidth="2" className={cn(active ? 'stroke-brand-500' : done ? 'stroke-emerald-400' : 'stroke-slate-300')} />
+        </svg>
+      )}
+      <ArrowRight className={cn('size-4 rotate-90', !vertical && 'lg:hidden', active ? 'text-brand-500' : done ? 'text-emerald-400' : 'text-slate-300')} />
     </div>
   )
 }
@@ -20,22 +22,24 @@ function Connector({ active, done }) {
 /**
  * Visual chain of agents for one run: which agent is working, which are waiting, which are done.
  * In "planned" mode steps can be removed before the run starts.
+ * It runs left to right on wide screens unless `vertical`, e.g. inside a narrow side panel.
  */
-export default function Pipeline({ steps, onRemove, selectedId, onSelect }) {
+export default function Pipeline({ steps, onRemove, selectedId, onSelect, vertical = false }) {
   return (
-    <div className="flex flex-col lg:flex-row lg:items-stretch lg:overflow-x-auto lg:pb-2">
+    <div className={cn('flex flex-col', !vertical && 'lg:flex-row lg:items-stretch lg:overflow-x-auto lg:pb-2')}>
       {steps.map((s, i) => {
         const processing = s.status === 'processing'
         const prev = steps[i - 1]
         return (
           <Fragment key={s.id}>
-            {i > 0 && <Connector done={prev.status === 'completed'} active={prev.status === 'completed' && processing} />}
+            {i > 0 && <Connector vertical={vertical} done={prev.status === 'completed'} active={prev.status === 'completed' && processing} />}
             <div
               role={onSelect ? 'button' : undefined} tabIndex={onSelect ? 0 : undefined}
               onClick={onSelect ? () => onSelect(s.id) : undefined}
               onKeyDown={onSelect ? (e) => e.key === 'Enter' && onSelect(s.id) : undefined}
               className={cn(
-                'relative flex min-w-0 flex-col rounded-xl border bg-white p-3 transition lg:w-52 lg:shrink-0',
+                'relative flex min-w-0 flex-col rounded-xl border bg-white p-3 transition',
+                !vertical && 'lg:w-52 lg:shrink-0',
                 processing ? 'pulse-ring border-brand-400' : s.status === 'completed' ? 'border-emerald-200' : s.status === 'returned' ? 'border-amber-300' : 'border-slate-200',
                 selectedId === s.id && 'ring-2 ring-brand-500',
                 onSelect && 'cursor-pointer hover:border-slate-300',
