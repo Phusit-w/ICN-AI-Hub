@@ -171,7 +171,7 @@ export default function AgentLibrary() {
   const tab = params.get('tab') === 'skills' ? 'skills' : 'agents'
   return (
     <Tabs
-      label="คลังผู้ช่วย AI" tabs={TABS} value={tab} className="mx-auto max-w-5xl"
+      label="คลังผู้ช่วย AI" tabs={TABS} value={tab} className="mx-auto max-w-5xl" listProps={{ 'data-tour': 'agents-tabs' }}
       onChange={(t) => setParams(t === 'skills' ? { tab: t } : {})}
     />
   )

@@ -11,14 +11,11 @@
  *   await app.letRunsFinish()                  // advance fake time until Runs complete
  *   app.url()                                  // '/workspace?run=…'
  *   expectWithinBudget(app, 2)
- *
- * Budget assertions today's app does not meet use `itOverBudget('NN', …)` instead of `it(…)`.
- * The ticket that fixes the journey flips it back to `it(…)`.
  */
 import { act, screen, within, render } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router-dom'
-import { expect, it, vi } from 'vitest'
+import { expect, vi } from 'vitest'
 import App from '../src/App'
 import { AppStoreProvider } from '../src/store/AppStore'
 import { TourProvider } from '../src/components/tour/Tour'
@@ -83,13 +80,6 @@ export function expectWithinBudget(app, budget) {
   expect(app.clicks, `journey used ${app.clicks} clicks, budget is ${budget}`).toBeLessThanOrEqual(budget)
 }
 
-/**
- * A journey whose click budget today's app does not meet yet. It runs and is expected to FAIL;
- * if it starts passing, vitest reports it so the fixing ticket flips it to a plain `it(...)`.
- */
-export function itOverBudget(ticket, name, fn) {
-  it.fails(`[over budget until ticket ${ticket}] ${name}`, fn)
-}
 
 /** Links and buttons look the same to a user; find either by accessible name. */
 export function getAllControls(name, container = document.body) {
