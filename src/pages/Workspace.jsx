@@ -7,11 +7,12 @@ import {
 import { useStore } from '../store/AppStore'
 import { AttachButton, AttachmentList } from '../components/ui/Attachments'
 import { ACTIVITIES } from '../lib/mockOutputs'
-import { runProgress } from '../lib/runs'
+import { isChatRun as isChat, runProgress } from '../lib/runs'
 import { clockTime, cn, timeAgo } from '../lib/utils'
 import usePersistentState from '../lib/usePersistentState'
 import { ProgressBar } from '../components/ui/Card'
 import Button from '../components/ui/Button'
+import Menu from '../components/ui/Menu'
 import EntityIcon from '../components/agents/EntityIcon'
 import Pipeline from '../components/workflow/Pipeline'
 import ArtifactView from '../components/workflow/ArtifactView'
@@ -25,9 +26,6 @@ const SUGGESTIONS = [
   'นโยบายวันลาพักร้อนสะสมได้กี่วัน',
   'VPN ต่อไม่ได้ตั้งแต่เช้า',
 ]
-
-/** A Run, or the plan for one, that is a single chat answer rather than work for several Agents. */
-const isChat = (run) => run.steps.length === 1 && run.steps[0].kind === 'chat'
 
 /** The deliverable to show first: the document if there is one, otherwise the last real output. */
 function finalStep(run) {
@@ -139,7 +137,26 @@ function StepChips({ steps, onRemove }) {
   )
 }
 
-function AssistantMessage({ run, onShowSteps }) {
+/**
+ * Under a finished Artifact, for chat and multi-Agent Runs alike: "ดาวน์โหลด" first, "บันทึกไว้ใช้ซ้ำ" beside it,
+ * the rest in "⋯". Only the latest Run's download is brand-coloured, so the page keeps one primary button.
+ */
+function ArtifactActions({ run, latest, onShowSteps }) {
+  const { actions } = useStore()
+  return (
+    <div role="group" aria-label="การทำงานกับผลงาน" className="flex flex-wrap items-center gap-1.5">
+      <Button size="sm" variant={latest ? 'primary' : 'secondary'} icon={Download} onClick={() => actions.toast('ดาวน์โหลดไฟล์เรียบร้อย (จำลอง)')}>ดาวน์โหลด</Button>
+      <SaveForReuse run={run} />
+      <Menu items={[
+        { label: 'คัดลอก', icon: Copy, onSelect: () => actions.toast('คัดลอกแล้ว') },
+        { label: 'แชร์', icon: Share2, onSelect: () => actions.toast('คัดลอกลิงก์สำหรับแชร์แล้ว') },
+        { label: 'ดูขั้นตอน', icon: ListChecks, onSelect: onShowSteps },
+      ]} />
+    </div>
+  )
+}
+
+function AssistantMessage({ run, latest, onShowSteps }) {
   const { actions } = useStore()
   const chat = isChat(run)
   const current = run.steps[run.current]
@@ -183,7 +200,10 @@ function AssistantMessage({ run, onShowSteps }) {
         ))}
 
         {run.status === 'completed' && (chat ? (
-          <ArtifactView artifact={run.steps[0].output} />
+          <>
+            <ArtifactView artifact={run.steps[0].output} />
+            <ArtifactActions run={run} latest={latest} onShowSteps={onShowSteps} />
+          </>
         ) : (
           <>
             <p className="text-[15px] text-slate-700">
@@ -195,13 +215,7 @@ function AssistantMessage({ run, onShowSteps }) {
                 <ArtifactView artifact={final.output} />
               </div>
             )}
-            <div className="flex flex-wrap gap-1">
-              <Button size="sm" variant="ghost" icon={Download} onClick={() => actions.toast('ดาวน์โหลดไฟล์เรียบร้อย (จำลอง)')}>ดาวน์โหลด</Button>
-              <Button size="sm" variant="ghost" icon={Copy} onClick={() => actions.toast('คัดลอกแล้ว')}>คัดลอก</Button>
-              <Button size="sm" variant="ghost" icon={Share2} onClick={() => actions.toast('คัดลอกลิงก์สำหรับแชร์แล้ว')}>แชร์</Button>
-              <Button size="sm" variant="ghost" icon={ListChecks} onClick={onShowSteps}>ดูขั้นตอน</Button>
-              <SaveForReuse run={run} />
-            </div>
+            <ArtifactActions run={run} latest={latest} onShowSteps={onShowSteps} />
           </>
         ))}
       </div>
@@ -237,7 +251,7 @@ function ChatView({ thread, onShowSteps, onSuggest }) {
             <AttachmentList files={run.attachments} className="flex max-w-[85%] flex-wrap justify-end gap-1.5" />
             <p className="max-w-[85%] rounded-2xl rounded-br-md bg-slate-100 px-4 py-2.5 text-[15px] text-slate-800">{run.prompt}</p>
           </div>
-          <AssistantMessage run={run} onShowSteps={() => onShowSteps(run.id)} />
+          <AssistantMessage run={run} latest={run === last} onShowSteps={() => onShowSteps(run.id)} />
         </div>
       ))}
       <div ref={bottom} />

@@ -65,7 +65,7 @@ export default function SaveForReuse({ run }) {
 
   return (
     <div ref={box} className="relative">
-      <Button size="sm" variant="ghost" icon={BookmarkPlus} onClick={() => setOpen(!open)} aria-expanded={open}>บันทึกไว้ใช้ซ้ำ</Button>
+      <Button size="sm" icon={BookmarkPlus} onClick={() => setOpen(!open)} aria-expanded={open}>บันทึกไว้ใช้ซ้ำ</Button>
       {open && (
         <form
           onSubmit={(e) => { e.preventDefault(); save() }}
@@ -80,7 +80,7 @@ export default function SaveForReuse({ run }) {
           />
           <div className="mt-2 flex items-center justify-between">
             <span className="text-[11px] text-slate-400">แชร์: เฉพาะฉัน · แก้รายละเอียดได้ภายหลัง</span>
-            <Button type="submit" size="sm" variant="primary" disabled={!name.trim()}>บันทึก</Button>
+            <Button type="submit" size="sm" variant="subtle" disabled={!name.trim()}>บันทึก</Button>
           </div>
         </form>
       )}

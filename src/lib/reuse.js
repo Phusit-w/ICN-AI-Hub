@@ -1,22 +1,27 @@
 // "Save for reuse" (บันทึกไว้ใช้ซ้ำ): turning a finished Run into an Agent or a Workflow.
 // See GLOSSARY.md. Also builds linear Workflows from a list of agents (used by the Workflow drafter).
 
-import { agentFromForm, formFromAgent } from './agentDraft'
+import { BLANK_FORM, INSTRUCTION_STARTERS, agentFromForm, formFromAgent } from './agentDraft'
+import { isChatRun } from './runs'
 import { truncate, uid } from './utils'
 
 // Review Agent is added to every multi-step plan automatically, so it doesn't count as the user's choice.
 const workers = (run) => run.steps.filter((s) => s.agentId && s.kind !== 'review')
+
+/** The general assistant behind chat answers, as a starting point for an Agent saved from a chat. */
+const CHAT_BASE = { form: { ...BLANK_FORM, dept: 'core', kind: 'document' }, instruction: INSTRUCTION_STARTERS.core }
 
 /** A run step as a workflow node reference. */
 export const stepRef = (s) => ({ type: s.agentId ? 'agent' : s.skillId ? 'skill' : 'condition', ref: s.agentId ?? s.skillId, label: s.name })
 
 /**
  * What a finished run can be saved as:
- * 'agent' when one agent did the work, 'workflow' when several did, null for plain chat answers.
+ * 'agent' when one agent did the work (a chat answer counts: ICN Assistant did it alone), 'workflow' when several did.
  * Runs that followed an existing Workflow (picked or matched), or were already saved, aren't offered again.
  */
 export function reuseTarget(run) {
   if (run.status !== 'completed' || run.workflowId || run.savedAs) return null
+  if (isChatRun(run)) return 'agent'
   const n = workers(run).length
   return n === 0 ? null : n === 1 ? 'agent' : 'workflow'
 }
@@ -74,10 +79,14 @@ export function workflowFromRun(run, thread, { name, owner, dept }) {
 /**
  * Copies the agent that did the work. The conversation's first request becomes its main job, later
  * messages become refinements, the base agent's own rules stay underneath, and every file attached
- * anywhere in the conversation becomes its knowledge.
+ * anywhere in the conversation becomes its knowledge. A chat answer has no library Agent behind it,
+ * so its Agent starts from the general ICN Assistant's rules.
  */
 export function agentFromRun(run, thread, { name, owner, agents }) {
-  const base = agents.find((a) => a.id === workers(run)[0].agentId)
+  const agent = agents.find((a) => a.id === workers(run)[0]?.agentId)
+  const base = agent
+    ? { name: agent.name, form: formFromAgent(agent), instruction: agent.instruction }
+    : { name: run.steps[0].name, ...CHAT_BASE }
   const [first, ...followUps] = thread
   const instruction = [
     `งานหลัก: ${first.prompt}`,
@@ -87,14 +96,14 @@ export function agentFromRun(run, thread, { name, owner, agents }) {
     base.instruction,
   ].join('\n')
   const form = {
-    ...formFromAgent(base),
+    ...base.form,
     name,
     description: first.prompt,
     instruction,
     uploads: [...new Set(thread.flatMap((r) => (r.attachments ?? []).map((f) => f.name)))],
     share: 'private',
   }
-  return agentFromForm(form, { owner, note: `บันทึกจากแชต โดยใช้ ${base.name} เป็นต้นแบบ`, forkedFrom: base.name })
+  return agentFromForm(form, { owner, note: `บันทึกจากแชต โดยใช้ ${base.name} เป็นต้นแบบ`, forkedFrom: agent?.name })
 }
 
 /**
