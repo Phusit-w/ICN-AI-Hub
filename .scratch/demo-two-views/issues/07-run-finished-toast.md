@@ -6,9 +6,9 @@ Spec: `.scratch/demo-two-views/spec.md` (stories 47–50).
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Finishing on another page or Thread shows a toast; clicking it opens the Thread (one click)
-- [ ] No toast while viewing that Thread
-- [ ] No toast for chat Runs
-- [ ] Journeys cover all three cases
+- [x] Finishing on another page or Thread shows a toast; clicking it opens the Thread (one click)
+- [x] No toast while viewing that Thread
+- [x] No toast for chat Runs
+- [x] Journeys cover all three cases

@@ -138,9 +138,11 @@ export function AppStoreProvider({ children }) {
   }, [])
 
   const actions = useMemo(() => {
-    const toast = (message, opts = {}) => {
+    /** Show a toast; `stay: true` keeps it until the user clicks its link or closes it. */
+    const toast = (message, { stay = false, ...opts } = {}) => {
       const t = { id: uid('toast'), message, tone: 'success', ...opts }
       dispatch({ type: 'toast', toast: t })
+      if (stay) return
       // Toasts with a follow-up link stay longer so there's time to click it.
       setTimeout(() => dispatch({ type: 'dismissToast', id: t.id }), t.action ? 7000 : 3800)
     }

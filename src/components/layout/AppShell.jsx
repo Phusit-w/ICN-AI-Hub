@@ -7,7 +7,7 @@ import { isAdminView, useStore } from '../../store/AppStore'
 import { userById, VIEW_PERSONAS } from '../../data/catalog'
 import { cn, isToday } from '../../lib/utils'
 import { skillLink } from '../../lib/routes'
-import { threadsOf } from '../../lib/runs'
+import { isChatRun, threadsOf } from '../../lib/runs'
 import usePersistentState from '../../lib/usePersistentState'
 import { Avatar, Toaster } from '../ui/Overlay'
 import MenuButton from '../ui/Menu'
@@ -58,13 +58,38 @@ const itemClass = (isActive) => cn(
   isActive ? 'bg-slate-900/[0.06] text-slate-900' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900',
 )
 
-/** Chat history (Threads), newest first and grouped by day, as in ChatGPT, Claude or Gemini. One click opens the Thread. */
-function ChatHistory({ onNavigate }) {
+/** The Thread the user is looking at, or null when no Thread is on screen. */
+function useOpenThreadId() {
   const { state } = useStore()
   const [params] = useSearchParams()
   const { pathname } = useLocation()
+  return pathname === '/workspace' ? state.runs.find((r) => r.id === params.get('run'))?.threadId ?? null : null
+}
+
+/**
+ * When the user's multi-Agent Run finishes out of sight (on another page or in another Thread), a toast says so
+ * and links to its Thread. It stays until clicked or closed, so the user doesn't have to watch for it.
+ */
+function RunFinishedToasts() {
+  const { state, actions } = useStore()
+  const openThreadId = useOpenThreadId()
+  const wasRunning = useRef(null)
+  useEffect(() => {
+    const running = new Set(state.runs.filter((r) => r.status === 'running').map((r) => r.id))
+    const before = wasRunning.current ?? running
+    wasRunning.current = running
+    state.runs
+      .filter((r) => before.has(r.id) && r.status === 'completed' && !isChatRun(r) && r.owner === state.userId && r.threadId !== openThreadId)
+      .forEach((r) => actions.toast(`งานของคุณเสร็จแล้ว: “${r.title}”`, { stay: true, action: { label: 'เปิดดู', to: `/workspace?run=${r.id}` } }))
+  }, [state.runs, state.userId, openThreadId, actions])
+  return null
+}
+
+/** Chat history (Threads), newest first and grouped by day, as in ChatGPT, Claude or Gemini. One click opens the Thread. */
+function ChatHistory({ onNavigate }) {
+  const { state } = useStore()
   const threads = useMemo(() => threadsOf(state.runs), [state.runs])
-  const activeThreadId = pathname === '/workspace' ? state.runs.find((r) => r.id === params.get('run'))?.threadId : null
+  const activeThreadId = useOpenThreadId()
   const groups = [
     { label: 'วันนี้', items: threads.filter((t) => isToday(t.latest.createdAt)) },
     { label: 'ก่อนหน้านี้', items: threads.filter((t) => !isToday(t.latest.createdAt)) },
@@ -258,6 +283,7 @@ export default function AppShell() {
         <Outlet />
       </main>
       <Toaster />
+      <RunFinishedToasts />
     </div>
   )
 }
