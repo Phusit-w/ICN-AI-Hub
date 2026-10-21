@@ -28,6 +28,10 @@ _Avoid_: Pinned agent, bookmark
 One request carried out by one or more Agents, producing an Artifact.
 _Avoid_: Task, job, execution
 
+**Plan** (แผนงาน):
+The ordered list of Agents the system proposes for a Run when the user did not pick an Agent or Workflow themselves; the user confirms it before the Run starts.
+_Avoid_: Workflow (a Plan is not saved and is not a Workflow until the user chooses Save for reuse), workflow mode
+
 **Thread** (แชต):
 A conversation made of one or more Runs that follow on from each other.
 _Avoid_: Session, conversation
