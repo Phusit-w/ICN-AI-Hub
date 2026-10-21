@@ -6,4 +6,11 @@ export default defineConfig({
   // Relative asset paths so the static build works from any folder or host.
   base: './',
   plugins: [react(), tailwindcss()],
+  test: {
+    environment: 'jsdom',
+    setupFiles: ['./test/setup.js'],
+    include: ['test/**/*.test.{js,jsx}'],
+    // Whole-app journeys advance Runs on fake timers; give slow machines room.
+    testTimeout: 20000,
+  },
 })
