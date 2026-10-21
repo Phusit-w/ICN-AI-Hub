@@ -30,9 +30,9 @@ describe('Navigation: five-item main menu', () => {
     expect(menuItems(mobile)).toEqual(MENU)
   })
 
-  it('the community page is still reachable by link but not in the menu', () => {
+  it('the community page is gone: not in the menu, and its old link lands on the Agents page', () => {
     const app = startJourney('/community')
-    expect(app.url()).toBe('/community')
+    expect(app.url()).toBe('/agents?filter=popular')
     expect(within(mainMenu()).queryByRole('link', { name: /ชุมชน/ })).toBeNull()
   })
 })

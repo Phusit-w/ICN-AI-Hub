@@ -6,6 +6,8 @@ import { userById } from '../data/catalog'
 import { planRequest } from '../lib/runs'
 import { linearSteps, linearWorkflow, stepRef, withLinearSteps } from '../lib/reuse'
 import { rankByMatch, truncate, uid } from '../lib/utils'
+import { applyShareFilter, shareFilterFrom } from '../lib/sharing'
+import ShareFilterChips from '../components/ui/ShareFilterChips'
 import { Card } from '../components/ui/Card'
 import Button from '../components/ui/Button'
 import { DeptBadge } from '../components/ui/Badge'
@@ -83,12 +85,14 @@ function Suggestions({ items }) {
   const [showAll, setShowAll] = useState(false)
   return (
     <section>
-      <div className="mb-2 flex items-baseline justify-between">
+      <div className="mb-3 flex flex-wrap items-center gap-x-3 gap-y-2">
         <h2 className="text-sm font-semibold text-slate-900">สายงานแนะนำจากเพื่อนร่วมงาน</h2>
+        <ShareFilterChips className="order-last w-full overflow-x-auto sm:order-none sm:w-auto" />
         {items.length > SHOWN_SUGGESTIONS && (
-          <button type="button" onClick={() => setShowAll(!showAll)} className="text-xs font-medium text-brand-700 hover:underline">{showAll ? 'ย่อ' : `ดูทั้งหมด (${items.length})`}</button>
+          <button type="button" onClick={() => setShowAll(!showAll)} className="ml-auto text-xs font-medium text-brand-700 hover:underline">{showAll ? 'ย่อ' : `ดูทั้งหมด (${items.length})`}</button>
         )}
       </div>
+      {items.length === 0 && <p className="rounded-xl border border-dashed border-slate-200 p-4 text-sm text-slate-400">ยังไม่มีสายงานตรงตัวกรองนี้</p>}
       <div className="grid gap-3 sm:grid-cols-2">
         {(showAll ? items : items.slice(0, SHOWN_SUGGESTIONS)).map((w) => (
           <div key={w.id} className="flex flex-col rounded-xl border border-slate-200 bg-white p-4 transition hover:border-brand-300">
@@ -189,6 +193,7 @@ function DraftEditor({ initial, workflow, onCancel }) {
 
 function Landing() {
   const { state } = useStore()
+  const [params] = useSearchParams()
   const stepsOf = useStepsOf()
   const [text, setText] = useState('')
   const [draft, setDraft] = useState(null)
@@ -196,7 +201,10 @@ function Landing() {
   // "Mine" = workflows I made, or ones I chose to run myself (not ones the planner matched for me).
   const picked = new Set(state.runs.filter((r) => r.owner === state.userId && r.workflowPicked).map((r) => r.workflowId))
   const mine = state.workflows.filter((w) => w.owner === state.userId || picked.has(w.id))
-  const shared = state.workflows.filter((w) => !mine.includes(w)).sort((a, b) => b.uses - a.uses)
+  const filter = shareFilterFrom(params)
+  const shared = filter
+    ? applyShareFilter(state.workflows, filter, userById(state.userId))
+    : state.workflows.filter((w) => !mine.includes(w)).sort((a, b) => b.uses - a.uses)
   // While typing, surface workflows that already do this job so people reuse instead of rebuilding.
   const matches = text.trim() ? rankByMatch(state.workflows, (w) => `${w.name} ${w.description}`, text).slice(0, 3) : []
 
@@ -247,7 +255,7 @@ function Landing() {
         </div>
       )}
 
-      {shared.length > 0 && <Suggestions items={shared} />}
+      {(shared.length > 0 || filter) && <Suggestions key={filter} items={shared} />}
       <section>
         <h2 className="mb-2 text-sm font-semibold text-slate-900">สายงานของฉัน</h2>
         {mine.length

@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { Activity, Check, Cloud, Coins, Minus, Server, ShieldAlert, ShieldCheck, Trophy, Zap } from 'lucide-react'
 import { AUDIT_LOG, DEPT_USAGE, KPIS, MODEL_USAGE, MONTHLY_COST, PERMISSIONS, POLICIES, ROLES } from '../data/governance'
-import { deptById } from '../data/catalog'
-import { cn, fmt, fmtBaht } from '../lib/utils'
+import { deptById, userById } from '../data/catalog'
+import { cn, fmt, fmtBaht, fmtCompact } from '../lib/utils'
+import { Avatar } from '../components/ui/Overlay'
 import { Card, CardHeader, EmptyState, PageHeader, StatCard } from '../components/ui/Card'
 import Badge from '../components/ui/Badge'
 import { Toggle } from '../components/ui/Form'
@@ -174,12 +175,45 @@ function AuditTab() {
   )
 }
 
-// Filled by ticket 07 with the contributor leaderboard moved from the community page.
+/** Top 5 people whose Agents and Skills are used most across the company. */
 function ContributorsTab() {
+  const { state } = useStore()
+  const contributors = Object.values(
+    [...state.agents, ...state.skills].filter((x) => x.share !== 'private').reduce((m, x) => {
+      const c = m[x.owner] ?? { id: x.owner, items: 0, uses: 0 }
+      return { ...m, [x.owner]: { ...c, items: c.items + 1, uses: c.uses + x.uses } }
+    }, {}),
+  ).sort((a, b) => b.uses - a.uses).slice(0, 5)
+
+  if (!contributors.length) {
+    return (
+      <EmptyState icon={Trophy} title="ยังไม่มีข้อมูลผู้มีส่วนร่วม">
+        เมื่อมีคนสร้างและแชร์ Agent หรือ Skill ที่คนอื่นใช้งาน รายชื่อผู้มีส่วนร่วมจะแสดงที่นี่
+      </EmptyState>
+    )
+  }
   return (
-    <EmptyState icon={Trophy} title="ยังไม่มีข้อมูลผู้มีส่วนร่วม">
-      เมื่อมีคนสร้างและแชร์ Agent หรือ Skill ที่คนอื่นใช้งาน รายชื่อผู้มีส่วนร่วมจะแสดงที่นี่
-    </EmptyState>
+    <Card>
+      <CardHeader icon={Trophy} title="ผู้มีส่วนร่วมสูงสุด" subtitle="คนที่สร้าง Agent และ Skill ที่ทั้งบริษัทใช้มากที่สุด" />
+      <ol className="divide-y divide-slate-100 border-t border-slate-100">
+        {contributors.map((c, i) => {
+          const u = userById(c.id)
+          return (
+            <li key={c.id} className="flex items-center gap-3 px-5 py-3">
+              <span className="w-4 text-xs font-semibold text-slate-400">{i + 1}</span>
+              <Avatar name={u.name} />
+              <div className="min-w-0 flex-1">
+                <div className="truncate text-sm font-medium text-slate-800">{u.name}</div>
+                <div className="truncate text-xs text-slate-500">{u.title}</div>
+              </div>
+              <div className="text-right text-xs text-slate-500">
+                <div className="font-medium text-slate-700">ใช้ {fmtCompact(c.uses)} ครั้ง</div>{c.items} รายการ
+              </div>
+            </li>
+          )
+        })}
+      </ol>
+    </Card>
   )
 }
 
