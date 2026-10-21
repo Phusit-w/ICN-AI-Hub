@@ -86,6 +86,9 @@ const AGENT_RULES = [
   [/ภาพ|รูป|image|diagram|ไดอะแกรม|infographic/i, 'agent-image'],
 ]
 
+/** A Run, or the Plan for one, that is a single chat answer from ICN Assistant rather than work for Agents. */
+export const isChatRun = (run) => run.steps.length === 1 && run.steps[0].kind === 'chat'
+
 /** Decide which agents should handle a free-text request. */
 export function planRequest(prompt, { agents, skills, workflows, agentId, workflowId }) {
   const sensitive = isSensitive(prompt)
