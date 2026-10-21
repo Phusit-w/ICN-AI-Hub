@@ -82,9 +82,8 @@ function Suggestions({ items }) {
   const [showAll, setShowAll] = useState(false)
   return (
     <section>
-      <div className="mb-3 flex flex-wrap items-center gap-x-3 gap-y-2">
+      <div className="mb-3 flex flex-wrap items-center gap-3">
         <h2 id="wf-suggestions" className="text-sm font-semibold text-slate-900">สายงานแนะนำจากเพื่อนร่วมงาน</h2>
-        <ShareFilterChips className="order-last w-full overflow-x-auto sm:order-none sm:w-auto" />
         {items.length > SHOWN_SUGGESTIONS && (
           <button type="button" onClick={() => setShowAll(!showAll)} className="ml-auto text-xs font-medium text-brand-700 hover:underline">{showAll ? 'ย่อ' : `ดูทั้งหมด (${items.length})`}</button>
         )}
@@ -209,6 +208,7 @@ function Landing() {
       <div className="text-center">
         <h1 className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">อยากให้สายงานทำอะไรให้คุณ?</h1>
         <p className="mt-1 text-sm text-slate-500">เล่าขั้นตอนเป็นภาษาปกติ AI จะจัดผู้ช่วยให้ทำงานต่อกันเป็นสาย</p>
+        <ShareFilterChips className="mt-4 justify-center overflow-x-auto" />
       </div>
 
       {draft ? <DraftEditor key={draft.prompt} initial={draft} onCancel={() => setDraft(null)} /> : (

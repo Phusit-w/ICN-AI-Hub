@@ -87,6 +87,7 @@ function AgentsTab() {
         <span className="inline-flex size-12 items-center justify-center rounded-2xl bg-brand-50 text-brand-600"><Sparkles className="size-6" /></span>
         <h1 className="mt-3 text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">วันนี้อยากให้ช่วยเรื่องอะไร?</h1>
         <p className="mt-1 text-sm text-slate-500">บอกงานมา เราจะแนะนำผู้ช่วย AI ที่เหมาะที่สุดให้ หรือเลือกเองจากรายการด้านล่าง</p>
+        <ShareFilterChips className="mt-4 justify-center overflow-x-auto" />
         <input
           value={q} onChange={(e) => { setQ(e.target.value); setNeed(null) }} aria-label="ค้นหาผู้ช่วยจากงานที่อยากให้ช่วย"
           placeholder="เช่น ทำ proposal ให้ลูกค้า, วันลา, VPN"
@@ -127,7 +128,6 @@ function AgentsTab() {
       <section className={filter ? 'mt-8' : 'mt-10'}>
         <div className="mb-3 flex flex-wrap items-center gap-3">
           <h2 className="text-sm font-semibold text-slate-900">ผู้ช่วยทั้งหมด <span className="font-normal text-slate-400">({list.length})</span></h2>
-          <ShareFilterChips className="order-last w-full overflow-x-auto sm:order-none sm:w-auto" />
           <button
             type="button" onClick={() => setShowFilters(!showFilters)} aria-pressed={showFilters}
             className={cn('ml-auto inline-flex h-8 items-center gap-1.5 rounded-lg border px-3 text-[13px]', showFilters ? 'border-brand-300 bg-brand-50 text-brand-700' : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300')}
