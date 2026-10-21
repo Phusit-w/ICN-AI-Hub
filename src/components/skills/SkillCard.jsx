@@ -5,7 +5,8 @@ import EntityIcon from '../agents/EntityIcon'
 import Badge, { Rating, ShareBadge } from '../ui/Badge'
 import Button from '../ui/Button'
 
-export default function SkillCard({ skill, usedBy, onOpen, onAttach }) {
+/** `awaiting`: sharing this Skill with the whole company waits for the Admin. */
+export default function SkillCard({ skill, usedBy, awaiting, onOpen, onAttach }) {
   return (
     <div className="flex flex-col rounded-xl border border-slate-200 bg-white p-4 transition hover:border-slate-300 hover:shadow-sm">
       <div className="flex items-start gap-3">
@@ -22,7 +23,7 @@ export default function SkillCard({ skill, usedBy, onOpen, onAttach }) {
       </div>
       <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-3">
         <div className="flex min-w-0 items-center gap-2 text-xs text-slate-500">
-          <ShareBadge share={skill.share} /><span className="truncate">โดย {userById(skill.owner).name}</span>
+          <ShareBadge share={skill.share} awaiting={awaiting} /><span className="truncate">โดย {userById(skill.owner).name}</span>
         </div>
         <div className="flex gap-1.5">
           <Button size="sm" variant="ghost" onClick={onOpen}>รายละเอียด</Button>

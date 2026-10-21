@@ -1,4 +1,4 @@
-import { CircleCheck, CircleDashed, Cloud, LoaderCircle, Server, Star, Undo2, Lock, Users, Building2, Shuffle } from 'lucide-react'
+import { CircleCheck, CircleDashed, Cloud, LoaderCircle, Server, Star, Undo2, Lock, Users, Building2, Shuffle, Hourglass } from 'lucide-react'
 import { deptById, modelById } from '../../data/catalog'
 import { cn } from '../../lib/utils'
 
@@ -67,8 +67,11 @@ export function DeptBadge({ dept }) {
 
 const SHARE_ICONS = { private: Lock, department: Users, company: Building2 }
 const SHARE_LABEL = { private: 'เฉพาะฉัน', department: 'ในแผนก', company: 'ทั้งบริษัท' }
-export function ShareBadge({ share }) {
-  return <Badge tone="outline" icon={SHARE_ICONS[share]}>{SHARE_LABEL[share]}</Badge>
+/** Who can use an item; `awaiting` adds that sharing it with the whole company waits for the Admin. */
+export function ShareBadge({ share, awaiting }) {
+  const badge = <Badge tone="outline" icon={SHARE_ICONS[share]}>{SHARE_LABEL[share]}</Badge>
+  if (!awaiting) return badge
+  return <>{badge}<Badge tone="warning" icon={Hourglass}>รออนุมัติ</Badge></>
 }
 
 export function Rating({ value }) {

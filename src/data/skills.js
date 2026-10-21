@@ -8,10 +8,10 @@ export const SKILLS = [
     purpose: 'ค้นข้อมูลจากเว็บที่เชื่อถือได้ คัดกรองแหล่งที่มา และสรุปสาระสำคัญ',
     instruction: 'Search at least 5 sources. Prefer government, academic and industry reports. Discard content older than 2 years unless historical.',
     input: 'หัวข้อหรือคำถามที่ต้องการค้น', output: 'สรุป 5–10 bullet พร้อม URL แหล่งที่มา',
-    tools: ['web-search'], template: 'Research Brief v2', owner: 'u-ai-team', rating: 4.8, uses: 15400, version: '2.3',
+    tools: ['web-search'], template: 'Research Brief v2', owner: 'u-kittipong', rating: 4.8, uses: 15400, version: '2.3',
     versions: [
-      { v: '2.3', date: '2026-09-30', by: 'u-ai-team', note: 'กรองแหล่งข้อมูลที่ไม่น่าเชื่อถือออก' },
-      { v: '2.0', date: '2026-06-12', by: 'u-ai-team', note: 'รองรับการค้นภาษาไทย' },
+      { v: '2.3', date: '2026-09-30', by: 'u-kittipong', note: 'กรองแหล่งข้อมูลที่ไม่น่าเชื่อถือออก' },
+      { v: '2.0', date: '2026-06-12', by: 'u-kittipong', note: 'รองรับการค้นภาษาไทย' },
     ],
   }),
   skill({
@@ -19,16 +19,16 @@ export const SKILLS = [
     purpose: 'แนบแหล่งอ้างอิงทุกข้อเท็จจริงในรูปแบบมาตรฐานบริษัท',
     instruction: 'Attach [n] citation markers and a reference list at the end.',
     input: 'เนื้อหาที่มีข้อเท็จจริง', output: 'เนื้อหาพร้อมเลขอ้างอิงและรายการแหล่งที่มา',
-    template: 'ICN Citation Style', owner: 'u-ai-team', rating: 4.6, uses: 9100, version: '1.4',
+    template: 'ICN Citation Style', owner: 'u-kittipong', rating: 4.6, uses: 9100, version: '1.4',
   }),
   skill({
     id: 'skill-report-format', name: 'Company Report Format', category: 'Writing & Format', icon: 'file',
     purpose: 'จัดรูปแบบรายงานตามมาตรฐาน ICN: ปก, Executive Summary, เนื้อหา, ภาคผนวก',
     instruction: 'Structure: Cover → Executive Summary (max 150 words) → Sections with numbered headings → Appendix. Use ICN fonts and colors.',
     input: 'เนื้อหาร่าง', output: 'เอกสาร Word ตาม Template ICN Corporate Report',
-    tools: ['doc-gen'], template: 'ICN Corporate Report.dotx', owner: 'u-ai-team', rating: 4.9, uses: 13200, version: '3.1',
+    tools: ['doc-gen'], template: 'ICN Corporate Report.dotx', owner: 'u-kittipong', rating: 4.9, uses: 13200, version: '3.1',
     versions: [
-      { v: '3.1', date: '2026-10-01', by: 'u-ai-team', note: 'อัปเดตโลโก้และสีตาม Brand 2026' },
+      { v: '3.1', date: '2026-10-01', by: 'u-kittipong', note: 'อัปเดตโลโก้และสีตาม Brand 2026' },
       { v: '3.0', date: '2026-04-01', by: 'u-pranee', note: 'เพิ่ม Executive Summary อัตโนมัติ' },
     ],
   }),
@@ -44,7 +44,7 @@ export const SKILLS = [
     purpose: 'ตรวจคำผิด ไวยากรณ์ และระดับภาษาให้เหมาะกับเอกสารทางการ',
     instruction: 'Fix spelling per Royal Institute dictionary. Keep formal business tone. Do not change technical terms.',
     input: 'ข้อความภาษาไทย', output: 'ข้อความที่แก้แล้ว + รายการจุดที่แก้',
-    owner: 'u-ai-team', rating: 4.7, uses: 11800, version: '1.8',
+    owner: 'u-kittipong', rating: 4.7, uses: 11800, version: '1.8',
   }),
   skill({
     id: 'skill-data-analysis', name: 'Data Analysis', category: 'Analysis', icon: 'chart',
@@ -61,7 +61,7 @@ export const SKILLS = [
   skill({
     id: 'skill-brand-visual', name: 'Brand Visual Guideline', category: 'Visual', icon: 'image',
     purpose: 'ควบคุมภาพให้ตรง Brand: สี ฟอนต์ สัดส่วนโลโก้', instruction: 'Apply ICN palette and spacing rules from the Brand Guideline.',
-    input: 'คำอธิบายภาพ', output: 'ภาพ / ไดอะแกรม', tools: ['image-gen'], owner: 'u-ai-team', rating: 4.4, uses: 3900, version: '1.1',
+    input: 'คำอธิบายภาพ', output: 'ภาพ / ไดอะแกรม', tools: ['image-gen'], owner: 'u-kittipong', rating: 4.4, uses: 3900, version: '1.1',
   }),
   skill({
     id: 'skill-compliance', name: 'PDPA & Compliance Check', category: 'Compliance', icon: 'shield',

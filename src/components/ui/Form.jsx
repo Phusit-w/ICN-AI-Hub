@@ -83,13 +83,16 @@ export function ChoiceCard({ selected, onClick, title, description, icon: Icon, 
 
 const SHARE_ICONS = { private: Lock, department: Users, company: Building2 }
 
-/** Who can use what is being created: private, department or company. */
-export function ShareChoice({ label = 'ใครใช้ได้บ้าง', value, onChange }) {
+/**
+ * Who can use what is being created: private, department or company.
+ * `companyNeedsApproval` says up front that company-wide sharing waits for the Admin (the User view).
+ */
+export function ShareChoice({ label = 'ใครใช้ได้บ้าง', value, onChange, companyNeedsApproval }) {
   return (
     <Field label={label}>
       <div className="grid gap-2 sm:grid-cols-3">
         {SHARE_LEVELS.map((sl) => (
-          <ChoiceCard key={sl.id} selected={value === sl.id} onClick={() => onChange(sl.id)} icon={SHARE_ICONS[sl.id]} title={sl.name} description={sl.th} />
+          <ChoiceCard key={sl.id} selected={value === sl.id} onClick={() => onChange(sl.id)} icon={SHARE_ICONS[sl.id]} title={sl.name} description={sl.id === 'company' && companyNeedsApproval ? `${sl.th} — แชร์ในแผนกก่อนจนแอดมินอนุมัติ` : sl.th} />
         ))}
       </div>
     </Field>

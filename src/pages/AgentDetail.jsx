@@ -1,6 +1,6 @@
 import { Link, useParams } from 'react-router-dom'
 import { ArrowLeft, Copy, FileText, History, Lock, Play, Workflow, Wrench, BookOpen, Puzzle } from 'lucide-react'
-import { useStore } from '../store/AppStore'
+import { isAwaitingCompanyShare, useStore } from '../store/AppStore'
 import { DATA_CLASSES, deptById, knowledgeById, modelById, toolById, userById } from '../data/catalog'
 import { fmt } from '../lib/utils'
 import { skillLink } from '../lib/routes'
@@ -50,7 +50,7 @@ export default function AgentDetail() {
             <p className="mt-1.5 max-w-3xl text-sm leading-relaxed text-slate-600">{agent.description}</p>
             <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-slate-500">
               <DeptBadge dept={agent.dept} />
-              <ShareBadge share={agent.share} />
+              <ShareBadge share={agent.share} awaiting={isAwaitingCompanyShare(state, 'agent', agent.id)} />
               <Rating value={agent.rating || 0} />
               <span>{fmt(agent.uses)} ครั้งที่ใช้งาน</span>
               <span className="flex items-center gap-1.5"><Avatar name={owner.name} size="sm" /> {owner.name}</span>

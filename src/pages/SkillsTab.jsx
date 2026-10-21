@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { ArrowRight, Plus, Puzzle } from 'lucide-react'
-import { useStore } from '../store/AppStore'
+import { isAwaitingCompanyShare, useStore } from '../store/AppStore'
 import { SKILL_CATEGORIES } from '../data/skills'
 import { toolById, userById } from '../data/catalog'
 import { EmptyState } from '../components/ui/Card'
@@ -49,7 +49,7 @@ function SkillDetail({ skill, onClose, onAttach }) {
       footer={<><Button variant="ghost" onClick={onClose}>ปิด</Button><Button variant="primary" icon={Plus} onClick={onAttach}>เพิ่มให้ผู้ช่วย</Button></>}
     >
       <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
-        <Badge>{skill.category}</Badge><ShareBadge share={skill.share} /><Rating value={skill.rating} /><span>v{skill.version}</span><span>by {userById(skill.owner).name}</span>
+        <Badge>{skill.category}</Badge><ShareBadge share={skill.share} awaiting={isAwaitingCompanyShare(state, 'skill', skill.id)} /><Rating value={skill.rating} /><span>v{skill.version}</span><span>by {userById(skill.owner).name}</span>
       </div>
       <div className="mt-5 grid gap-3 sm:grid-cols-[1fr_auto_1fr] sm:items-center">
         <div className="rounded-lg border border-slate-200 p-3"><p className="text-[11px] font-medium uppercase text-slate-400">Input</p><p className="mt-1 text-sm text-slate-700">{skill.input}</p></div>
@@ -127,7 +127,7 @@ export default function SkillsTab() {
       {list.length ? (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {list.map((s) => (
-            <SkillCard key={s.id} skill={s} usedBy={usedBy(s.id)} onOpen={() => openSkill(s.id)} onAttach={() => setAttachId(s.id)} />
+            <SkillCard key={s.id} skill={s} usedBy={usedBy(s.id)} awaiting={isAwaitingCompanyShare(state, 'skill', s.id)} onOpen={() => openSkill(s.id)} onAttach={() => setAttachId(s.id)} />
           ))}
         </div>
       ) : (

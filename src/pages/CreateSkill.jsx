@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { ArrowRight, FileUp, FlaskConical, LoaderCircle, Rocket } from 'lucide-react'
-import { useStore } from '../store/AppStore'
+import { isAdminView, useStore } from '../store/AppStore'
 import { SKILL_CATEGORIES } from '../data/skills'
 import { TOOLS } from '../data/catalog'
 import { skillLink } from '../lib/routes'
@@ -30,7 +30,7 @@ function QuickCreateSkill({ initial, onCreate, onAdvanced }) {
       describeLabel="อยากได้ทักษะแบบไหน" placeholder="เช่น สรุปสัญญาเช่าให้เหลือ 1 หน้า พร้อมจุดที่ต้องระวัง"
       initial={initial} drafted={!!form} onFill={(text) => setForm(draftSkillForm(text, state.skills))}
       createLabel="สร้างทักษะ" canCreate={!!form?.name.trim() && !!form?.purpose.trim()}
-      onCreate={() => onCreate(form)} onAdvanced={() => onAdvanced(form)}
+      onCreate={() => onCreate(form)} onAdvanced={onAdvanced && (() => onAdvanced(form))}
     >
       {form && (
         <>
@@ -38,12 +38,12 @@ function QuickCreateSkill({ initial, onCreate, onAdvanced }) {
             <EntityIcon icon={form.icon} tone="skill" size="lg" />
             <div className="min-w-0 flex-1 space-y-3">
               <Field label="ชื่อ" htmlFor="q-name"><Input id="q-name" value={form.name} onChange={(e) => set({ name: e.target.value })} /></Field>
-              <Field label="ทำอะไร" htmlFor="q-purpose" hint={form.based && `เริ่มจาก ${form.based} — ปรับขั้นตอนการทำงานได้ในตั้งค่าขั้นสูง`}>
+              <Field label="ทำอะไร" htmlFor="q-purpose" hint={form.based && `เริ่มจาก ${form.based}${onAdvanced ? ' — ปรับขั้นตอนการทำงานได้ในตั้งค่าขั้นสูง' : ''}`}>
                 <Textarea id="q-purpose" rows={2} value={form.purpose} onChange={(e) => set({ purpose: e.target.value })} />
               </Field>
             </div>
           </div>
-          <ShareChoice value={form.share} onChange={(share) => set({ share })} />
+          <ShareChoice value={form.share} onChange={(share) => set({ share })} companyNeedsApproval={!isAdminView(state)} />
         </>
       )}
     </QuickCreate>
@@ -66,11 +66,15 @@ export default function CreateSkill() {
   }
   const create = (form = f) => {
     const skill = skillFromForm(form, { owner: state.userId })
-    actions.addSkill(skill)
-    actions.toast(`สร้าง Skill “${skill.name}” แล้ว — นำไปใส่ใน Agent ได้เลย`)
+    const saved = actions.addSkill(skill)
+    actions.toast(`สร้าง Skill “${skill.name}” แล้ว — ${saved.share !== skill.share ? 'ส่งคำขอแชร์ทั้งบริษัทให้แอดมินแล้ว ระหว่างนี้แชร์ในแผนกก่อน' : 'นำไปใส่ใน Agent ได้เลย'}`)
     navigate(skillLink(skill.id))
   }
 
+  // The full form is Admin-only; in the User view `?advanced=1` uses quick create, with no way into the full form.
+  if (!isAdminView(state)) {
+    return <QuickCreateSkill initial={params.get('q') ?? ''} onCreate={create} />
+  }
   if (quick) {
     return <QuickCreateSkill initial={params.get('q') ?? ''} onCreate={create} onAdvanced={(form) => { setF(form); setQuick(false) }} />
   }

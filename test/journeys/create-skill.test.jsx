@@ -32,7 +32,7 @@ describe('Create a Skill the same way as an Agent', () => {
   })
 
   it('extra Skill settings sit behind "ตั้งค่าขั้นสูง" and keep what AI filled in', async () => {
-    const app = startJourney('/skills/new')
+    const app = startJourney('/skills/new', { view: 'admin' })
     expect(screen.queryByRole('textbox', { name: /^Instruction/ })).toBeNull()
 
     await app.type(app.box('อยากได้ทักษะแบบไหน'), 'ตรวจคำผิดในเอกสาร')
@@ -44,7 +44,7 @@ describe('Create a Skill the same way as an Agent', () => {
   })
 
   it('each creation page has exactly one primary button', async () => {
-    const app = startJourney('/skills/new')
+    const app = startJourney('/skills/new', { view: 'admin' })
     expectOnePrimary('ให้ AI กรอกให้')
     await app.type(app.box('อยากได้ทักษะแบบไหน'), 'ตรวจคำผิดในเอกสาร')
     await app.click(screen.getByRole('button', { name: 'ให้ AI กรอกให้' }))

@@ -1,8 +1,9 @@
-import { createContext, useContext, useEffect, useMemo, useReducer } from 'react'
+import { createContext, useContext, useEffect, useMemo, useReducer, useRef } from 'react'
 import { AGENTS } from '../data/agents'
 import { SKILLS } from '../data/skills'
 import { WORKFLOWS } from '../data/workflows'
-import { CURRENT_USER_ID } from '../data/catalog'
+import { AUDIT_LOG } from '../data/governance'
+import { CURRENT_USER_ID, userById, VIEW_PERSONAS } from '../data/catalog'
 import { advanceRun, createRun, planRequest, replayRun, startRun } from '../lib/runs'
 import { uid } from '../lib/utils'
 import usePersistentState from '../lib/usePersistentState'
@@ -15,6 +16,15 @@ export const VIEW_STORAGE_KEY = 'icn.view'
 
 /** The one question every page asks about the view: is the presenter looking through the Admin's eyes? */
 export const isAdminView = (state) => state.view === 'admin'
+
+/** Whether the Agent, Skill or Workflow `id` is waiting for an Admin to approve sharing it with the whole company. */
+export const isAwaitingCompanyShare = (state, kind, id) => state.shareRequests.some((r) => r.kind === kind && r.itemId === id)
+
+// Where each kind of shareable item lives in the state.
+const COLLECTIONS = { agent: 'agents', skill: 'skills', workflow: 'workflows' }
+
+/** The Agent, Skill or Workflow a Company sharing request is about (undefined if it no longer exists). */
+export const shareRequestItem = (state, req) => state[COLLECTIONS[req.kind]].find((x) => x.id === req.itemId)
 
 function seedRuns() {
   const ctx = { agents: AGENTS, skills: SKILLS, workflows: WORKFLOWS }
@@ -32,14 +42,23 @@ function seedRuns() {
   ]
 }
 
+// Company sharing requests waiting for the Admin when the demo opens: the items stay at department until then.
+const seedShareRequests = () => [
+  { id: 'req-soc-check', kind: 'agent', itemId: 'agent-soc-check', requester: 'u-ploy', at: Date.now() - 3 * 60 * MIN },
+  { id: 'req-month-end', kind: 'workflow', itemId: 'wf-month-end', requester: 'u-nok', at: Date.now() - 26 * 60 * MIN },
+]
+
+const clock = (ms) => new Date(ms).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
+
 const initialState = () => ({
-  userId: CURRENT_USER_ID,
   agents: AGENTS,
   skills: SKILLS,
   workflows: WORKFLOWS,
   runs: seedRuns(),
   favorites: ['agent-sales-proposal', 'agent-research', 'agent-customer-insight'],
   toasts: [],
+  shareRequests: seedShareRequests(),
+  auditLog: AUDIT_LOG,
 })
 
 function reducer(state, action) {
@@ -67,6 +86,25 @@ function reducer(state, action) {
       const exists = state.workflows.some((w) => w.id === action.workflow.id)
       return { ...state, workflows: exists ? state.workflows.map((w) => (w.id === action.workflow.id ? action.workflow : w)) : [...state.workflows, action.workflow] }
     }
+    case 'requestCompanyShare':
+      return { ...state, shareRequests: [...state.shareRequests, action.request] }
+    case 'decideShareRequest': {
+      const req = state.shareRequests.find((r) => r.id === action.id)
+      if (!req) return state
+      const key = COLLECTIONS[req.kind]
+      const item = shareRequestItem(state, req)
+      const entry = {
+        id: uid('log'), time: clock(action.now), user: userById(VIEW_PERSONAS.admin).name,
+        action: `${action.approve ? 'อนุมัติ' : 'ส่งกลับ'}คำขอแชร์ทั้งบริษัท: ${item?.name ?? req.itemId} ของ ${userById(req.requester).name}`,
+        result: action.approve ? 'แชร์ทั้งบริษัทแล้ว' : 'ยังแชร์ในแผนก', tone: action.approve ? 'success' : 'neutral',
+      }
+      return {
+        ...state,
+        shareRequests: state.shareRequests.filter((r) => r.id !== req.id),
+        auditLog: [entry, ...state.auditLog],
+        [key]: action.approve ? state[key].map((x) => (x.id === req.itemId ? { ...x, share: 'company' } : x)) : state[key],
+      }
+    }
     case 'toggleFavorite':
       return { ...state, favorites: state.favorites.includes(action.id) ? state.favorites.filter((f) => f !== action.id) : [...state.favorites, action.id] }
     case 'toast':
@@ -84,6 +122,10 @@ export function AppStoreProvider({ children }) {
   const [state, dispatch] = useReducer(reducer, undefined, initialState)
   // 'user' | 'admin'. Opens in the User view; anything else in storage counts as the User view.
   const [view, setView] = usePersistentState(VIEW_STORAGE_KEY, 'user')
+  const normalView = view === 'admin' ? 'admin' : 'user'
+  // Actions are made once, so they read the view through a ref to know who is acting.
+  const viewRef = useRef(normalView)
+  viewRef.current = normalView
 
   // One clock drives every running workflow, so progress continues while the user navigates.
   useEffect(() => {
@@ -98,6 +140,13 @@ export function AppStoreProvider({ children }) {
       // Toasts with a follow-up link stay longer so there's time to click it.
       setTimeout(() => dispatch({ type: 'dismissToast', id: t.id }), t.action ? 7000 : 3800)
     }
+    // A User can't share with the whole company directly: the item stays at department and the Admin gets a
+    // Company sharing request. The Admin approves sharing, so the Admin's own items go company-wide at once.
+    const holdForAdmin = (kind, item) => {
+      if (item.share !== 'company' || viewRef.current === 'admin') return item
+      dispatch({ type: 'requestCompanyShare', request: { id: uid('req'), kind, itemId: item.id, requester: item.owner, at: Date.now() } })
+      return { ...item, share: 'department' }
+    }
     return {
       toast,
       dismissToast: (id) => dispatch({ type: 'dismissToast', id }),
@@ -108,7 +157,7 @@ export function AppStoreProvider({ children }) {
       planRun: (prompt, opts, ctx, { threadId, autoStart = false, attachments = [] } = {}) => {
         const plan = planRequest(prompt, { ...ctx, ...opts })
         // `workflowPicked` separates "the user chose this workflow" from the planner matching one by keyword.
-        const run = { ...createRun({ prompt, plan, owner: CURRENT_USER_ID, threadId }), attachments, workflowPicked: Boolean(opts.workflowId) }
+        const run = { ...createRun({ prompt, plan, owner: VIEW_PERSONAS[viewRef.current], threadId }), attachments, workflowPicked: Boolean(opts.workflowId) }
         const start = typeof autoStart === 'function' ? autoStart(plan) : autoStart
         dispatch({ type: 'addRun', run: start ? startRun(run) : run })
         return run.id
@@ -124,17 +173,21 @@ export function AppStoreProvider({ children }) {
         },
       }),
       discardRun: (id) => dispatch({ type: 'removeRun', id }),
-      addAgent: (agent) => dispatch({ type: 'addAgent', agent }),
-      addSkill: (skill) => dispatch({ type: 'addSkill', skill }),
+      /** Add an Agent or Skill and return it as stored, so the caller can tell whether sharing it company-wide waits for the Admin. */
+      addAgent: (agent) => { const a = holdForAdmin('agent', agent); dispatch({ type: 'addAgent', agent: a }); return a },
+      addSkill: (skill) => { const sk = holdForAdmin('skill', skill); dispatch({ type: 'addSkill', skill: sk }); return sk },
       attachSkill: (skillId, agentIds) => dispatch({ type: 'attachSkill', skillId, agentIds }),
       saveWorkflow: (workflow) => dispatch({ type: 'saveWorkflow', workflow }),
       toggleFavorite: (id) => dispatch({ type: 'toggleFavorite', id }),
+      /** The Admin approves (`approve` true) or sends back a Company sharing request; either way it is written to the audit log. */
+      decideShareRequest: (id, approve) => dispatch({ type: 'decideShareRequest', id, approve, now: Date.now() }),
       // The first render's setter is enough: it only uses React's stable setter and the fixed storage key.
       setView,
     }
   }, [])
 
-  const value = useMemo(() => ({ state: { ...state, view: view === 'admin' ? 'admin' : 'user' }, actions }), [state, view, actions])
+  // Whose eyes the view looks through is also who owns what is made in it.
+  const value = useMemo(() => ({ state: { ...state, view: normalView, userId: VIEW_PERSONAS[normalView] }, actions }), [state, normalView, actions])
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>
 }
 

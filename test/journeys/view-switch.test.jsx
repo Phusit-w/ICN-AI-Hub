@@ -25,7 +25,7 @@ describe('Switching between the User and Admin views', () => {
   it('the profile menu switches to the Admin view: the Admin persona and the governance menu appear', async () => {
     const app = startJourney()
     await switchTo(app, 'admin')
-    expect(profile()).toHaveTextContent('Tawan C.')
+    expect(profile()).toHaveTextContent('Kittipong W.')
     expect(profile()).toHaveTextContent('IT Administrator')
     expect(menuItems()).toContain(GOVERNANCE)
     expect(app.url()).toBe('/workspace')
@@ -47,7 +47,7 @@ describe('Switching between the User and Admin views', () => {
     await switchTo(app, 'admin')
     cleanup()
     startJourney()
-    expect(profile()).toHaveTextContent('Tawan C.')
+    expect(profile()).toHaveTextContent('Kittipong W.')
     expect(menuItems()).toContain(GOVERNANCE)
   })
 
@@ -100,6 +100,15 @@ describe('The User view', () => {
     expect(screen.getByRole('button', { name: 'สร้างผู้ช่วย' })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'ตั้งค่าขั้นสูง' })).toBeNull()
     expect(screen.queryByRole('navigation', { name: 'ขั้นตอน' })).toBeNull()
+  })
+
+  it('the full Skill form link falls back to quick create, without "ตั้งค่าขั้นสูง"', async () => {
+    const app = startJourney('/skills/new?advanced=1')
+    await app.type(app.box('อยากได้ทักษะแบบไหน'), 'ตรวจคำผิดในเอกสาร')
+    await app.click(screen.getByRole('button', { name: 'ให้ AI กรอกให้' }))
+    expect(screen.getByRole('button', { name: 'สร้างทักษะ' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'ตั้งค่าขั้นสูง' })).toBeNull()
+    expect(screen.queryByRole('textbox', { name: /^Instruction/ })).toBeNull()
   })
 
   it('copying an Agent opens quick create filled in from it', () => {

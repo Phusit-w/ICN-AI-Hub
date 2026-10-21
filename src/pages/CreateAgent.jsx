@@ -55,7 +55,7 @@ function QuickCreateAgent({ initial, initialForm, onCreate, onAdvanced }) {
               {form.skills.length === 0 && <span className="text-xs text-slate-400">{onAdvanced ? 'ไม่มี — เพิ่มได้ในตั้งค่าขั้นสูง' : 'ไม่มี'}</span>}
             </div>
           </Field>
-          <ShareChoice value={form.share} onChange={(share) => set({ share })} />
+          <ShareChoice value={form.share} onChange={(share) => set({ share })} companyNeedsApproval={!isAdminView(state)} />
         </>
       )}
     </QuickCreate>
@@ -83,8 +83,8 @@ export default function CreateAgent() {
 
   const create = (f = form) => {
     const agent = agentFromForm(f, { owner: state.userId, note: source ? `Clone จาก ${source.name}` : 'สร้างใหม่', forkedFrom: source?.name })
-    actions.addAgent(agent)
-    actions.toast(`สร้าง ${agent.name} แล้ว${f.share === 'company' && f.review ? ' — ส่งให้ AI CoE รีวิวก่อนเผยแพร่ทั้งบริษัท' : ''}`)
+    const saved = actions.addAgent(agent)
+    actions.toast(`สร้าง ${agent.name} แล้ว${saved.share !== agent.share ? ' — ส่งคำขอแชร์ทั้งบริษัทให้แอดมินแล้ว ระหว่างนี้แชร์ในแผนกก่อน' : ''}`)
     navigate(`/agents/${agent.id}`)
   }
 
@@ -262,15 +262,9 @@ export default function CreateAgent() {
                 <ShareChoice label="แชร์ให้ใครใช้ได้บ้าง" value={form.share} onChange={(share) => set({ share })} />
                 <Field label="ใครแก้ไข Agent นี้ได้">
                   <Select value={form.editors} onChange={(e) => set({ editors: e.target.value })}>
-                    <option value="me">เฉพาะฉัน</option><option value="dept-admin">ฉัน + Department Admin</option><option value="team">ทุกคนในแผนก</option>
+                    <option value="me">เฉพาะฉัน</option><option value="admin">ฉัน + แอดมิน</option><option value="team">ทุกคนในแผนก</option>
                   </Select>
                 </Field>
-                {form.share === 'company' && (
-                  <div className="flex items-center justify-between gap-4 rounded-xl border border-slate-200 p-4">
-                    <div><p className="text-sm font-medium text-slate-800">ส่งให้ AI CoE รีวิวก่อนเผยแพร่</p><p className="text-xs text-slate-500">บังคับสำหรับ Agent ระดับบริษัท เพื่อคุณภาพและความปลอดภัย</p></div>
-                    <Toggle checked={form.review} onChange={(v) => set({ review: v })} label="ส่งรีวิว" />
-                  </div>
-                )}
               </>
             )}
           </div>

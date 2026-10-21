@@ -82,7 +82,7 @@ describe('Governance: contributor leaderboard', () => {
     await app.click(screen.getByRole('tab', { name: 'ผู้มีส่วนร่วม' }))
     const rows = within(screen.getByRole('tabpanel', { name: 'ผู้มีส่วนร่วม' })).getAllByRole('listitem')
     expect(rows.length).toBe(5)
-    expect(rows[0]).toHaveTextContent('AI CoE Team')
+    expect(rows[0]).toHaveTextContent('Kittipong W.')
     expect(within(rows[1]).getByText('Somchai R.')).toBeInTheDocument()
   })
 })

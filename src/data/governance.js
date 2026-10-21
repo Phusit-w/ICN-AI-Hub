@@ -38,15 +38,16 @@ export const DEPT_USAGE = [
   { dept: 'hr', users: 2, tasks: 80, cost: 330, budget: 1000, topAgent: 'Quotation Compare Agent' },
 ]
 
-export const ROLES = ['Employee', 'Agent Creator', 'Department Admin', 'Platform Admin']
+export const ROLES = ['User', 'Admin']
 export const PERMISSIONS = [
-  { name: 'ใช้ Agent ที่แชร์ให้', grants: [true, true, true, true] },
-  { name: 'สร้าง Agent / Skill ส่วนตัว', grants: [false, true, true, true] },
-  { name: 'แชร์ระดับแผนก', grants: [false, true, true, true] },
-  { name: 'แชร์ระดับบริษัท (ต้องผ่านการรีวิว)', grants: [false, false, true, true] },
-  { name: 'เลือกใช้ Cloud Model', grants: [false, true, true, true] },
-  { name: 'เชื่อมต่อระบบภายใน (SAP, CRM)', grants: [false, false, true, true] },
-  { name: 'ตั้งงบประมาณและนโยบายข้อมูล', grants: [false, false, false, true] },
+  { name: 'ใช้ Agent ที่แชร์ให้', grants: [true, true] },
+  { name: 'สร้าง Agent / Skill / Workflow ของตัวเอง', grants: [true, true] },
+  { name: 'แชร์ระดับแผนก', grants: [true, true] },
+  { name: 'ขอแชร์ระดับบริษัท', grants: [true, true] },
+  { name: 'อนุมัติการแชร์ระดับบริษัท', grants: [false, true] },
+  { name: 'สร้างแบบขั้นสูง (Workflow canvas, ฟอร์มทีละขั้น)', grants: [false, true] },
+  { name: 'เชื่อมต่อระบบภายใน', grants: [false, true] },
+  { name: 'ตั้งงบประมาณและนโยบายข้อมูล', grants: [false, true] },
 ]
 
 export const POLICIES = [
@@ -59,8 +60,8 @@ export const POLICIES = [
 
 export const AUDIT_LOG = [
   { time: '14:32', user: 'Nok J.', action: 'ส่งงานที่มีข้อมูล Confidential', result: 'Routed → ICN Llama 70B (Local)', tone: 'info' },
-  { time: '14:05', user: 'Thanawat P.', action: 'ขอแชร์ Sales Proposal Agent v3.0 ระดับบริษัท', result: 'อนุมัติโดย AI CoE', tone: 'success' },
+  { time: '14:05', user: 'Thanawat P.', action: 'ขอแชร์ Sales Proposal Agent v3.0 ระดับบริษัท', result: 'อนุมัติโดย Kittipong W.', tone: 'success' },
   { time: '13:48', user: 'Unknown device', action: 'พยายามส่งไฟล์เงินเดือนไป Cloud Model', result: 'Blocked by policy p3', tone: 'danger' },
   { time: '11:20', user: 'Somchai R.', action: 'เพิ่ม ServiceNow Tool ให้ IT Support Agent', result: 'บันทึกเวอร์ชัน 2.6', tone: 'neutral' },
-  { time: '09:02', user: 'System', action: 'Sales ใช้งบไป 90% ของเดือน', result: 'แจ้งเตือน Department Admin', tone: 'warning' },
+  { time: '09:02', user: 'System', action: 'Sales ใช้งบไป 90% ของเดือน', result: 'แจ้งเตือนแอดมิน', tone: 'warning' },
 ]

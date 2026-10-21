@@ -54,7 +54,7 @@ export const WORKFLOWS = [
     ],
   },
   {
-    id: 'wf-month-end', name: 'Month-end Close Report', dept: 'accounting', owner: 'u-nok', uses: 96, rating: 4.8, version: '1.4',
+    id: 'wf-month-end', name: 'Month-end Close Report', dept: 'accounting', owner: 'u-nok', share: 'department', uses: 96, rating: 4.8, version: '1.4',
     description: 'กระทบยอด → วิเคราะห์งบ → รายงานปิดงบประจำเดือน (ประมวลผลบน Local AI)',
     nodes: row([
       { id: 'n1', type: 'trigger', label: 'วันที่ 1 ของเดือน' },

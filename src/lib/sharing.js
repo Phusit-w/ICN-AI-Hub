@@ -7,7 +7,7 @@ export const SHARE_FILTERS = [
 /** The active filter id from the URL, or null. */
 export const shareFilterFrom = (params) => (SHARE_FILTERS.some((f) => f.id === params.get('filter')) ? params.get('filter') : null)
 
-// Workflows have no share level yet; they are visible company-wide.
+// Most Workflows have no share level; they are visible company-wide.
 const shareOf = (item) => item.share ?? 'company'
 
 /**

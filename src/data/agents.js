@@ -17,11 +17,11 @@ export const AGENTS = [
     instruction: 'You are a research analyst for ICN. Search reliable sources, prefer company knowledge first, and always cite sources. Summarize in Thai bullet points.',
     model: 'auto', skills: ['skill-web-research', 'skill-citation'], knowledge: ['kb-market'], tools: ['web-search', 'sharepoint'],
     output: { format: 'Short answer', language: 'TH', template: 'Research Brief v2' },
-    owner: 'u-ai-team', rating: 4.8, uses: 12840, version: '3.2', updated: '2026-10-12',
+    owner: 'u-kittipong', rating: 4.8, uses: 12840, version: '3.2', updated: '2026-10-12',
     examples: ['หาข้อมูลตลาด EV Charger ในไทย', 'สรุปคู่แข่ง 5 รายในธุรกิจ Logistics'],
     versions: [
-      { v: '3.2', date: '2026-10-12', by: 'u-ai-team', note: 'เพิ่ม Citation Skill อ้างอิงแหล่งที่มาอัตโนมัติ' },
-      { v: '3.0', date: '2026-08-02', by: 'u-ai-team', note: 'ค้นคลังความรู้บริษัทก่อนค้นเว็บ' },
+      { v: '3.2', date: '2026-10-12', by: 'u-kittipong', note: 'เพิ่ม Citation Skill อ้างอิงแหล่งที่มาอัตโนมัติ' },
+      { v: '3.0', date: '2026-08-02', by: 'u-kittipong', note: 'ค้นคลังความรู้บริษัทก่อนค้นเว็บ' },
       { v: '2.1', date: '2026-05-19', by: 'u-pranee', note: 'ปรับรูปแบบสรุปเป็น bullet ภาษาไทย' },
     ],
   }),
@@ -31,9 +31,9 @@ export const AGENTS = [
     instruction: 'Write professional business documents following the ICN Corporate Report template. Keep tone formal and concise.',
     model: 'claude', skills: ['skill-report-format', 'skill-grammar-th', 'skill-proposal-template'], knowledge: ['kb-brand'], tools: ['doc-gen'],
     output: { format: 'Word document', language: 'TH', template: 'ICN Corporate Report' },
-    owner: 'u-ai-team', rating: 4.7, uses: 10215, version: '2.4', updated: '2026-09-28',
+    owner: 'u-kittipong', rating: 4.7, uses: 10215, version: '2.4', updated: '2026-09-28',
     examples: ['ทำรายงานสรุปผลประชุมเป็น Word', 'แปลง bullet เป็นรายงานทางการ'],
-    versions: [{ v: '2.4', date: '2026-09-28', by: 'u-ai-team', note: 'รองรับ Proposal Template v3' }],
+    versions: [{ v: '2.4', date: '2026-09-28', by: 'u-kittipong', note: 'รองรับ Proposal Template v3' }],
   }),
   agent({
     id: 'agent-image', name: 'Image Agent', kind: 'image', dept: 'core',
@@ -41,7 +41,7 @@ export const AGENTS = [
     instruction: 'Create clean diagrams and illustrations using ICN brand colors. No text-heavy images.',
     model: 'icn-image', skills: ['skill-brand-visual'], knowledge: ['kb-brand'], tools: ['image-gen'],
     output: { format: 'Image / Diagram', language: 'EN', template: 'ICN Diagram Style' },
-    owner: 'u-ai-team', rating: 4.5, uses: 6120, version: '1.6', updated: '2026-09-10',
+    owner: 'u-kittipong', rating: 4.5, uses: 6120, version: '1.6', updated: '2026-09-10',
     examples: ['วาด Architecture diagram ของระบบ', 'ทำ Infographic สรุปตัวเลข'],
   }),
   agent({
@@ -68,7 +68,7 @@ export const AGENTS = [
     instruction: 'Review the draft against the checklist. If required information is missing, send it back with a clear reason.',
     model: 'auto', skills: ['skill-grammar-th', 'skill-compliance'], tools: [],
     output: { format: 'Short answer', language: 'TH', template: 'Review Checklist' },
-    owner: 'u-ai-team', rating: 4.7, uses: 9010, version: '1.9', updated: '2026-10-05',
+    owner: 'u-kittipong', rating: 4.7, uses: 9010, version: '1.9', updated: '2026-10-05',
     examples: ['ตรวจ Proposal ก่อนส่งลูกค้า', 'เช็ค PDPA ในเอกสาร'],
   }),
   agent({
@@ -77,7 +77,7 @@ export const AGENTS = [
     instruction: 'Translate faithfully, keep ICN glossary terms unchanged.',
     model: 'typhoon', skills: ['skill-grammar-th'], tools: ['sharepoint'],
     output: { format: 'Word document', language: 'Multi', template: 'Keep original layout' },
-    owner: 'u-ai-team', rating: 4.4, uses: 5210, version: '1.2', updated: '2026-07-30',
+    owner: 'u-kittipong', rating: 4.4, uses: 5210, version: '1.2', updated: '2026-07-30',
   }),
   agent({
     id: 'agent-sales-proposal', name: 'Sales Proposal Agent', kind: 'sales', dept: 'sales',

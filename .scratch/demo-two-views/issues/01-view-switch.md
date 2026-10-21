@@ -14,11 +14,13 @@ Spec: `.scratch/demo-two-views/spec.md` (stories 1–13, 16, 23).
 - [x] User view: a direct governance link lands on new chat; a detailed-builder link lands on the simple Workflow editor; the step-by-step Agent link lands on quick create
 - [x] Switching to User while on governance lands on new chat; otherwise the page stays
 - [x] Admin view sees the governance menu and the "ขั้นสูง" buttons
-- [ ] Admin persona's name is fictional and resembles no one on the ICN org chart
+- [x] Admin persona's name is fictional and resembles no one on the ICN org chart
 - [x] Journey harness can start in the Admin view; journeys cover all of the above; existing journeys that visit governance start as Admin
 
 ## Open questions (after implementation, 2026-10-21)
 
-- **Admin persona name:** "Tawan C." (IT Administrator, `src/data/catalog.js`) has not been checked against page 3 of the org chart yet. Tick the box above once the user confirms it.
-- **Skill quick create:** "ตั้งค่าขั้นสูง" still shows in the User view, because story 11 names only Workflows and Agents. Waiting on the user: hide it too?
-- **Ownership:** the view changes only the sidebar persona. `state.userId` stays Kanya S., so items made in the Admin view are owned by Kanya. Decide during ticket 02 whether Admin-made items should belong to the Admin.
+Resolved in ticket 02:
+
+- **Admin persona name:** renamed to "Kittipong W." (IT Administrator), checked against page 3 of the org chart.
+- **Skill quick create:** hidden in the User view too; `/skills/new?advanced=1` falls back to quick create.
+- **Ownership:** `state.userId` follows the view, so what the Admin makes belongs to the Admin, and the Admin's company-wide sharing needs no request.

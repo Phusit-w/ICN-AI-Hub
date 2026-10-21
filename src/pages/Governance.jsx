@@ -1,14 +1,15 @@
 import { useState } from 'react'
-import { Activity, Check, Cloud, Coins, Minus, Server, ShieldAlert, ShieldCheck, Trophy, Zap } from 'lucide-react'
-import { AUDIT_LOG, DEPT_USAGE, KPIS, MODEL_USAGE, MONTHLY_COST, PERMISSIONS, POLICIES, ROLES } from '../data/governance'
+import { Activity, Building2, Check, Cloud, Coins, Minus, Server, ShieldAlert, ShieldCheck, Trophy, Zap } from 'lucide-react'
+import { DEPT_USAGE, KPIS, MODEL_USAGE, MONTHLY_COST, PERMISSIONS, POLICIES, ROLES } from '../data/governance'
 import { deptById, userById } from '../data/catalog'
-import { cn, fmt, fmtBaht, fmtCompact } from '../lib/utils'
+import { cn, fmt, fmtBaht, fmtCompact, timeAgo } from '../lib/utils'
+import Button from '../components/ui/Button'
 import { Avatar } from '../components/ui/Overlay'
 import { Card, CardHeader, EmptyState, PageHeader, StatCard } from '../components/ui/Card'
 import Badge from '../components/ui/Badge'
 import { Toggle } from '../components/ui/Form'
 import Tabs from '../components/ui/Tabs'
-import { useStore } from '../store/AppStore'
+import { shareRequestItem, useStore } from '../store/AppStore'
 
 function Donut({ value }) {
   const r = 52, c = 2 * Math.PI * r
@@ -158,18 +159,56 @@ function PermissionsTab() {
 }
 
 function AuditTab() {
+  const { state } = useStore()
   return (
     <Card>
       <CardHeader icon={Activity} title="Audit log" subtitle="บันทึกเหตุการณ์สำคัญวันนี้" />
       <ul className="divide-y divide-slate-100 border-t border-slate-100">
-        {AUDIT_LOG.map((l) => (
-          <li key={l.time + l.action} className="flex flex-col gap-1 px-5 py-3 sm:flex-row sm:items-center sm:gap-4">
+        {state.auditLog.map((l) => (
+          <li key={l.id ?? l.time + l.action} className="flex flex-col gap-1 px-5 py-3 sm:flex-row sm:items-center sm:gap-4">
             <span className="w-12 font-mono text-xs text-slate-400">{l.time}</span>
             <span className="w-32 text-sm font-medium text-slate-700">{l.user}</span>
             <span className="flex-1 text-sm text-slate-600">{l.action}</span>
             <Badge tone={LOG_TONE[l.tone]}>{l.result}</Badge>
           </li>
         ))}
+      </ul>
+    </Card>
+  )
+}
+
+const KIND_LABEL = { agent: 'ผู้ช่วย', skill: 'ทักษะ', workflow: 'สายงาน' }
+
+/** Company sharing requests waiting for the Admin: approve to share with everyone, or send back to stay at department. */
+function ShareRequestsTab() {
+  const { state, actions } = useStore()
+  if (!state.shareRequests.length) {
+    return (
+      <EmptyState icon={Building2} title="ไม่มีคำขอแชร์ทั้งบริษัทที่รออยู่">
+        เมื่อมีคนขอแชร์ผู้ช่วย ทักษะ หรือสายงานให้ทั้งบริษัท คำขอจะแสดงที่นี่ให้อนุมัติ
+      </EmptyState>
+    )
+  }
+  return (
+    <Card>
+      <CardHeader icon={Building2} title="คำขอแชร์ทั้งบริษัท" subtitle="อนุมัติแล้วทุกคนในบริษัทใช้ได้ ส่งกลับแล้วยังแชร์ในแผนกเหมือนเดิม" />
+      <ul className="divide-y divide-slate-100 border-t border-slate-100">
+        {state.shareRequests.map((r) => {
+          const item = shareRequestItem(state, r)
+          const requester = userById(r.requester)
+          return (
+            <li key={r.id} className="flex flex-col gap-3 px-5 py-3 sm:flex-row sm:items-center">
+              <div className="min-w-0 flex-1">
+                <p className="text-sm text-slate-800"><Badge>{KIND_LABEL[r.kind]}</Badge> <span className="font-medium">{item?.name ?? r.itemId}</span></p>
+                <p className="mt-0.5 text-xs text-slate-500">ขอโดย {requester.name} · {deptById(requester.dept).name} · {timeAgo(r.at)}</p>
+              </div>
+              <div className="flex shrink-0 gap-2">
+                <Button size="sm" onClick={() => actions.decideShareRequest(r.id, false)}>ส่งกลับ</Button>
+                <Button size="sm" variant="primary" onClick={() => actions.decideShareRequest(r.id, true)}>อนุมัติ</Button>
+              </div>
+            </li>
+          )
+        })}
       </ul>
     </Card>
   )
@@ -218,7 +257,7 @@ function ContributorsTab() {
 }
 
 export default function Governance() {
-  const { actions } = useStore()
+  const { state, actions } = useStore()
   // Policy switches live here, not in the tab, so switching tabs doesn't reset them.
   const [policies, setPolicies] = useState(POLICIES)
   const togglePolicy = (p, v) => {
@@ -226,9 +265,11 @@ export default function Governance() {
     actions.toast(`${v ? 'เปิด' : 'ปิด'}นโยบาย: ${p.name}`, { tone: 'info' })
   }
 
+  const pending = state.shareRequests.length
   const tabs = [
     { id: 'usage', label: 'ค่าใช้จ่ายและ Model', content: <UsageTab /> },
     { id: 'departments', label: 'แผนก', content: <DepartmentTab /> },
+    { id: 'requests', label: pending ? `คำขอแชร์ทั้งบริษัท (${pending})` : 'คำขอแชร์ทั้งบริษัท', content: <ShareRequestsTab /> },
     { id: 'policies', label: 'นโยบายข้อมูล', content: <PolicyTab policies={policies} onToggle={togglePolicy} /> },
     { id: 'permissions', label: 'สิทธิ์การใช้งาน', content: <PermissionsTab /> },
     { id: 'audit', label: 'Audit log', content: <AuditTab /> },

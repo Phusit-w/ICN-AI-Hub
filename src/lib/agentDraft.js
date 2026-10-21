@@ -14,7 +14,7 @@ export const INSTRUCTION_STARTERS = {
 /** What an agent is searched and matched by. */
 export const agentSearchText = (a) => `${a.name} ${a.description} ${a.examples.join(' ')}`
 
-export const BLANK_FORM = { name: '', description: '', dept: 'sales', kind: 'sales', instruction: '', model: 'auto', classification: 'internal', knowledge: [], uploads: [], skills: [], tools: [], format: 'Word document', language: 'TH', template: '', share: 'private', editors: 'me', review: true }
+export const BLANK_FORM = { name: '', description: '', dept: 'sales', kind: 'sales', instruction: '', model: 'auto', classification: 'internal', knowledge: [], uploads: [], skills: [], tools: [], format: 'Word document', language: 'TH', template: '', share: 'private', editors: 'me' }
 
 /** Every setting of `src`, ready to adjust. Sharing resets to private. */
 export function formFromAgent(src) {

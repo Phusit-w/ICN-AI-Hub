@@ -8,10 +8,15 @@ Spec: `.scratch/demo-two-views/spec.md` (stories 14, 15, 17–20, 24).
 
 **Status:** ready-for-agent
 
-- [ ] Sharing with the whole company as a User shows "รออนุมัติ" and the item stays at department sharing
-- [ ] Admin sees pending requests with requester, item and time
-- [ ] Approve: item becomes company-shared, request leaves the list, audit log gains an entry
-- [ ] Send back: item stays at department, request leaves the list, audit log gains an entry
-- [ ] Permissions table has exactly two columns, User and Admin
-- [ ] No "AI CoE" text anywhere in the app
-- [ ] Journeys cover a User request and both Admin decisions
+- [x] Sharing with the whole company as a User shows "รออนุมัติ" and the item stays at department sharing
+- [x] Admin sees pending requests with requester, item and time
+- [x] Approve: item becomes company-shared, request leaves the list, audit log gains an entry
+- [x] Send back: item stays at department, request leaves the list, audit log gains an entry
+- [x] Permissions table has exactly two columns, User and Admin
+- [x] No "AI CoE" text anywhere in the app
+- [x] Journeys cover a User request and both Admin decisions
+
+## Notes (after implementation, 2026-10-21)
+
+- Workflows have no sharing choice in the UI yet, so a User can't request one; a seeded Workflow request (Month-end Close Report) shows the Admin side.
+- The "Unknown device" audit entry and the contributors leaderboard are left for the later tickets that own them.
