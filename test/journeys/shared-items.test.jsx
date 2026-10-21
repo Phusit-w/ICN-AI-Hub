@@ -76,13 +76,15 @@ describe('Shared items: filter chips and "ใช้งาน"', () => {
   })
 })
 
-describe('Governance: contributor leaderboard', () => {
-  it('the contributors tab shows who made the most-used shared items', async () => {
+describe('Governance: no contributor leaderboard', () => {
+  // Ticket 04: the old people leaderboard became the most useful Agents, credited to their department.
+  it('the governance tabs rank Agents by department, never people', async () => {
     const app = startJourney('/governance', { view: 'admin' })
-    await app.click(screen.getByRole('tab', { name: 'ผู้มีส่วนร่วม' }))
-    const rows = within(screen.getByRole('tabpanel', { name: 'ผู้มีส่วนร่วม' })).getAllByRole('listitem')
+    expect(screen.queryByRole('tab', { name: 'ผู้มีส่วนร่วม' })).toBeNull()
+    await app.click(screen.getByRole('tab', { name: 'Agent ที่มีประโยชน์ที่สุดเดือนนี้' }))
+    const rows = within(screen.getByRole('tabpanel', { name: 'Agent ที่มีประโยชน์ที่สุดเดือนนี้' })).getAllByRole('listitem')
     expect(rows.length).toBe(5)
-    expect(rows[0]).toHaveTextContent('Kittipong W.')
-    expect(within(rows[1]).getByText('Somchai R.')).toBeInTheDocument()
+    expect(rows[0]).toHaveTextContent('SOC Check Agent')
+    expect(rows[0]).not.toHaveTextContent('Ploy')
   })
 })

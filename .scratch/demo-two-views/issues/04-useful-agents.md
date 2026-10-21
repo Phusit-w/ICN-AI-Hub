@@ -8,7 +8,7 @@ Spec: `.scratch/demo-two-views/spec.md` (stories 21, 22, 43, 44).
 
 **Status:** ready-for-agent
 
-- [ ] No list ranking people anywhere in the app
-- [ ] Top Agents by Feedback, each showing its department and helpful % / count
-- [ ] The 👎 reasons for an Agent are readable from the governance page
-- [ ] Journeys cover the tab and reading reasons; the old contributors journey is updated
+- [x] No list ranking people anywhere in the app
+- [x] Top Agents by Feedback, each showing its department and helpful % / count
+- [x] The 👎 reasons for an Agent are readable from the governance page
+- [x] Journeys cover the tab and reading reasons; the old contributors journey is updated

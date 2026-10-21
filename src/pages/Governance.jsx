@@ -1,10 +1,11 @@
 import { useState } from 'react'
-import { Activity, Building2, Check, Cloud, Coins, Minus, Server, ShieldAlert, ShieldCheck, Trophy, Zap } from 'lucide-react'
+import { Activity, Building2, Check, Cloud, Coins, Minus, Server, ShieldAlert, ShieldCheck, ThumbsDown, ThumbsUp, Zap } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { DEPT_USAGE, KPIS, MODEL_USAGE, MONTHLY_COST, PERMISSIONS, POLICIES, ROLES } from '../data/governance'
 import { deptById, userById } from '../data/catalog'
-import { cn, fmt, fmtBaht, fmtCompact, timeAgo } from '../lib/utils'
+import { feedbackLabel, mostHelpfulAgents } from '../lib/feedback'
+import { cn, fmt, fmtBaht, timeAgo } from '../lib/utils'
 import Button from '../components/ui/Button'
-import { Avatar } from '../components/ui/Overlay'
 import { Card, CardHeader, EmptyState, PageHeader, StatCard } from '../components/ui/Card'
 import Badge from '../components/ui/Badge'
 import { Toggle } from '../components/ui/Form'
@@ -177,6 +178,7 @@ function AuditTab() {
   )
 }
 
+const USEFUL_AGENTS = 'Agent ที่มีประโยชน์ที่สุดเดือนนี้'
 const KIND_LABEL = { agent: 'ผู้ช่วย', skill: 'ทักษะ', workflow: 'สายงาน' }
 
 /** Company sharing requests waiting for the Admin: approve to share with everyone, or send back to stay at department. */
@@ -214,43 +216,50 @@ function ShareRequestsTab() {
   )
 }
 
-/** Top 5 people whose Agents and Skills are used most across the company. */
-function ContributorsTab() {
-  const { state } = useStore()
-  const contributors = Object.values(
-    [...state.agents, ...state.skills].filter((x) => x.share !== 'private').reduce((m, x) => {
-      const c = m[x.owner] ?? { id: x.owner, items: 0, uses: 0 }
-      return { ...m, [x.owner]: { ...c, items: c.items + 1, uses: c.uses + x.uses } }
-    }, {}),
-  ).sort((a, b) => b.uses - a.uses).slice(0, 5)
+/** One Agent in the most-useful list: its department and Feedback, and the 👎 reasons the Admin can open. */
+function UsefulAgentRow({ agent, summary, reasons }) {
+  const [open, setOpen] = useState(false)
+  const listId = `reasons-${agent.id}`
+  const dept = deptById(agent.dept)
+  return (
+    <li className="px-5 py-3">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+        <div className="min-w-0 flex-1">
+          <Link to={`/agents/${agent.id}`} className="truncate text-sm font-medium text-slate-800 hover:text-brand-700">{agent.name}</Link>
+          <p className="flex items-center gap-1.5 text-xs text-slate-500"><span className={cn('size-2 rounded-full', dept.dot)} />{dept.name}</p>
+        </div>
+        <span className="text-xs font-medium text-slate-700">{feedbackLabel(summary)}</span>
+        <Button size="sm" variant="ghost" icon={ThumbsDown} aria-expanded={open} aria-controls={listId} onClick={() => setOpen(!open)}>
+          เหตุผล 👎 ({reasons.length})
+        </Button>
+      </div>
+      {open && (reasons.length ? (
+        <ul id={listId} aria-label={`เหตุผล 👎 ของ ${agent.name}`} className="mt-2 space-y-1 rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-600">
+          {reasons.map((r, i) => <li key={i}>“{r}”</li>)}
+        </ul>
+      ) : (
+        <p id={listId} className="mt-2 text-xs text-slate-500">ยังไม่มีใครบอกเหตุผลที่กด 👎</p>
+      ))}
+    </li>
+  )
+}
 
-  if (!contributors.length) {
+/** The shared Agents people found most helpful, credited to their department: no person is ranked. */
+function UsefulAgentsTab() {
+  const { state } = useStore()
+  const top = mostHelpfulAgents(state)
+  if (!top.length) {
     return (
-      <EmptyState icon={Trophy} title="ยังไม่มีข้อมูลผู้มีส่วนร่วม">
-        เมื่อมีคนสร้างและแชร์ Agent หรือ Skill ที่คนอื่นใช้งาน รายชื่อผู้มีส่วนร่วมจะแสดงที่นี่
+      <EmptyState icon={ThumbsUp} title="ยังไม่มี Feedback">
+        เมื่อมีคนกด 👍/👎 ใต้ผลงานของ Agent ที่แชร์ Agent ที่มีประโยชน์ที่สุดจะแสดงที่นี่
       </EmptyState>
     )
   }
   return (
     <Card>
-      <CardHeader icon={Trophy} title="ผู้มีส่วนร่วมสูงสุด" subtitle="คนที่สร้าง Agent และ Skill ที่ทั้งบริษัทใช้มากที่สุด" />
-      <ol className="divide-y divide-slate-100 border-t border-slate-100">
-        {contributors.map((c, i) => {
-          const u = userById(c.id)
-          return (
-            <li key={c.id} className="flex items-center gap-3 px-5 py-3">
-              <span className="w-4 text-xs font-semibold text-slate-400">{i + 1}</span>
-              <Avatar name={u.name} />
-              <div className="min-w-0 flex-1">
-                <div className="truncate text-sm font-medium text-slate-800">{u.name}</div>
-                <div className="truncate text-xs text-slate-500">{u.title}</div>
-              </div>
-              <div className="text-right text-xs text-slate-500">
-                <div className="font-medium text-slate-700">ใช้ {fmtCompact(c.uses)} ครั้ง</div>{c.items} รายการ
-              </div>
-            </li>
-          )
-        })}
+      <CardHeader icon={ThumbsUp} title={USEFUL_AGENTS} subtitle="จาก Feedback 👍/👎 ใต้ผลงาน พร้อมแผนกที่สร้าง เปิดดูเหตุผลที่คนกด 👎 ได้" />
+      <ol aria-label={USEFUL_AGENTS} className="divide-y divide-slate-100 border-t border-slate-100">
+        {top.map((x) => <UsefulAgentRow key={x.agent.id} {...x} />)}
       </ol>
     </Card>
   )
@@ -273,7 +282,7 @@ export default function Governance() {
     { id: 'policies', label: 'นโยบายข้อมูล', content: <PolicyTab policies={policies} onToggle={togglePolicy} /> },
     { id: 'permissions', label: 'สิทธิ์การใช้งาน', content: <PermissionsTab /> },
     { id: 'audit', label: 'Audit log', content: <AuditTab /> },
-    { id: 'contributors', label: 'ผู้มีส่วนร่วม', content: <ContributorsTab /> },
+    { id: 'useful-agents', label: USEFUL_AGENTS, content: <UsefulAgentsTab /> },
   ]
 
   return (

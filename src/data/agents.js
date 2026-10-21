@@ -85,7 +85,7 @@ export const AGENTS = [
     instruction: 'Act as an ICN presales consultant. Map customer requirements to ICN solutions, estimate price using the price list, and highlight risks.',
     model: 'auto', skills: ['skill-requirement', 'skill-proposal-template', 'skill-pricing'], knowledge: ['kb-price', 'kb-cases'], tools: ['crm'],
     output: { format: 'Word document', language: 'TH', template: 'Sales Proposal v3' },
-    owner: 'u-thanawat', feedback: { up: 34, down: 3 }, uses: 4870, version: '3.0', updated: '2026-10-15',
+    owner: 'u-thanawat', feedback: { up: 34, down: 3, reasons: ['ราคาต่อหน่วยยังเป็นราคาปีที่แล้ว'] }, uses: 4870, version: '3.0', updated: '2026-10-15',
     examples: ['ทำ Proposal ระบบ Smart Warehouse ให้ Siam Logistics', 'สรุป Requirement จาก TOR นี้'],
     versions: [
       { v: '3.0', date: '2026-10-15', by: 'u-thanawat', note: 'ใช้ Pricing Calculator Skill คำนวณราคาอัตโนมัติ' },
@@ -107,7 +107,7 @@ export const AGENTS = [
     instruction: 'Answer HR policy questions only from the Employee Handbook. Quote the section number. If unsure, refer to HR.',
     model: 'typhoon', skills: ['skill-policy-lookup', 'skill-citation'], knowledge: ['kb-handbook'], tools: [],
     output: { format: 'Short answer', language: 'TH', template: 'Policy Answer' },
-    owner: 'u-arisa', feedback: { up: 20, down: 2 }, uses: 8650, version: '2.1', updated: '2026-10-08',
+    owner: 'u-arisa', feedback: { up: 20, down: 2, reasons: ['ตอบเรื่องวันลาตามระเบียบฉบับเก่า'] }, uses: 8650, version: '2.1', updated: '2026-10-08',
     examples: ['ลาพักร้อนสะสมได้กี่วัน', 'สวัสดิการค่ารักษาพยาบาลครอบคลุมอะไรบ้าง'],
   }),
   agent({
@@ -166,7 +166,7 @@ export const AGENTS = [
     instruction: 'Check every SOC row against the cited Datasheet page. Report page, item label and highlight issues. Do not decide Comply/Better.',
     model: 'icn-llama', classification: 'confidential', share: 'department', skills: ['skill-soc-check'], knowledge: ['kb-datasheets'],
     output: { format: 'Excel table', language: 'TH', template: 'SOC Check Result' },
-    owner: 'u-ploy', feedback: { up: 41, down: 2 }, uses: 640, version: '1.2', updated: '2026-10-14',
+    owner: 'u-ploy', feedback: { up: 41, down: 2, reasons: ['ไม่ได้ตรวจหัวข้อ SOC ภาคผนวก ข ต้องเช็คเองอีกรอบ', 'อ้างเลขข้อใน TOR ผิดไปหนึ่งข้อ'] }, uses: 640, version: '1.2', updated: '2026-10-14',
     examples: ['ตรวจ SOC ภาคผนวก ก กับ Datasheet ที่แนบ', 'เช็ค Highlight ใน Catalog ว่าครบทุกข้อไหม'],
   }),
   agent({
@@ -184,7 +184,7 @@ export const AGENTS = [
     instruction: 'Write minutes in the project template. List action items with owner and due date. Mark decisions clearly.',
     model: 'icn-llama', classification: 'confidential', share: 'department', skills: ['skill-meeting-summary'], knowledge: ['kb-project-templates'],
     output: { format: 'Word document', language: 'TH', template: 'Project Minutes' },
-    owner: 'u-wichai', feedback: { up: 31, down: 3 }, uses: 2310, version: '1.3', updated: '2026-10-11',
+    owner: 'u-wichai', feedback: { up: 31, down: 3, reasons: ['จับชื่อผู้รับผิดชอบสลับกันในรายงานประชุม', 'ไม่แยก Action item ออกจากเรื่องที่คุย'] }, uses: 2310, version: '1.3', updated: '2026-10-11',
     examples: ['สรุปประชุมโครงการกับลูกค้าจากไฟล์เสียงนี้', 'ทำ Action Items จากโน้ตประชุมเช้านี้'],
   }),
   agent({
@@ -193,7 +193,7 @@ export const AGENTS = [
     instruction: 'Turn the weekly notes into the customer progress report. Compare against contract milestones.',
     model: 'icn-llama', classification: 'confidential', share: 'department', skills: ['skill-progress-report'], knowledge: ['kb-project-templates', 'kb-contracts'], tools: ['doc-gen'],
     output: { format: 'Word document', language: 'TH', template: 'Weekly Progress Report' },
-    owner: 'u-wichai', feedback: { up: 11, down: 1 }, uses: 1980, version: '1.1', updated: '2026-10-09',
+    owner: 'u-wichai', feedback: { up: 11, down: 1, reasons: ['สรุปความคืบหน้าไม่ตรงกับ Gantt ล่าสุด'] }, uses: 1980, version: '1.1', updated: '2026-10-09',
     examples: ['ทำรายงานความคืบหน้าสัปดาห์นี้: เดินสายชั้น 3 เสร็จ รอ Rack', 'สรุปความคืบหน้างวดที่ 2 ส่งลูกค้า'],
   }),
   agent({

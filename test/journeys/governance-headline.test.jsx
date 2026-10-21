@@ -19,7 +19,7 @@ describe('Governance: headline numbers and detail tabs', () => {
     const app = startJourney('/governance', { view: 'admin' })
     const tabs = within(screen.getByRole('tablist', { name: 'รายละเอียด' })).getAllByRole('tab')
     expect(tabs.map((t) => t.textContent)).toEqual([
-      'ค่าใช้จ่ายและ Model', 'แผนก', 'คำขอแชร์ทั้งบริษัท (2)', 'นโยบายข้อมูล', 'สิทธิ์การใช้งาน', 'Audit log', 'ผู้มีส่วนร่วม',
+      'ค่าใช้จ่ายและ Model', 'แผนก', 'คำขอแชร์ทั้งบริษัท (2)', 'นโยบายข้อมูล', 'สิทธิ์การใช้งาน', 'Audit log', 'Agent ที่มีประโยชน์ที่สุดเดือนนี้',
     ])
     expect(screen.getByRole('tabpanel', { name: 'ค่าใช้จ่ายและ Model' })).toBeInTheDocument()
     expect(screen.queryByText('บันทึกเหตุการณ์สำคัญวันนี้')).not.toBeInTheDocument()
@@ -42,15 +42,15 @@ describe('Governance: headline numbers and detail tabs', () => {
     expect(screen.getByRole('tabpanel', { name: 'แผนก' })).toBeInTheDocument()
 
     await app.type(screen.getByRole('tab', { name: 'แผนก' }), '{End}')
-    expect(screen.getByRole('tab', { name: 'ผู้มีส่วนร่วม' })).toHaveAttribute('aria-selected', 'true')
+    expect(screen.getByRole('tab', { name: 'Agent ที่มีประโยชน์ที่สุดเดือนนี้' })).toHaveAttribute('aria-selected', 'true')
 
-    await app.type(screen.getByRole('tab', { name: 'ผู้มีส่วนร่วม' }), '{ArrowRight}')
+    await app.type(screen.getByRole('tab', { name: 'Agent ที่มีประโยชน์ที่สุดเดือนนี้' }), '{ArrowRight}')
     expect(screen.getByRole('tab', { name: 'ค่าใช้จ่ายและ Model' })).toHaveFocus()
 
     await app.type(screen.getByRole('tab', { name: 'ค่าใช้จ่ายและ Model' }), '{ArrowLeft}')
-    expect(screen.getByRole('tab', { name: 'ผู้มีส่วนร่วม' })).toHaveFocus()
+    expect(screen.getByRole('tab', { name: 'Agent ที่มีประโยชน์ที่สุดเดือนนี้' })).toHaveFocus()
 
-    await app.type(screen.getByRole('tab', { name: 'ผู้มีส่วนร่วม' }), '{Home}')
+    await app.type(screen.getByRole('tab', { name: 'Agent ที่มีประโยชน์ที่สุดเดือนนี้' }), '{Home}')
     expect(screen.getByRole('tab', { name: 'ค่าใช้จ่ายและ Model' })).toHaveAttribute('aria-selected', 'true')
   })
 
