@@ -5,9 +5,10 @@ import { cn } from '../../lib/utils'
  * Accessible tabs (WAI-ARIA tabs pattern, automatic activation).
  * `tabs`: [{ id, label, content }]. Controlled with `value` + `onChange`, or uncontrolled with `defaultValue`.
  * Only the selected panel is rendered, so keep state that must survive a tab switch in the parent.
+ * `listProps` go on the tab list, e.g. a `data-tour` target.
  * Keyboard: ArrowLeft/ArrowRight (wrapping), Home, End.
  */
-export default function Tabs({ tabs, label, value, defaultValue, onChange, className }) {
+export default function Tabs({ tabs, label, value, defaultValue, onChange, className, listProps }) {
   const [own, setOwn] = useState(defaultValue ?? tabs[0]?.id)
   const selected = value ?? own
   const base = useId()
@@ -34,7 +35,7 @@ export default function Tabs({ tabs, label, value, defaultValue, onChange, class
 
   return (
     <div className={className}>
-      <div role="tablist" aria-label={label} onKeyDown={onKeyDown} className="flex gap-1 overflow-x-auto border-b border-slate-200">
+      <div {...listProps} role="tablist" aria-label={label} onKeyDown={onKeyDown} className="flex gap-1 overflow-x-auto border-b border-slate-200">
         {tabs.map((t) => {
           const on = t.id === selected
           return (

@@ -22,7 +22,8 @@
 - **Agent** = พนักงานผู้เชี่ยวชาญ (มีหน้าที่, ความรู้, เครื่องมือ)
 - **Skill** = คู่มือการทำงาน / SOP ที่พนักงานหลายคนใช้ร่วมกัน
 - **Knowledge** = เอกสารอ้างอิงที่ให้พนักงานอ่าน
-- **Workflow** = สายงานส่งต่อระหว่างทีม (มีจุดตรวจและส่งกลับแก้ได้)
+- **Plan (แผนงาน)** = หัวหน้าแบ่งงานให้ทีม: ลำดับ Agent ที่ระบบเสนอเมื่อผู้ใช้ไม่ได้เลือก Agent หรือ Workflow เอง ผู้ใช้กด "เริ่มเลย" ก่อน Run เริ่ม (ไม่ได้บันทึก จนกว่าจะกด "บันทึกไว้ใช้ซ้ำ")
+- **Workflow** = สายงานส่งต่อระหว่างทีมที่ **บันทึกไว้** (มีจุดตรวจและส่งกลับแก้ได้) — ใช้คำนี้กับสายงานที่บันทึกแล้วเท่านั้น ไม่ใช่โหมดหรือ Plan
 - **Workspace** = ห้องสั่งงานและติดตามความคืบหน้า
 
 ### Core concepts (domain model)
@@ -31,99 +32,110 @@
 Workflow ──has many──▶ Node (Trigger | Agent | Skill | Condition | Output)
 Agent ──uses──▶ Skill[] , Knowledge[] , Tool[] , Model , OutputFormat
 Skill ──reusable across──▶ many Agents
-Run (task) ──executes──▶ Step[] (one per Agent/Skill/Condition) ──produces──▶ Artifact
+Run ──starts from──▶ chat (1 step) | Plan (Agents the system proposed) | picked Agent | picked Workflow
+Run ──executes──▶ Step[] (one per Agent/Skill/Condition) ──produces──▶ Artifact
 Model ──location──▶ Local | Cloud | Auto  (Auto = router picks by data classification + cost)
 ```
 
 ### Design principles
-1. **Plan before run** — ระบบเสนอแผน (Agent ไหนทำอะไร) ให้ผู้ใช้เห็นและแก้ก่อนเริ่ม → สร้างความไว้วางใจ
+1. **Plan before run** — เมื่อระบบเลือก Agent หลายตัวเอง จะหยุดที่ **Plan** (Agent ไหนทำอะไร) ให้ผู้ใช้เห็น แก้ได้ และกด "เริ่มเลย" ก่อนเริ่ม → สร้างความไว้วางใจ · คำถามสั้นตอบเป็นแชตทันที และถ้าผู้ใช้เลือก Agent หรือ Workflow เองก็เริ่มทันที ไม่ถามซ้ำ · ไม่มีตัวสลับโหมดให้ผู้ใช้ต้องเลือก
 2. **Show the team working** — เห็นสถานะ Waiting / Processing / Completed / Sent back ของทุก Agent แบบเรียลไทม์
 3. **Outputs, not messages** — ผลลัพธ์ของแต่ละ Agent เป็นชิ้นงาน ดูย้อนได้ทีละขั้น
 4. **Safe by default** — ข้อมูลลับถูกส่งไป Local AI อัตโนมัติ และแสดงให้ผู้ใช้เห็นว่าข้อมูลไม่ออกนอกบริษัท
-5. **Plain language** — ทุกฟอร์มมีคำอธิบายภาษาคน, มีตัวอย่าง, มี template ให้เริ่ม
+5. **Plain language** — ทุกฟอร์มมีคำอธิบายภาษาคน, มีตัวอย่าง, มี template ให้เริ่ม · ทุกหน้าอธิบายตัวเองได้โดยไม่ต้องเปิดทัวร์ (ทัวร์มีแค่ 6 ขั้น)
+6. **Clean** — หนึ่งหน้ามีปุ่มหลัก (สีแบรนด์) ปุ่มเดียว · แสดงเฉพาะข้อมูลที่ช่วยตัดสินใจ · แยกส่วนด้วยระยะห่าง ไม่ใช้กรอบซ้อนกรอบ · งานที่ทำบ่อยอยู่ใน click budget (สั่งงานจนได้ Artifact ≤ 2 คลิก, ใช้ซ้ำ 1 คลิก, เปิดผลงานเก่า 1 คลิก, สร้าง Agent ≤ 3 คลิก, ใช้ของที่แชร์ ≤ 2 คลิก)
 
 ---
 
 ## 2. Sitemap
 
+เมนูหลัก 5 รายการ: ไม่มีหน้าชุมชน, ทักษะเป็นแท็บในหน้าผู้ช่วย, Workspace ไม่มีตัวสลับโหมด
+
 ```
 ICN AI Hub
-├── Work
-│   ├── Home Dashboard                /
-│   ├── AI Workspace                  /workspace  (?q= prompt, ?agent= preselect, ?run= view run)
-│   └── Workflow Builder              /workflows  (?id=)
-├── Library
-│   ├── Agent Library                 /agents
-│   │   ├── Agent Detail              /agents/:id
-│   │   └── Create / Clone Agent      /agents/new  (?from= clone source)
-│   ├── Skill Library                 /skills  (?open= detail modal)
-│   │   └── Create Skill              /skills/new
-│   └── Community                     /community
-└── Organization
-    └── Governance (Admin)            /governance
+├── งานของฉัน
+│   ├── หน้าหลัก (Home)               /
+│   ├── สั่งงาน AI (Workspace)         /workspace  (?q= prompt, ?agent= / ?workflow= pick, ?run= view Run)
+│   ├── สายงาน (Workflows)             /workflows  (?id= simple editor, &advanced=1 detailed builder)
+│   └── ผู้ช่วย AI (Agents)            /agents     (?filter=popular|shared, ?tab=skills, &open= Skill detail)
+│       ├── Agent Detail              /agents/:id
+│       ├── Create Agent              /agents/new  (?q= description, ?from= copy source, ?advanced=1 wizard)
+│       └── Create Skill              /skills/new  (?q= description, ?advanced=1 full form)
+└── องค์กร
+    └── ภาพรวมและการกำกับดูแล          /governance
+
+Old links: /community → /agents?filter=popular · /skills(?open=id) → /agents?tab=skills(&open=id)
 ```
 
 ## 3. Information architecture
 
-- **Global (ทุกหน้า):** Sidebar (3 กลุ่ม: Work / Library / Organization), ปุ่ม **New task**, Global search (Agent + Skill + Workflow), Running-count badge, Hybrid routing meter (Local vs Cloud)
-- **Work** — สิ่งที่ผู้ใช้ "ทำ" ทุกวัน: สั่งงาน, ติดตาม, ประกอบ Workflow
-- **Library** — สิ่งที่ผู้ใช้ "ค้น/ใช้ซ้ำ/สร้าง": Agent, Skill, ของที่คนอื่นแชร์
-- **Organization** — สิ่งที่ผู้ดูแล "ควบคุม": ค่าใช้จ่าย, Model, สิทธิ์, นโยบาย
+- **Global (ทุกหน้า):** Sidebar 5 รายการ (กลุ่ม "งานของฉัน" 4 รายการ + "องค์กร" แยกอยู่ล่างสุด, ย่อเป็นแถบไอคอนได้), ปุ่ม **สั่งงานใหม่**, Global search (Agent + Skill + Workflow; Skill เปิดในแท็บทักษะ), Running-count badge, Hybrid routing meter (Local vs Cloud), ปุ่ม **วิธีใช้** (คำศัพท์ + ทัวร์ 6 ขั้น)
+- **งานของฉัน** — สิ่งที่ผู้ใช้ทำทุกวัน: สั่งงาน, ใช้ซ้ำ, ติดตาม Run, หาและใช้ Agent / Workflow / Skill
+- **องค์กร** — สิ่งที่ผู้ดูแลควบคุม: ค่าใช้จ่าย, Model, สิทธิ์, นโยบาย, Audit log, ผู้มีส่วนร่วม
+- **ของที่แชร์** ไม่มีหน้าแยก: อยู่ในแต่ละ library ผ่านชิป "ยอดนิยมในองค์กร" / "แชร์ให้ฉัน" และปุ่มหลักคือ **ใช้งาน** เสมอ (Workflow ที่แชร์ใช้ได้ทันทีโดยไม่ต้องคัดลอก)
 
-Object ทุกตัวมีชุด metadata เดียวกัน: Owner · Department · Share level (Private/Department/Company) · Version · Rating · Usage → ทำให้ Library, Community และ Governance ใช้ component ชุดเดียวกันได้
+Object ทุกตัวมีชุด metadata เดียวกัน: Owner · Department · Share level (Private/Department/Company) · Version · Rating · Usage — การ์ดแสดงแค่ไอคอน ชื่อ คำอธิบาย 1 บรรทัด และปุ่ม "ใช้งาน" ตัวเลขอื่นอยู่ในหน้ารายละเอียด
 
 ## 4. Main user flows
 
-**Flow A — สั่งงานครั้งเดียว ได้ Proposal (hero demo)**
-1. Home → พิมพ์ "ทำ Proposal ระบบ Smart Warehouse ให้ลูกค้า X" → *วางแผนงาน*
-2. Workspace แสดง **แผนที่ระบบเสนอ**: Research → Sales Proposal → Document → Image → Review → Condition "ข้อมูลครบ?"
-3. ผู้ใช้ลบขั้นที่ไม่ต้องการ (ถ้ามี) → *เริ่มทำงาน*
-4. Pipeline ไฮไลต์ Agent ที่กำลังทำงาน, Activity panel แสดงขั้นย่อยแบบสด, Outputs แสดงชิ้นงานที่เสร็จ
+**Flow A — สั่งงานครั้งเดียว ได้ Proposal (hero demo, ≤ 2 คลิก)**
+1. Home → พิมพ์ "ทำ Proposal ระบบ Smart Warehouse ให้ลูกค้า X" → Enter
+2. ระบบเลือก Agent หลายตัวเอง → Workspace แสดง **Plan**: Research → Sales Proposal → Document → Image → Review → Condition "ข้อมูลครบ?"
+3. ผู้ใช้ลบขั้นที่ไม่ต้องการ (ถ้ามี) → **เริ่มเลย**
+4. Step chips ในแชตบอกว่า Agent ไหนกำลังทำ · "ดูขั้นตอน" เปิด panel ด้านขวา (pipeline, ปิดได้)
 5. Condition ตรวจพบ "ไม่มีงบประมาณลูกค้า" → **ส่งกลับ Research Agent** (รอบที่ 2) → ผ่าน
-6. Final deliverable (Proposal .docx) → Download / Share / **Save as workflow**
+6. Artifact (Proposal .docx) → **ดาวน์โหลด** (ปุ่มหลัก) · **บันทึกไว้ใช้ซ้ำ** · "⋯" (คัดลอก, แชร์, ดูขั้นตอน)
 
-**Flow B — ใช้ Agent ของแผนก**: Agent Library → filter Sales → *Use Agent* → Workspace (Agent ถูกเลือกไว้แล้ว)
+คำถามสั้น (เช่น "ลาพักร้อนได้กี่วัน") ตอบเป็นแชตทันที ไม่มี Plan
 
-**Flow C — สร้าง Agent ของตัวเอง**: Agent Library → *Clone* Agent ที่ใกล้เคียง → Wizard 6 ขั้น (ค่าเดิมถูกเติมให้) → ปรับ Instruction/Skill → เลือก Share → สร้าง
+**Flow B — ใช้ซ้ำ (1 คลิก ไม่เปลี่ยนหน้า)**: Home → แถว **ใช้ซ้ำ** → กด Favourite agent หรือ Workflow → ถูกเติมในช่องสั่งงาน → พิมพ์แล้วส่ง → Run เริ่มทันที (ไม่มี Plan เพราะผู้ใช้เลือกเอง)
 
-**Flow D — ทำ SOP เป็น Skill แล้วกระจายให้ทุก Agent**: Create Skill → ทดลอง (Run test) → สร้าง → *Add to Agent* (เลือกหลาย Agent พร้อมกัน)
+**Flow C — เปิดผลงานเก่า (1 คลิก)**: Home → **งานของฉัน** → กด Run
 
-**Flow E — ประกอบ Workflow**: Workflow Builder → ลาก Agent/Skill/Condition → เชื่อม (คลิกจุดขวาของ Node) → Condition ชี้กลับ Node ก่อนหน้า = เส้นวนกลับอัตโนมัติ → *Test run* ดูสถานะบน Canvas
+**Flow D — สร้าง Agent ของตัวเอง (≤ 3 คลิก)**: ผู้ช่วย AI → สร้างผู้ช่วย → บอกว่าอยากได้ผู้ช่วยแบบไหน → AI กรอกให้ในหน้าเดียว → ตรวจ → สร้าง (wizard เต็มอยู่หลัง "ตั้งค่าขั้นสูง"; คัดลอก Agent ที่มีอยู่ทำจากหน้ารายละเอียด)
 
-**Flow F — Admin**: Governance → ดู Cost/Model/Local vs Cloud → เปิด-ปิดนโยบายข้อมูลลับ → ดู Audit log
+**Flow E — ใช้ของที่คนอื่นแชร์ (≤ 2 คลิก)**: ผู้ช่วย AI หรือ สายงาน → ชิป "ยอดนิยมในองค์กร" / "แชร์ให้ฉัน" → **ใช้งาน** → ช่องสั่งงานใน Workspace ที่เลือกไว้แล้ว
+
+**Flow F — ทำ SOP เป็น Skill แล้วกระจายให้ทุก Agent**: ผู้ช่วย AI → แท็บ **ทักษะ** → สร้างทักษะ (บอก → AI กรอก → สร้าง) → เปิดรายละเอียด → *เพิ่มให้ผู้ช่วย* (เลือกหลายตัวพร้อมกัน)
+
+**Flow G — ประกอบ Workflow**: สายงาน → เล่าขั้นตอนเป็นภาษาปกติ → AI ร่าง → editor แบบง่าย (เรียง Agent ขึ้น/ลง) → บันทึก / ลองรัน · เงื่อนไขและการวนกลับอยู่ในตัวสร้างแบบละเอียดหลังลิงก์ "ขั้นสูง"
+
+**Flow H — Admin**: ภาพรวมและการกำกับดูแล → 4 ตัวเลขหลัก (ค่าใช้จ่าย, จำนวน Run, สัดส่วน Local AI, การแจ้งเตือนนโยบาย) → แท็บรายละเอียด (ค่าใช้จ่ายและ Model, แผนก, นโยบายข้อมูล, สิทธิ์, Audit log, ผู้มีส่วนร่วม)
 
 ## 5. Screen-by-screen design & layout
 
 | # | Screen | Layout (desktop) | Key elements |
 |---|---|---|---|
-| 1 | **Home** | Greeting + org stats · Command bar (full width) · 2/3: Running workflows, Recent tasks, Recommended agents (3 cards) · 1/3: Frequently used, Popular skills, CTA "สร้าง Agent" | Command bar + quick-start chips ทำให้คนไม่เก่ง AI เริ่มได้ใน 1 คลิก |
-| 2 | **AI Workspace** | ซ้าย 340px: Composer (Auto / เลือก Agent / ใช้ Workflow) + รายการงาน Planned/Running/Completed · ขวา: Run header → Pipeline visual → [Agent activity 2/5 · Outputs 3/5] | Plan-before-run, Sensitive-data banner, progress %, loop-back, Save as workflow |
-| 3 | **Agent Library** | Header + Create · Search + filters (Model location, Share, Sort, Favorites) · Department tabs with counts · Grid grouped by department | Card: icon, name, dept, version, description, Model badge (Local/Cloud/Auto), share, owner, rating, uses · **Use Agent / Details / Clone / ★** |
-| 4 | **Create Agent** | 3 คอลัมน์: Stepper (6 ขั้น) · Form · Live preview + readiness checklist | Instruction starters ต่อแผนก, Data classification → ล็อก Cloud model, Knowledge upload, Skill picker, Tool toggles, Output format, Share + review gate |
-| 5 | **Skill Library** | Header + Create · Search + category tabs · Grid | Card: "ใช้ใน N Agents", Details modal (Input → Output, instruction, used-by, versions), **Add to Agent** multi-select |
-| 6 | **Create Skill** | Form 4 ส่วน (What / How / Tools & Template / Sharing) · Sidebar: preview + **Run test** | Input → Expected output แบบเห็นภาพ |
-| 7 | **Workflow Builder** | Palette (Agents/Skills/Logic) · Canvas (dot grid, zoom) · Inspector | Drag & drop, ลากย้าย Node, คลิก port เพื่อเชื่อม, เส้นประสีส้ม = retry loop, Test run แสดงสถานะบน Node |
-| 8 | **Community** | KPI 4 ช่อง · ตาราง ranking (tab Agents/Skills/Workflows) · Top contributors + tips | Created by, Rating, Usage, Version (คลิกดู history + Restore), Clone/Fork |
-| 9 | **Governance** | KPI 5 ช่อง · Model usage bars + Local/Cloud donut · Monthly cost (stacked) + Department table · Policies (toggle) + Permission matrix · Audit log | ทุกกราฟแยกสี Local (เขียว) / Cloud (เทา) สม่ำเสมอ |
-| 10 | **Agent Detail** | Hero (icon, name, version, meta, Favorite/Clone/Use) · 2/3: ทำอะไร + ตัวอย่างคำสั่ง + System prompt, Skills, Workflows ที่ใช้อยู่, Version history · 1/3: Model + data class, Output format, Knowledge, Tools, งานล่าสุด | ตัวอย่างคำสั่งคลิกแล้วไป Workspace ทันที |
+| 1 | **Home** | Welcome card (ครั้งแรกครั้งเดียว) · ช่องสั่งงาน · แถว **ใช้ซ้ำ** · **งานของฉัน** 3–5 รายการ (กำลังทำขึ้นก่อน) | ชิปตัวอย่างงานแสดงเฉพาะเมื่อยังไม่มี Run · ลิงก์เบา "ดูทั้งหมด" / "ผู้ช่วยทั้งหมด" |
+| 2 | **สั่งงาน AI (Workspace)** | ซ้าย: ประวัติ Thread (ย่อ/ขยายได้) · กลาง: Thread + composer (อัตโนมัติ / เลือก Agent / Workflow) · ขวา: panel ขั้นตอน (เปิดจาก "ดูขั้นตอน") | ระบบตัดสินใจเองว่าแชตหรือ Plan · Plan + "เริ่มเลย" · step chips · Sensitive-data notice · ใต้ Artifact: ดาวน์โหลด / บันทึกไว้ใช้ซ้ำ / ⋯ |
+| 3 | **ผู้ช่วย AI** | แท็บ ผู้ช่วย / ทักษะ · ช่องบอกงาน + ป้ายงาน → แนะนำ 3 อันดับพร้อมเหตุผล · รายการทั้งหมด + ชิปแชร์ + ตัวกรอง (ซ่อนไว้) + สร้างผู้ช่วย | การ์ด: ไอคอน, ชื่อ, 1 บรรทัด, **ใช้งาน** · ทั้งการ์ดเปิดรายละเอียด · ดาวแสดงเมื่อ hover/focus |
+| 4 | **ทักษะ (แท็บ)** | ค้นหา + หมวด · Grid · สร้างทักษะ | รายละเอียด (Input → Output, ใช้ในผู้ช่วยตัวไหน, เวอร์ชัน) · **เพิ่มให้ผู้ช่วย** หลายตัวพร้อมกัน |
+| 5 | **Create Agent / Create Skill** | หน้าเดียว: บอก → AI กรอก → ตรวจ → สร้าง (ปุ่มหลักปุ่มเดียว) | Wizard / ฟอร์มเต็มหลัง "ตั้งค่าขั้นสูง" · Data classification ล็อก Cloud model · Run test ของ Skill |
+| 6 | **สายงาน (Workflows)** | ช่องเล่าขั้นตอน → ร่าง · ชิปแชร์ · การ์ดสายงาน (ใช้งาน) · สายงานของฉัน | Editor แบบง่ายเป็นค่าเริ่มต้น · ตัวสร้างละเอียด (Palette · Canvas · Inspector, condition loop, Test run) หลัง "ขั้นสูง" |
+| 7 | **ภาพรวมและการกำกับดูแล** | 4 ตัวเลขหลัก · แท็บรายละเอียดด้านล่าง | ทุกกราฟแยกสี Local (เขียว) / Cloud (เทา) · leaderboard ผู้มีส่วนร่วมย้ายมาอยู่ที่นี่ |
+| 8 | **Agent Detail** | Hero (icon, name, meta, ★, **ใช้งาน**, คัดลอกไปปรับใช้ = รอง) · ทำอะไร + ตัวอย่างคำสั่ง, Skills, Workflows, Version history · Model, Output, Knowledge, Tools | ตัวเลข uses / rating / version อยู่ที่นี่ ไม่อยู่บนการ์ด |
 
-**Responsive:** Sidebar → drawer (< lg), grid ลดคอลัมน์, Pipeline เปลี่ยนจากแนวนอนเป็นแนวตั้ง, ตารางเลื่อนแนวนอน, Modal เป็น bottom sheet บนมือถือ
+**Responsive:** Sidebar → drawer (< lg), grid ลดคอลัมน์, panel ขั้นตอนเต็มจอบนมือถือ, ตารางเลื่อนแนวนอน, Modal เป็น bottom sheet บนมือถือ, ไม่มี scroll แนวนอนทั้งหน้า
 
 ## 6. Component list (`src/components`)
 
 | Group | Components |
 |---|---|
-| `layout/` | `AppShell` (Sidebar, Topbar, GlobalSearch, mobile drawer) |
+| `layout/` | `AppShell` (Sidebar 5 รายการ ย่อได้, Topbar, GlobalSearch, mobile drawer) · `Help` (`TERMS` คำศัพท์รวม Plan, WelcomeCard, ปุ่มวิธีใช้/เริ่มทัวร์) |
+| `tour/` | `Tour` (spotlight + popover, ข้ามขั้นที่มองไม่เห็น) · `steps.js` (6 ขั้น: ช่องสั่งงาน, ใช้ซ้ำ, งานของฉัน, ค้นหา, ผู้ช่วย AI, พร้อมแล้ว) |
 | `ui/Button` | variants: primary · secondary · ghost · subtle · danger; sizes sm/md/lg/icon; `to` → router Link |
 | `ui/Badge` | `Badge`, `StatusPill` (Waiting/Processing/Completed/Sent back/Ready/Running), `ModelBadge` (Local/Cloud/Auto), `DeptBadge`, `ShareBadge`, `Rating` |
 | `ui/Card` | `Card`, `CardHeader`, `PageHeader`, `StatCard`, `EmptyState`, `ProgressBar` |
-| `ui/Form` | `Field`, `Input`, `Textarea`, `Select`, `SearchInput`, `Toggle`, `Segmented` (tabs), `ChoiceCard` (single/multi) |
+| `ui/Form` | `Field`, `Input`, `Textarea`, `Select`, `SearchInput`, `Toggle`, `Segmented`, `ChoiceCard` (single/multi) |
+| `ui/` (อื่นๆ) | `Tabs` (WAI-ARIA tabs: หน้าผู้ช่วย, Governance) · `Menu` ("⋯") · `ShareFilterChips` (ยอดนิยม / แชร์ให้ฉัน) · `QuickCreate` (บอก → AI กรอก → สร้าง) · `Attachments` · `TypewriterHint` |
 | `ui/Overlay` | `Modal`, `Toaster`, `Avatar` |
-| `agents/` | `EntityIcon` (agent = brand tint, skill = neutral), `AgentCard`, `AgentRow`, `FavoriteButton` |
+| `agents/` | `EntityIcon` (agent = brand tint, skill = neutral), `AgentCard` |
 | `skills/` | `SkillCard` |
-| `workflow/` | `Pipeline` (run visual), `RunRow` (live mini-progress), `ArtifactView` (bullets/table/doc/diagram/checklist) |
+| `workflow/` | `Pipeline` (panel ขั้นตอน), `RunRow` (live mini-progress), `ArtifactView` (bullets/table/doc/diagram/checklist), `ComposerPick` (Agent หรือ Workflow ที่เลือกในช่องสั่งงาน ใช้ร่วมกัน Home/Workspace), `SaveForReuse` |
 
-Logic: `store/AppStore.jsx` (reducer + one clock for all runs) · `lib/runs.js` (planner, model router, step engine with loop-back) · `lib/mockOutputs.js`
+Logic: `store/AppStore.jsx` (reducer + one clock for all runs) · `lib/runs.js` (planner: chat หรือ Plan, model router, step engine with loop-back) · `lib/reuse.js` (บันทึกไว้ใช้ซ้ำ) · `lib/mockOutputs.js`
+
+Tests: `test/journeys/` — whole-app journey tests (Vitest + Testing Library) ที่ตรวจ click budget และเป้าหมายของทุกขั้นในทัวร์
 
 ## 7. Design system
 
@@ -169,15 +181,16 @@ Logic: `store/AppStore.jsx` (reducer + one clock for all runs) · `lib/runs.js` 
 |---|---|---|
 | 1 | IA, design system, mock data, App shell, Home, Agent/Skill Library, Agent Detail | ✅ เสร็จ |
 | 2 | Workspace + simulated orchestration (plan → run → handoff → loop-back → deliverable), Create Agent/Skill, Clone/Fork | ✅ เสร็จ |
-| 3 | Workflow Builder (drag/drop, connect, condition loop, test run), Community, Governance | ✅ เสร็จ (เวอร์ชันเดโม) |
+| 3 | Workflow Builder (drag/drop, connect, condition loop, test run), Governance | ✅ เสร็จ (เวอร์ชันเดโม) |
+| 3½ | Simpler pages: เมนู 5 รายการ, แถวใช้ซ้ำ, ไม่มีตัวสลับโหมด (แชต หรือ Plan), ทักษะเป็นแท็บ, ไม่มีหน้าชุมชน, สร้างในหน้าเดียว, ทัวร์ 6 ขั้น, journey tests | ✅ เสร็จ |
 | 4 | Polish & pitch: ซ้อมสคริปต์เดโม, user test กับพนักงาน 5 คน, ปรับ copy, (ทางเลือก) เชื่อม LLM จริง 1 ตัวผ่าน Local model เพื่อพิสูจน์ provider-agnostic | ⏭ ถัดไป |
 
 **ไม่อยู่ใน scope:** backend, auth/SSO, AI จริง, การเก็บข้อมูลถาวร (refresh = reset), การอัปโหลดไฟล์จริง
 
 ### Demo script (5 นาที)
-1. Home — "นี่คือห้องทำงาน AI ของทั้งบริษัท" ชี้ Running workflows ของแผนกอื่นที่กำลังวิ่ง
-2. กด chip "ทำ Proposal ให้ลูกค้า" → แสดงแผน → เริ่ม → ชี้ Agent ส่งต่องาน → Condition ส่งกลับ Research → Final Proposal
-3. Agent Library → Clone Sales Proposal Agent → เปลี่ยนเป็นของแผนกตัวเองใน 30 วินาที
-4. Skill Library → Add "Company Report Format" ให้ 3 Agents พร้อมกัน ("แก้ที่เดียว ทุก Agent ได้")
-5. Workflow Builder → Test run บน canvas
-6. Governance → 63% Local, ข้อมูลเงินเดือนถูก block — "ปลอดภัยและไม่ผูกกับ Provider"
+1. Home — "นี่คือห้องทำงาน AI ของทั้งบริษัท" ช่องสั่งงานอยู่บนสุด แถวใช้ซ้ำ และงานของฉันที่กำลังทำ
+2. พิมพ์ "ทำ Proposal ให้ลูกค้า" → ระบบเสนอ **Plan** → **เริ่มเลย** → ชี้ step chips / "ดูขั้นตอน" → Condition ส่งกลับ Research → Proposal → ดาวน์โหลด · บันทึกไว้ใช้ซ้ำ
+3. กลับ Home → สายงานที่เพิ่งบันทึกอยู่ในแถวใช้ซ้ำ → กด 1 ครั้ง พิมพ์ ส่ง → เริ่มทันที
+4. ผู้ช่วย AI → สร้างผู้ช่วย → บอกเป็นภาษาปกติ → AI กรอกให้ → สร้าง (≤ 3 คลิก)
+5. แท็บทักษะ → เพิ่ม "Company Report Format" ให้ 3 Agents พร้อมกัน ("แก้ที่เดียว ทุก Agent ได้")
+6. ภาพรวมและการกำกับดูแล → 63% Local, ข้อมูลเงินเดือนถูก block — "ปลอดภัยและไม่ผูกกับ Provider"
