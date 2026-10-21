@@ -1,6 +1,6 @@
 import { Fragment, useState } from 'react'
 import { Navigate, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
-import { ArrowDown, ArrowUp, ChevronRight, Pencil, Play, Plus, Save, Sparkles, X } from 'lucide-react'
+import { ArrowDown, ArrowUp, ChevronRight, Play, Plus, Save, Sparkles, X } from 'lucide-react'
 import { useStore } from '../store/AppStore'
 import { userById } from '../data/catalog'
 import { planRequest } from '../lib/runs'
@@ -10,8 +10,9 @@ import { applyShareFilter, shareFilterFrom } from '../lib/sharing'
 import ShareFilterChips from '../components/ui/ShareFilterChips'
 import { Card } from '../components/ui/Card'
 import Button from '../components/ui/Button'
-import { DeptBadge } from '../components/ui/Badge'
 import EntityIcon from '../components/agents/EntityIcon'
+import { ItemCard } from '../components/agents/AgentCard'
+import WorkflowStats from '../components/workflow/WorkflowStats'
 import TypewriterHint from '../components/ui/TypewriterHint'
 import WorkflowBuilder from './WorkflowBuilder'
 
@@ -61,19 +62,16 @@ function StepTrail({ steps, max = 4 }) {
   )
 }
 
-function WorkflowRows({ items }) {
+/** Workflows in the same clean card shape as Agents. The card opens the Workflow; "ใช้งาน" runs it as-is. */
+function WorkflowCards({ items, labelledBy }) {
   const stepsOf = useStepsOf()
   return (
-    <ul className="divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-200 bg-white">
+    <ul className="grid gap-3 sm:grid-cols-2" aria-labelledby={labelledBy}>
       {items.map((w) => (
-        <li key={w.id} className="flex items-center gap-3 px-4 py-3">
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2"><span className="truncate text-sm font-medium text-slate-800">{w.name}</span><DeptBadge dept={w.dept} /></div>
-            <div className="mt-1.5"><StepTrail steps={stepsOf(w)} /></div>
-          </div>
-          <Button size="icon" variant="ghost" icon={Pencil} to={`/workflows?id=${w.id}`} aria-label={`แก้ ${w.name}`} title="แก้สายงาน" />
-          <Button size="sm" variant="primary" icon={Play} to={runLink(w)}>ใช้งาน</Button>
-        </li>
+        <ItemCard
+          key={w.id} icon="workflow" name={w.name} to={`/workflows?id=${w.id}`} useTo={runLink(w)}
+          description={w.description || stepsOf(w).map((s) => s.name).join(' → ')}
+        />
       ))}
     </ul>
   )
@@ -81,31 +79,18 @@ function WorkflowRows({ items }) {
 
 /** Shared workflows people can use as-is (GLOSSARY: not "templates"). A few cards, the rest on request. */
 function Suggestions({ items }) {
-  const stepsOf = useStepsOf()
   const [showAll, setShowAll] = useState(false)
   return (
     <section>
       <div className="mb-3 flex flex-wrap items-center gap-x-3 gap-y-2">
-        <h2 className="text-sm font-semibold text-slate-900">สายงานแนะนำจากเพื่อนร่วมงาน</h2>
+        <h2 id="wf-suggestions" className="text-sm font-semibold text-slate-900">สายงานแนะนำจากเพื่อนร่วมงาน</h2>
         <ShareFilterChips className="order-last w-full overflow-x-auto sm:order-none sm:w-auto" />
         {items.length > SHOWN_SUGGESTIONS && (
           <button type="button" onClick={() => setShowAll(!showAll)} className="ml-auto text-xs font-medium text-brand-700 hover:underline">{showAll ? 'ย่อ' : `ดูทั้งหมด (${items.length})`}</button>
         )}
       </div>
       {items.length === 0 && <p className="rounded-xl border border-dashed border-slate-200 p-4 text-sm text-slate-400">ยังไม่มีสายงานตรงตัวกรองนี้</p>}
-      <div className="grid gap-3 sm:grid-cols-2">
-        {(showAll ? items : items.slice(0, SHOWN_SUGGESTIONS)).map((w) => (
-          <div key={w.id} className="flex flex-col rounded-xl border border-slate-200 bg-white p-4 transition hover:border-brand-300">
-            <div className="flex items-start justify-between gap-2"><span className="text-sm font-semibold text-slate-900">{w.name}</span><DeptBadge dept={w.dept} /></div>
-            <p className="mt-1 line-clamp-2 flex-1 text-xs text-slate-500">{w.description}</p>
-            <div className="mt-3"><StepTrail steps={stepsOf(w)} max={3} /></div>
-            <div className="mt-3 flex gap-2">
-              <Button size="sm" variant="primary" icon={Play} to={runLink(w)} className="flex-1 justify-center">ใช้งาน</Button>
-              <Button size="icon" variant="ghost" icon={Pencil} to={`/workflows?id=${w.id}`} aria-label={`ดูหรือแก้ ${w.name}`} title="ดู / แก้" />
-            </div>
-          </div>
-        ))}
-      </div>
+      {items.length > 0 && <WorkflowCards items={showAll ? items : items.slice(0, SHOWN_SUGGESTIONS)} labelledBy="wf-suggestions" />}
     </section>
   )
 }
@@ -143,6 +128,7 @@ function DraftEditor({ initial, workflow, onCancel }) {
         : <p className="flex items-center gap-1.5 text-xs font-medium text-brand-700"><Sparkles className="size-4" /> AI ร่างสายงานให้แล้ว — ตรวจลำดับขั้นตอนด้านล่าง</p>}
       <input value={name} onChange={(e) => setName(e.target.value)} aria-label="ชื่อสายงาน" className="mt-2 w-full rounded-lg border border-transparent px-2 py-1 text-lg font-semibold text-slate-900 hover:border-slate-200 focus:border-brand-400 focus:outline-none" />
       <p className="px-2 text-xs text-slate-400">{workflow ? initial.prompt : `จาก: ${initial.prompt}`}</p>
+      {workflow && <WorkflowStats workflow={workflow} className="mt-1 px-2" />}
 
       <ol className="mt-4 space-y-2" aria-label="ขั้นตอนของสายงาน">
         {refs.map((r, i) => {
@@ -247,7 +233,7 @@ function Landing() {
                     <div className="truncate text-sm font-medium text-slate-800">{w.name}</div>
                     <div className="mt-1"><StepTrail steps={stepsOf(w)} /></div>
                   </div>
-                  <Button size="sm" variant="primary" icon={Play} to={runLink(w)}>ใช้งาน</Button>
+                  <Button size="sm" variant="subtle" icon={Play} to={runLink(w)}>ใช้งาน</Button>
                 </div>
               ))}
             </div>
@@ -257,9 +243,9 @@ function Landing() {
 
       {(shared.length > 0 || filter) && <Suggestions key={filter} items={shared} />}
       <section>
-        <h2 className="mb-2 text-sm font-semibold text-slate-900">สายงานของฉัน</h2>
+        <h2 id="wf-mine" className="mb-3 text-sm font-semibold text-slate-900">สายงานของฉัน</h2>
         {mine.length
-          ? <WorkflowRows items={mine} />
+          ? <WorkflowCards items={mine} labelledBy="wf-mine" />
           : <p className="rounded-xl border border-dashed border-slate-200 p-4 text-sm text-slate-400">ยังไม่มี — พิมพ์ด้านบนเพื่อสร้าง กด “ใช้งาน” สายงานแนะนำ หรือกด “บันทึกไว้ใช้ซ้ำ” ใต้แชตที่ใช้ได้ผล</p>}
       </section>
     </div>

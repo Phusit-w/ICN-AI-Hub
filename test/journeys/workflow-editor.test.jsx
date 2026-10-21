@@ -16,7 +16,7 @@ describe('Editing a Workflow', () => {
   it('opens the simple editor first, with the detailed builder behind "ขั้นสูง"', async () => {
     const app = startJourney('/workflows')
 
-    await app.click(screen.getByRole('link', { name: 'ดูหรือแก้ Market Research Report' }))
+    await app.click(screen.getByRole('link', { name: 'Market Research Report' }))
 
     expect(screen.getByRole('textbox', { name: 'ชื่อสายงาน' })).toHaveValue('Market Research Report')
     expect(stepNames()).toEqual(['Research Agent', 'Data Agent', 'Document Agent', 'Image Agent'])
@@ -37,7 +37,7 @@ describe('Editing a Workflow', () => {
     expect(app.url()).toBe('/workflows')
     expect(screen.getAllByText('Market Research Report')).toHaveLength(1)
 
-    await app.click(screen.getByRole('link', { name: 'ดูหรือแก้ Market Research Report' }))
+    await app.click(screen.getByRole('link', { name: 'Market Research Report' }))
     expect(stepNames()).toEqual(['Data Agent', 'Research Agent', 'Document Agent', 'Image Agent'])
   })
 
