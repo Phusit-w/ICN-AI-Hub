@@ -1,15 +1,21 @@
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes, useSearchParams } from 'react-router-dom'
 import AppShell from './components/layout/AppShell'
 import Home from './pages/Home'
 import Workspace from './pages/Workspace'
 import AgentLibrary from './pages/AgentLibrary'
 import AgentDetail from './pages/AgentDetail'
 import CreateAgent from './pages/CreateAgent'
-import SkillLibrary from './pages/SkillLibrary'
 import CreateSkill from './pages/CreateSkill'
 import Workflows from './pages/Workflows'
 import Community from './pages/Community'
 import Governance from './pages/Governance'
+import { skillLink } from './lib/routes'
+
+// Skills moved into a tab of the Agents page; old links (shared demo links too) keep their open Skill.
+function OldSkillsLink() {
+  const [params] = useSearchParams()
+  return <Navigate to={skillLink(params.get('open'))} replace />
+}
 
 export default function App() {
   return (
@@ -20,7 +26,7 @@ export default function App() {
         <Route path="agents" element={<AgentLibrary />} />
         <Route path="agents/new" element={<CreateAgent />} />
         <Route path="agents/:id" element={<AgentDetail />} />
-        <Route path="skills" element={<SkillLibrary />} />
+        <Route path="skills" element={<OldSkillsLink />} />
         <Route path="skills/new" element={<CreateSkill />} />
         <Route path="workflows" element={<Workflows />} />
         <Route path="community" element={<Community />} />

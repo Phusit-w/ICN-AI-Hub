@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { ArrowRight, Lightbulb, Play, Plus, SlidersHorizontal, Sparkles, Star } from 'lucide-react'
 import { useStore } from '../store/AppStore'
 import { deptById, modelById, userById } from '../data/catalog'
@@ -8,8 +8,10 @@ import { agentSearchText } from '../lib/agentDraft'
 import Button from '../components/ui/Button'
 import { DeptBadge, Rating } from '../components/ui/Badge'
 import { Select } from '../components/ui/Form'
+import Tabs from '../components/ui/Tabs'
 import EntityIcon from '../components/agents/EntityIcon'
 import { FavoriteButton } from '../components/agents/AgentCard'
+import SkillsTab from './SkillsTab'
 
 // One-tap shortcuts for people who don't know what to type yet.
 const NEEDS = [
@@ -58,7 +60,7 @@ function CreateFromSearch({ q }) {
   )
 }
 
-export default function AgentLibrary() {
+function AgentsTab() {
   const { state } = useStore()
   const me = userById(state.userId)
   const [q, setQ] = useState('')
@@ -95,7 +97,7 @@ export default function AgentLibrary() {
   const typedNoMatch = q.trim() && top.length === 0
 
   return (
-    <div className="mx-auto max-w-5xl pt-2 lg:pt-6">
+    <>
       <section className="text-center" data-tour="agents-filters">
         <span className="inline-flex size-12 items-center justify-center rounded-2xl bg-brand-50 text-brand-600"><Sparkles className="size-6" /></span>
         <h1 className="mt-3 text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">วันนี้อยากให้ช่วยเรื่องอะไร?</h1>
@@ -176,6 +178,23 @@ export default function AgentLibrary() {
         )}
         <Link to="/agents/new" className="mt-4 inline-flex items-center gap-1 text-[13px] text-slate-500 hover:text-brand-700">ไม่เจอที่ต้องการ? สร้างผู้ช่วยของคุณเอง ไม่ต้องเขียนโค้ด <ArrowRight className="size-3.5" /></Link>
       </section>
-    </div>
+    </>
+  )
+}
+
+const TABS = [
+  { id: 'agents', label: 'ผู้ช่วย', content: <AgentsTab /> },
+  { id: 'skills', label: 'ทักษะ', content: <SkillsTab /> },
+]
+
+/** The Agents page: "ผู้ช่วย" and "ทักษะ" tabs. The tab lives in the URL (`?tab=skills`) so it can be linked. */
+export default function AgentLibrary() {
+  const [params, setParams] = useSearchParams()
+  const tab = params.get('tab') === 'skills' ? 'skills' : 'agents'
+  return (
+    <Tabs
+      label="คลังผู้ช่วย AI" tabs={TABS} value={tab} className="mx-auto max-w-5xl"
+      onChange={(t) => setParams(t === 'skills' ? { tab: t } : {})}
+    />
   )
 }

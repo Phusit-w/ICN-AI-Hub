@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import {
-  Bell, Bot, LayoutDashboard, Menu, PanelLeftClose, PanelLeftOpen, Plus, Puzzle, Server, ShieldCheck, Sparkles, Users, Workflow, X, Cloud,
+  Bell, Bot, LayoutDashboard, Menu, PanelLeftClose, PanelLeftOpen, Plus, Server, ShieldCheck, Sparkles, Workflow, X, Cloud,
 } from 'lucide-react'
 import { useStore } from '../../store/AppStore'
 import { userById } from '../../data/catalog'
 import { cn } from '../../lib/utils'
+import { skillLink } from '../../lib/routes'
 import usePersistentState from '../../lib/usePersistentState'
 import { Avatar, Toaster } from '../ui/Overlay'
 import Button from '../ui/Button'
@@ -18,12 +19,8 @@ const NAV = [
   { section: 'งานของฉัน', items: [
     { to: '/', label: 'หน้าหลัก', icon: LayoutDashboard, end: true },
     { to: '/workspace', label: 'สั่งงาน AI', icon: Sparkles, live: true },
-    { to: '/workflows', label: 'สร้างสายงาน (Workflow)', icon: Workflow },
-  ] },
-  { section: 'คลัง', items: [
-    { to: '/agents', label: 'ผู้ช่วย AI (Agents)', icon: Bot },
-    { to: '/skills', label: 'ทักษะ (Skills)', icon: Puzzle },
-    { to: '/community', label: 'ชุมชน', icon: Users },
+    { to: '/workflows', label: 'สายงาน', icon: Workflow },
+    { to: '/agents', label: 'ผู้ช่วย AI', icon: Bot },
   ] },
   { section: 'องค์กร', items: [
     { to: '/governance', label: 'ภาพรวมและการกำกับดูแล', icon: ShieldCheck },
@@ -125,7 +122,7 @@ function GlobalSearch() {
   const match = (s) => s.toLowerCase().includes(term)
   const results = term ? [
     ...state.agents.filter((a) => match(a.name) || match(a.description)).slice(0, 5).map((a) => ({ id: a.id, label: a.name, sub: 'ผู้ช่วย', icon: a.kind, to: `/agents/${a.id}` })),
-    ...state.skills.filter((s) => match(s.name) || match(s.purpose)).slice(0, 4).map((s) => ({ id: s.id, label: s.name, sub: 'ทักษะ', icon: s.icon, to: `/skills?open=${s.id}`, skill: true })),
+    ...state.skills.filter((s) => match(s.name) || match(s.purpose)).slice(0, 4).map((s) => ({ id: s.id, label: s.name, sub: 'ทักษะ', icon: s.icon, to: skillLink(s.id), skill: true })),
     ...state.workflows.filter((w) => match(w.name)).slice(0, 3).map((w) => ({ id: w.id, label: w.name, sub: 'สายงาน', icon: 'condition', to: `/workflows?id=${w.id}`, skill: true })),
   ] : []
 
