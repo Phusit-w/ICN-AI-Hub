@@ -73,7 +73,7 @@ Old links: / → /workspace · /community → /agents?filter=popular · /skills(
 - **องค์กร** — สิ่งที่ผู้ดูแลควบคุม: ค่าใช้จ่าย, Model, สิทธิ์, นโยบาย, Audit log, ผู้มีส่วนร่วม
 - **ของที่แชร์** ไม่มีหน้าแยก: อยู่ในแต่ละ library ผ่านชิป "ยอดนิยมในองค์กร" / "แชร์ให้ฉัน" และปุ่มหลักคือ **ใช้งาน** เสมอ (Workflow ที่แชร์ใช้ได้ทันทีโดยไม่ต้องคัดลอก)
 
-Object ทุกตัวมีชุด metadata เดียวกัน: Owner · Department · Share level (Private/Department/Company) · Version · Rating · Usage — การ์ดแสดงแค่ไอคอน ชื่อ คำอธิบาย 1 บรรทัด และปุ่ม "ใช้งาน" ตัวเลขอื่นอยู่ในหน้ารายละเอียด
+Object ทุกตัวมีชุด metadata เดียวกัน: Owner · Department · Share level (Private/Department/Company) · Version · Usage · Feedback (Agent) — การ์ดแสดงแค่ไอคอน ชื่อ คำอธิบาย 1 บรรทัด และปุ่ม "ใช้งาน" ตัวเลขอื่นอยู่ในหน้ารายละเอียด
 
 ## 4. Main user flows
 
@@ -112,7 +112,7 @@ Object ทุกตัวมีชุด metadata เดียวกัน: Owne
 | 5 | **Create Agent / Create Skill** | หน้าเดียว: บอก → AI กรอก → ตรวจ → สร้าง (ปุ่มหลักปุ่มเดียว) | Wizard / ฟอร์มเต็มหลัง "ตั้งค่าขั้นสูง" · Data classification ล็อก Cloud model · Run test ของ Skill |
 | 6 | **สายงาน (Workflows)** | ช่องเล่าขั้นตอน → ร่าง · ชิปแชร์ · การ์ดสายงาน (ใช้งาน) · สายงานของฉัน | Editor แบบง่ายเป็นค่าเริ่มต้น · ตัวสร้างละเอียด (Palette · Canvas · Inspector, condition loop, Test run) หลัง "ขั้นสูง" |
 | 7 | **ภาพรวมและการกำกับดูแล** | 4 ตัวเลขหลัก · แท็บรายละเอียดด้านล่าง | ทุกกราฟแยกสี Local (เขียว) / Cloud (เทา) · leaderboard ผู้มีส่วนร่วมย้ายมาอยู่ที่นี่ |
-| 8 | **Agent Detail** | Hero (icon, name, meta, ★, **ใช้งาน**, คัดลอกไปปรับใช้ = รอง) · ทำอะไร + ตัวอย่างคำสั่ง, Skills, Workflows, Version history · Model, Output, Knowledge, Tools | ตัวเลข uses / rating / version อยู่ที่นี่ ไม่อยู่บนการ์ด |
+| 8 | **Agent Detail** | Hero (icon, name, meta, Feedback "มีประโยชน์ X% จาก N ครั้ง", **ใช้งาน**, คัดลอกไปปรับใช้ = รอง) · ทำอะไร + ตัวอย่างคำสั่ง, Skills, Workflows, Version history · Model, Output, Knowledge, Tools | ตัวเลข uses / Feedback / version อยู่ที่นี่ ไม่อยู่บนการ์ด |
 
 **Responsive:** Sidebar → drawer (< lg), grid ลดคอลัมน์, panel ขั้นตอนเต็มจอบนมือถือ, ตารางเลื่อนแนวนอน, Modal เป็น bottom sheet บนมือถือ, ไม่มี scroll แนวนอนทั้งหน้า
 
@@ -123,14 +123,14 @@ Object ทุกตัวมีชุด metadata เดียวกัน: Owne
 | `layout/` | `AppShell` (Sidebar: แชตใหม่, GlobalSearch, เมนู 3 รายการ, ChatHistory, ผู้ใช้ = เมนูโปรไฟล์สลับมุมมอง; ย่อได้ · Topbar โล่ง (วิธีใช้) · mobile drawer) · `Help` (`TERMS` คำศัพท์รวม Plan, WelcomeCard, ปุ่มวิธีใช้/เริ่มทัวร์) |
 | `tour/` | `Tour` (spotlight + popover, ข้ามขั้นที่มองไม่เห็น) · `steps.js` (5 ขั้น: ช่องสั่งงาน, ใช้ซ้ำ, ค้นหา, ผู้ช่วย AI, พร้อมแล้ว) |
 | `ui/Button` | variants: primary · secondary · ghost · subtle · danger; sizes sm/md/lg/icon; `to` → router Link |
-| `ui/Badge` | `Badge`, `StatusPill` (Waiting/Processing/Completed/Sent back/Ready/Running), `ModelBadge` (Local/Cloud/Auto), `DeptBadge`, `ShareBadge`, `Rating` |
+| `ui/Badge` | `Badge`, `StatusPill` (Waiting/Processing/Completed/Sent back/Ready/Running), `ModelBadge` (Local/Cloud/Auto), `DeptBadge`, `ShareBadge` |
 | `ui/Card` | `Card`, `CardHeader`, `PageHeader`, `StatCard`, `EmptyState`, `ProgressBar` |
 | `ui/Form` | `Field`, `Input`, `Textarea`, `Select`, `SearchInput`, `Toggle`, `Segmented`, `ChoiceCard` (single/multi) |
 | `ui/` (อื่นๆ) | `Tabs` (WAI-ARIA tabs: หน้าผู้ช่วย, Governance) · `Menu` ("⋯", หรือ trigger ที่กำหนดเอง เช่น เมนูโปรไฟล์) · `ShareFilterChips` (ยอดนิยม / แชร์ให้ฉัน) · `QuickCreate` (บอก → AI กรอก → สร้าง) · `Attachments` · `TypewriterHint` |
 | `ui/Overlay` | `Modal`, `Toaster`, `Avatar` |
 | `agents/` | `EntityIcon` (agent = brand tint, skill = neutral), `AgentCard` (`ItemCard`: การ์ดเดียวกันของ Agent และ Workflow — ไอคอน, ชื่อ, คำอธิบาย 1 บรรทัด, "ใช้งาน"; `FavoriteButton`) |
 | `skills/` | `SkillCard` |
-| `workflow/` | `Pipeline` (panel ขั้นตอน), `ArtifactView` (bullets/table/doc/diagram/checklist), `ComposerPick` (Agent หรือ Workflow ที่เลือกในช่องสั่งงาน), `ReuseRow` (แถวใช้ซ้ำในแชตใหม่), `SaveForReuse`, `WorkflowStats` (ใช้กี่ครั้ง, คะแนน, เวอร์ชัน — แสดงในหน้ารายละเอียด ไม่อยู่บนการ์ด) |
+| `workflow/` | `Pipeline` (panel ขั้นตอน), `ArtifactView` (bullets/table/doc/diagram/checklist), `ComposerPick` (Agent หรือ Workflow ที่เลือกในช่องสั่งงาน), `ReuseRow` (แถวใช้ซ้ำในแชตใหม่), `SaveForReuse`, `Feedback` (👍/👎 ใต้ Artifact), `WorkflowStats` (ใช้กี่ครั้ง, เวอร์ชัน — แสดงในหน้ารายละเอียด ไม่อยู่บนการ์ด) |
 
 Logic: `store/AppStore.jsx` (reducer + one clock for all runs) · `lib/runs.js` (`threadsOf` สำหรับประวัติการคุย, planner: chat หรือ Plan, model router, step engine with loop-back) · `lib/reuse.js` (บันทึกไว้ใช้ซ้ำ) · `lib/sharing.js` (ตัวกรองยอดนิยม / แชร์ให้ฉัน) · `lib/routes.js` (ลิงก์ไปแท็บทักษะ) · `lib/agentDraft.js`, `lib/skillDraft.js` (AI กรอกฟอร์มสร้าง) · `lib/mockOutputs.js`
 
@@ -162,7 +162,7 @@ Tests: `test/journeys/` — whole-app journey tests (Vitest + Testing Library) �
   skills: ['skill-requirement', 'skill-proposal-template', 'skill-pricing'],
   knowledge: ['kb-price', 'kb-cases'], tools: ['crm'],
   output: { format: 'Word document', language: 'TH', template: 'Sales Proposal v3' },
-  share: 'company', owner: 'u-thanawat', rating: 4.9, uses: 4870, version: '3.0' }
+  share: 'company', owner: 'u-thanawat', feedback: { up: 34, down: 3 }, uses: 4870, version: '3.0' }
 ```
 
 ## 9. ตัวอย่างต่อแผนก

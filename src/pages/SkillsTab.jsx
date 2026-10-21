@@ -6,7 +6,7 @@ import { SKILL_CATEGORIES } from '../data/skills'
 import { toolById, userById } from '../data/catalog'
 import { EmptyState } from '../components/ui/Card'
 import Button from '../components/ui/Button'
-import Badge, { Rating, ShareBadge } from '../components/ui/Badge'
+import Badge, { ShareBadge } from '../components/ui/Badge'
 import { ChoiceCard, SearchInput, Segmented } from '../components/ui/Form'
 import { Modal } from '../components/ui/Overlay'
 import SkillCard from '../components/skills/SkillCard'
@@ -49,7 +49,7 @@ function SkillDetail({ skill, onClose, onAttach }) {
       footer={<><Button variant="ghost" onClick={onClose}>ปิด</Button><Button variant="primary" icon={Plus} onClick={onAttach}>เพิ่มให้ผู้ช่วย</Button></>}
     >
       <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
-        <Badge>{skill.category}</Badge><ShareBadge share={skill.share} awaiting={isAwaitingCompanyShare(state, 'skill', skill.id)} /><Rating value={skill.rating} /><span>v{skill.version}</span><span>by {userById(skill.owner).name}</span>
+        <Badge>{skill.category}</Badge><ShareBadge share={skill.share} awaiting={isAwaitingCompanyShare(state, 'skill', skill.id)} /><span>v{skill.version}</span><span>by {userById(skill.owner).name}</span>
       </div>
       <div className="mt-5 grid gap-3 sm:grid-cols-[1fr_auto_1fr] sm:items-center">
         <div className="rounded-lg border border-slate-200 p-3"><p className="text-[11px] font-medium uppercase text-slate-400">Input</p><p className="mt-1 text-sm text-slate-700">{skill.input}</p></div>

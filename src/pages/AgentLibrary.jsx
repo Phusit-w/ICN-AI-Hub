@@ -27,7 +27,6 @@ const NEEDS = [
 
 const SORTS = {
   popular: (a, b) => b.uses - a.uses,
-  rating: (a, b) => b.rating - a.rating,
   newest: (a, b) => b.updated.localeCompare(a.updated),
 }
 
@@ -137,7 +136,7 @@ function AgentsTab() {
               <option value="all">ทุกระดับการแชร์</option><option value="company">ทั้งบริษัท</option><option value="department">ในแผนก</option><option value="private">เฉพาะฉัน</option>
             </Select>
             <Select value={sort} onChange={(e) => setSort(e.target.value)} className="w-auto" aria-label="เรียงตาม">
-              <option value="popular">ใช้บ่อยที่สุด</option><option value="rating">คะแนนสูงสุด</option><option value="newest">อัปเดตล่าสุด</option>
+              <option value="popular">ใช้บ่อยที่สุด</option><option value="newest">อัปเดตล่าสุด</option>
             </Select>
           </div>
         )}

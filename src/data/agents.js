@@ -17,7 +17,7 @@ export const AGENTS = [
     instruction: 'You are a research analyst for ICN. Search reliable sources, prefer company knowledge first, and always cite sources. Summarize in Thai bullet points.',
     model: 'auto', skills: ['skill-web-research', 'skill-citation'], knowledge: ['kb-market'], tools: ['web-search', 'sharepoint'],
     output: { format: 'Short answer', language: 'TH', template: 'Research Brief v2' },
-    owner: 'u-kittipong', rating: 4.8, uses: 12840, version: '3.2', updated: '2026-10-12',
+    owner: 'u-kittipong', feedback: { up: 9, down: 1 }, uses: 12840, version: '3.2', updated: '2026-10-12',
     examples: ['หาข้อมูลตลาด EV Charger ในไทย', 'สรุปคู่แข่ง 5 รายในธุรกิจ Logistics'],
     versions: [
       { v: '3.2', date: '2026-10-12', by: 'u-kittipong', note: 'เพิ่ม Citation Skill อ้างอิงแหล่งที่มาอัตโนมัติ' },
@@ -31,7 +31,7 @@ export const AGENTS = [
     instruction: 'Write professional business documents following the ICN Corporate Report template. Keep tone formal and concise.',
     model: 'claude', skills: ['skill-report-format', 'skill-grammar-th', 'skill-proposal-template'], knowledge: ['kb-brand'], tools: ['doc-gen'],
     output: { format: 'Word document', language: 'TH', template: 'ICN Corporate Report' },
-    owner: 'u-kittipong', rating: 4.7, uses: 10215, version: '2.4', updated: '2026-09-28',
+    owner: 'u-kittipong', feedback: { up: 20, down: 3 }, uses: 10215, version: '2.4', updated: '2026-09-28',
     examples: ['ทำรายงานสรุปผลประชุมเป็น Word', 'แปลง bullet เป็นรายงานทางการ'],
     versions: [{ v: '2.4', date: '2026-09-28', by: 'u-kittipong', note: 'รองรับ Proposal Template v3' }],
   }),
@@ -41,7 +41,7 @@ export const AGENTS = [
     instruction: 'Create clean diagrams and illustrations using ICN brand colors. No text-heavy images.',
     model: 'icn-image', skills: ['skill-brand-visual'], knowledge: ['kb-brand'], tools: ['image-gen'],
     output: { format: 'Image / Diagram', language: 'EN', template: 'ICN Diagram Style' },
-    owner: 'u-kittipong', rating: 4.5, uses: 6120, version: '1.6', updated: '2026-09-10',
+    owner: 'u-kittipong', feedback: { up: 27, down: 9 }, uses: 6120, version: '1.6', updated: '2026-09-10',
     examples: ['วาด Architecture diagram ของระบบ', 'ทำ Infographic สรุปตัวเลข'],
   }),
   agent({
@@ -50,7 +50,7 @@ export const AGENTS = [
     instruction: 'Analyze tabular data with Python. Always state assumptions and show the key numbers first.',
     model: 'icn-llama', skills: ['skill-data-analysis', 'skill-chart-style'], tools: ['code', 'sharepoint'],
     output: { format: 'Excel table', language: 'TH', template: 'Insight Summary' },
-    owner: 'u-pranee', rating: 4.6, uses: 7430, version: '2.0', updated: '2026-10-01',
+    owner: 'u-pranee', feedback: { up: 11, down: 3 }, uses: 7430, version: '2.0', updated: '2026-10-01',
     examples: ['วิเคราะห์ยอดขายรายภาค Q3', 'หา Top 10 สินค้าที่โตเร็วที่สุด'],
   }),
   agent({
@@ -59,7 +59,7 @@ export const AGENTS = [
     instruction: 'Write secure, readable code. Explain changes briefly. Never include credentials.',
     model: 'claude', skills: ['skill-code-review'], tools: ['code'],
     output: { format: 'Short answer', language: 'EN', template: '—' },
-    owner: 'u-somchai', rating: 4.6, uses: 3980, version: '1.3', updated: '2026-08-21',
+    owner: 'u-somchai', feedback: { up: 22, down: 5 }, uses: 3980, version: '1.3', updated: '2026-08-21',
     examples: ['เขียน SQL ดึงยอดขายรายเดือน', 'รีวิว Python script นี้'],
   }),
   agent({
@@ -68,7 +68,7 @@ export const AGENTS = [
     instruction: 'Review the draft against the checklist. If required information is missing, send it back with a clear reason.',
     model: 'auto', skills: ['skill-grammar-th', 'skill-compliance'], tools: [],
     output: { format: 'Short answer', language: 'TH', template: 'Review Checklist' },
-    owner: 'u-kittipong', rating: 4.7, uses: 9010, version: '1.9', updated: '2026-10-05',
+    owner: 'u-kittipong', feedback: { up: 34, down: 6 }, uses: 9010, version: '1.9', updated: '2026-10-05',
     examples: ['ตรวจ Proposal ก่อนส่งลูกค้า', 'เช็ค PDPA ในเอกสาร'],
   }),
   agent({
@@ -77,7 +77,7 @@ export const AGENTS = [
     instruction: 'Translate faithfully, keep ICN glossary terms unchanged.',
     model: 'typhoon', skills: ['skill-grammar-th'], tools: ['sharepoint'],
     output: { format: 'Word document', language: 'Multi', template: 'Keep original layout' },
-    owner: 'u-kittipong', rating: 4.4, uses: 5210, version: '1.2', updated: '2026-07-30',
+    owner: 'u-kittipong', feedback: { up: 13, down: 5 }, uses: 5210, version: '1.2', updated: '2026-07-30',
   }),
   agent({
     id: 'agent-sales-proposal', name: 'Sales Proposal Agent', kind: 'sales', dept: 'sales',
@@ -85,7 +85,7 @@ export const AGENTS = [
     instruction: 'Act as an ICN presales consultant. Map customer requirements to ICN solutions, estimate price using the price list, and highlight risks.',
     model: 'auto', skills: ['skill-requirement', 'skill-proposal-template', 'skill-pricing'], knowledge: ['kb-price', 'kb-cases'], tools: ['crm'],
     output: { format: 'Word document', language: 'TH', template: 'Sales Proposal v3' },
-    owner: 'u-thanawat', rating: 4.9, uses: 4870, version: '3.0', updated: '2026-10-15',
+    owner: 'u-thanawat', feedback: { up: 34, down: 3 }, uses: 4870, version: '3.0', updated: '2026-10-15',
     examples: ['ทำ Proposal ระบบ Smart Warehouse ให้ Siam Logistics', 'สรุป Requirement จาก TOR นี้'],
     versions: [
       { v: '3.0', date: '2026-10-15', by: 'u-thanawat', note: 'ใช้ Pricing Calculator Skill คำนวณราคาอัตโนมัติ' },
@@ -99,7 +99,7 @@ export const AGENTS = [
     instruction: 'Summarize account history from CRM: revenue, open opportunities, last issues, key contacts.',
     model: 'icn-llama', classification: 'confidential', share: 'department', skills: ['skill-meeting-summary'], tools: ['crm'],
     output: { format: 'Short answer', language: 'TH', template: 'Account Brief' },
-    owner: 'u-kanya', rating: 4.6, uses: 1940, version: '1.4', updated: '2026-09-02',
+    owner: 'u-kanya', feedback: { up: 35, down: 9 }, uses: 1940, version: '1.4', updated: '2026-09-02',
   }),
   agent({
     id: 'agent-hr-policy', name: 'HR Policy Agent', kind: 'hr', dept: 'hr',
@@ -107,7 +107,7 @@ export const AGENTS = [
     instruction: 'Answer HR policy questions only from the Employee Handbook. Quote the section number. If unsure, refer to HR.',
     model: 'typhoon', skills: ['skill-policy-lookup', 'skill-citation'], knowledge: ['kb-handbook'], tools: [],
     output: { format: 'Short answer', language: 'TH', template: 'Policy Answer' },
-    owner: 'u-arisa', rating: 4.8, uses: 8650, version: '2.1', updated: '2026-10-08',
+    owner: 'u-arisa', feedback: { up: 20, down: 2 }, uses: 8650, version: '2.1', updated: '2026-10-08',
     examples: ['ลาพักร้อนสะสมได้กี่วัน', 'สวัสดิการค่ารักษาพยาบาลครอบคลุมอะไรบ้าง'],
   }),
   agent({
@@ -116,7 +116,7 @@ export const AGENTS = [
     instruction: 'Score each candidate against the JD. Ignore age, gender, religion and photos. Explain each score.',
     model: 'icn-llama', classification: 'confidential', share: 'department', skills: ['skill-requirement'], knowledge: ['kb-jd'],
     output: { format: 'Excel table', language: 'TH', template: 'Candidate Scorecard' },
-    owner: 'u-arisa', rating: 4.5, uses: 1320, version: '1.1', updated: '2026-08-15',
+    owner: 'u-arisa', feedback: { up: 26, down: 9 }, uses: 1320, version: '1.1', updated: '2026-08-15',
   }),
   agent({
     id: 'agent-onboarding', name: 'Onboarding Agent', kind: 'hr', dept: 'hr',
@@ -124,7 +124,7 @@ export const AGENTS = [
     instruction: 'Create a personalized onboarding plan by role and department.',
     model: 'auto', skills: ['skill-report-format'], knowledge: ['kb-handbook'], tools: ['email'],
     output: { format: 'Word document', language: 'TH', template: 'Onboarding Plan' },
-    owner: 'u-arisa', rating: 4.6, uses: 980, version: '1.0', updated: '2026-09-20',
+    owner: 'u-arisa', feedback: { up: 10, down: 3 }, uses: 980, version: '1.0', updated: '2026-09-20',
   }),
   agent({
     id: 'agent-it-support', name: 'IT Support Agent', kind: 'it', dept: 'it',
@@ -132,7 +132,7 @@ export const AGENTS = [
     instruction: 'Troubleshoot step by step using the IT Knowledge Base. Open a ServiceNow ticket if unresolved after 3 steps.',
     model: 'gpt', skills: ['skill-ticket'], knowledge: ['kb-it'], tools: ['servicenow'],
     output: { format: 'Short answer', language: 'TH', template: 'Step-by-step Guide' },
-    owner: 'u-somchai', rating: 4.7, uses: 11420, version: '2.6', updated: '2026-10-10',
+    owner: 'u-somchai', feedback: { up: 22, down: 4 }, uses: 11420, version: '2.6', updated: '2026-10-10',
     examples: ['VPN ต่อไม่ได้', 'ขอสิทธิ์เข้า Shared Drive ของฝ่าย'],
   }),
   agent({
@@ -141,7 +141,7 @@ export const AGENTS = [
     instruction: 'Check against ICN Security Baseline. Rate findings High/Medium/Low.',
     model: 'icn-llama', classification: 'confidential', skills: ['skill-compliance'], knowledge: ['kb-it'],
     output: { format: 'Excel table', language: 'EN', template: 'Security Findings' },
-    owner: 'u-somchai', rating: 4.5, uses: 760, version: '1.2', updated: '2026-09-01',
+    owner: 'u-somchai', feedback: { up: 29, down: 10 }, uses: 760, version: '1.2', updated: '2026-09-01',
   }),
   agent({
     id: 'agent-invoice', name: 'Invoice Reconciliation Agent', kind: 'accounting', dept: 'accounting',
@@ -149,7 +149,7 @@ export const AGENTS = [
     instruction: 'Perform 3-way match. List mismatches with amount differences and likely causes.',
     model: 'icn-llama', classification: 'confidential', share: 'department', skills: ['skill-3way-match', 'skill-data-analysis'], knowledge: ['kb-coa'], tools: ['sap'],
     output: { format: 'Excel table', language: 'TH', template: 'Reconciliation Report' },
-    owner: 'u-nok', rating: 4.8, uses: 2210, version: '1.5', updated: '2026-10-03',
+    owner: 'u-nok', feedback: { up: 15, down: 2 }, uses: 2210, version: '1.5', updated: '2026-10-03',
   }),
   agent({
     id: 'agent-budget', name: 'Budget Analysis Agent', kind: 'accounting', dept: 'accounting',
@@ -157,7 +157,7 @@ export const AGENTS = [
     instruction: 'Compare actual vs budget by cost center. Explain variances over 5%.',
     model: 'icn-llama', classification: 'confidential', skills: ['skill-data-analysis', 'skill-chart-style'], knowledge: ['kb-coa'], tools: ['sap', 'code'],
     output: { format: 'Excel table', language: 'TH', template: 'Variance Report' },
-    owner: 'u-nok', rating: 4.6, uses: 1580, version: '1.3', updated: '2026-09-25',
+    owner: 'u-nok', feedback: { up: 24, down: 6 }, uses: 1580, version: '1.3', updated: '2026-09-25',
   }),
   // Department agents, drafted from docs/department-agents.md.
   agent({
@@ -166,7 +166,7 @@ export const AGENTS = [
     instruction: 'Check every SOC row against the cited Datasheet page. Report page, item label and highlight issues. Do not decide Comply/Better.',
     model: 'icn-llama', classification: 'confidential', share: 'department', skills: ['skill-soc-check'], knowledge: ['kb-datasheets'],
     output: { format: 'Excel table', language: 'TH', template: 'SOC Check Result' },
-    owner: 'u-ploy', rating: 4.9, uses: 640, version: '1.2', updated: '2026-10-14',
+    owner: 'u-ploy', feedback: { up: 41, down: 2 }, uses: 640, version: '1.2', updated: '2026-10-14',
     examples: ['ตรวจ SOC ภาคผนวก ก กับ Datasheet ที่แนบ', 'เช็ค Highlight ใน Catalog ว่าครบทุกข้อไหม'],
   }),
   agent({
@@ -175,7 +175,7 @@ export const AGENTS = [
     instruction: 'Split the TOR into numbered requirements. Map each to the offered spec and the Datasheet page that proves it.',
     model: 'icn-llama', classification: 'confidential', share: 'department', skills: ['skill-requirement'], knowledge: ['kb-datasheets'],
     output: { format: 'Excel table', language: 'TH', template: 'Compliance Matrix' },
-    owner: 'u-ploy', rating: 4.7, uses: 410, version: '1.0', updated: '2026-09-30',
+    owner: 'u-ploy', feedback: { up: 18, down: 3 }, uses: 410, version: '1.0', updated: '2026-09-30',
     examples: ['ทำ Compliance Matrix จาก TOR นี้', 'เทียบสเปค Switch 3 ยี่ห้อกับ TOR'],
   }),
   agent({
@@ -184,7 +184,7 @@ export const AGENTS = [
     instruction: 'Write minutes in the project template. List action items with owner and due date. Mark decisions clearly.',
     model: 'icn-llama', classification: 'confidential', share: 'department', skills: ['skill-meeting-summary'], knowledge: ['kb-project-templates'],
     output: { format: 'Word document', language: 'TH', template: 'Project Minutes' },
-    owner: 'u-wichai', rating: 4.8, uses: 2310, version: '1.3', updated: '2026-10-11',
+    owner: 'u-wichai', feedback: { up: 31, down: 3 }, uses: 2310, version: '1.3', updated: '2026-10-11',
     examples: ['สรุปประชุมโครงการกับลูกค้าจากไฟล์เสียงนี้', 'ทำ Action Items จากโน้ตประชุมเช้านี้'],
   }),
   agent({
@@ -193,7 +193,7 @@ export const AGENTS = [
     instruction: 'Turn the weekly notes into the customer progress report. Compare against contract milestones.',
     model: 'icn-llama', classification: 'confidential', share: 'department', skills: ['skill-progress-report'], knowledge: ['kb-project-templates', 'kb-contracts'], tools: ['doc-gen'],
     output: { format: 'Word document', language: 'TH', template: 'Weekly Progress Report' },
-    owner: 'u-wichai', rating: 4.8, uses: 1980, version: '1.1', updated: '2026-10-09',
+    owner: 'u-wichai', feedback: { up: 11, down: 1 }, uses: 1980, version: '1.1', updated: '2026-10-09',
     examples: ['ทำรายงานความคืบหน้าสัปดาห์นี้: เดินสายชั้น 3 เสร็จ รอ Rack', 'สรุปความคืบหน้างวดที่ 2 ส่งลูกค้า'],
   }),
   agent({
@@ -202,7 +202,7 @@ export const AGENTS = [
     instruction: 'Group photos by area, caption each with what was installed, and lay them out two per row.',
     model: 'icn-llama', classification: 'confidential', share: 'department', skills: ['skill-report-format'], knowledge: ['kb-project-templates'], tools: ['doc-gen'],
     output: { format: 'Word document', language: 'TH', template: 'Site Photo Report' },
-    owner: 'u-wichai', rating: 4.6, uses: 870, version: '1.0', updated: '2026-09-18',
+    owner: 'u-wichai', feedback: { up: 20, down: 5 }, uses: 870, version: '1.0', updated: '2026-09-18',
     examples: ['ทำรายงานรูปหน้างาน 20 รูปนี้', 'ใส่คำบรรยายรูปติดตั้งกล้อง CCTV'],
   }),
   agent({
@@ -211,7 +211,7 @@ export const AGENTS = [
     instruction: 'Draft the handover for the given milestone from the contract. List BOQ items that do not match the contract.',
     model: 'icn-llama', classification: 'confidential', share: 'department', knowledge: ['kb-contracts', 'kb-project-templates'], tools: ['doc-gen'],
     output: { format: 'Word document', language: 'TH', template: 'Handover Form' },
-    owner: 'u-wichai', rating: 4.7, uses: 640, version: '1.0', updated: '2026-09-05',
+    owner: 'u-wichai', feedback: { up: 32, down: 6 }, uses: 640, version: '1.0', updated: '2026-09-05',
     examples: ['ร่างใบส่งมอบงวดที่ 3', 'ตรวจ BOQ นี้เทียบกับสัญญา'],
   }),
   agent({
@@ -220,7 +220,7 @@ export const AGENTS = [
     instruction: 'Answer only from the equipment manuals. Give numbered steps and cite the manual page. Say so when the manual does not cover it.',
     model: 'icn-llama', skills: ['skill-citation'], knowledge: ['kb-manuals'],
     output: { format: 'Short answer', language: 'TH', template: 'Step-by-step Guide' },
-    owner: 'u-malee', rating: 4.8, uses: 3120, version: '1.4', updated: '2026-10-07',
+    owner: 'u-malee', feedback: { up: 14, down: 2 }, uses: 3120, version: '1.4', updated: '2026-10-07',
     examples: ['UPS ขึ้น error E05 แก้ยังไง', 'วิธี reset Access Point รุ่นนี้'],
   }),
   agent({
@@ -229,7 +229,7 @@ export const AGENTS = [
     instruction: 'Write the incident report and check response/restore time against the SLA for that contract.',
     model: 'icn-llama', classification: 'confidential', share: 'department', skills: ['skill-incident-report'], knowledge: ['kb-sla'],
     output: { format: 'Word document', language: 'TH', template: 'Incident Report' },
-    owner: 'u-malee', rating: 4.7, uses: 1460, version: '1.0', updated: '2026-09-27',
+    owner: 'u-malee', feedback: { up: 25, down: 4 }, uses: 1460, version: '1.0', updated: '2026-09-27',
     examples: ['ลิงก์ล่มที่สาขา A 10:15–11:40 สาเหตุไฟดับ ทำรายงาน', 'สรุป Incident เดือนนี้ที่เกิน SLA'],
   }),
   agent({
@@ -238,7 +238,7 @@ export const AGENTS = [
     instruction: 'Summarize the PM checklist, highlight items that failed or need parts, and attach photos.',
     model: 'icn-llama', share: 'department', skills: ['skill-report-format'], knowledge: ['kb-sla'], tools: ['doc-gen'],
     output: { format: 'Word document', language: 'TH', template: 'PM Report' },
-    owner: 'u-malee', rating: 4.6, uses: 920, version: '1.0', updated: '2026-09-12',
+    owner: 'u-malee', feedback: { up: 34, down: 8 }, uses: 920, version: '1.0', updated: '2026-09-12',
     examples: ['ทำรายงาน PM ไตรมาส 3 จาก Checklist นี้'],
   }),
   agent({
@@ -247,7 +247,7 @@ export const AGENTS = [
     instruction: 'Extract invoice fields into one row per invoice. Flag unreadable fields instead of guessing.',
     model: 'icn-llama', classification: 'confidential', share: 'department', skills: ['skill-data-analysis'],
     output: { format: 'Excel table', language: 'TH', template: 'Invoice Register' },
-    owner: 'u-nok', rating: 4.7, uses: 1730, version: '1.1', updated: '2026-10-02',
+    owner: 'u-nok', feedback: { up: 17, down: 3 }, uses: 1730, version: '1.1', updated: '2026-10-02',
     examples: ['ดึงข้อมูลใบแจ้งหนี้ 30 ใบนี้ลง Excel'],
   }),
   agent({
@@ -256,7 +256,7 @@ export const AGENTS = [
     instruction: 'Compare quotations line by line. Note payment terms, delivery and warranty. Draft the PR for the recommended vendor.',
     model: 'icn-llama', classification: 'confidential', share: 'department', skills: ['skill-data-analysis'],
     output: { format: 'Excel table', language: 'TH', template: 'Quotation Comparison' },
-    owner: 'u-arisa', rating: 4.6, uses: 760, version: '1.0', updated: '2026-09-22',
+    owner: 'u-arisa', feedback: { up: 26, down: 7 }, uses: 760, version: '1.0', updated: '2026-09-22',
     examples: ['เทียบใบเสนอราคาโน้ตบุ๊ก 3 ราย', 'ร่าง PR จากใบเสนอราคาที่ถูกที่สุด'],
   }),
   agent({
@@ -265,7 +265,7 @@ export const AGENTS = [
     instruction: 'Follow the listed-company minutes format: attendees, agenda, resolutions, votes. Keep it factual.',
     model: 'icn-llama', classification: 'confidential', share: 'department', skills: ['skill-meeting-summary', 'skill-report-format'], knowledge: ['kb-policies'],
     output: { format: 'Word document', language: 'TH', template: 'Board Minutes' },
-    owner: 'u-sudarat', rating: 4.7, uses: 210, version: '1.0', updated: '2026-09-15',
+    owner: 'u-sudarat', feedback: { up: 9, down: 2 }, uses: 210, version: '1.0', updated: '2026-09-15',
     examples: ['ร่างรายงานการประชุมกรรมการครั้งที่ 5', 'สรุปรายงานจาก 7 ฝ่ายเป็น 1 หน้าให้ CEO'],
   }),
   agent({
@@ -274,7 +274,7 @@ export const AGENTS = [
     instruction: 'Check the document against company policies. Cite the policy clause for every finding.',
     model: 'icn-llama', classification: 'confidential', share: 'department', skills: ['skill-compliance', 'skill-citation'], knowledge: ['kb-policies'],
     output: { format: 'Excel table', language: 'TH', template: 'Audit Findings' },
-    owner: 'u-sudarat', rating: 4.6, uses: 180, version: '1.0', updated: '2026-08-28',
+    owner: 'u-sudarat', uses: 180, version: '1.0', updated: '2026-08-28',
     examples: ['ตรวจขั้นตอนจัดซื้อนี้เทียบระเบียบ'],
   }),
 ]

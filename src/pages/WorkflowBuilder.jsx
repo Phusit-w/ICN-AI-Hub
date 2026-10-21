@@ -16,7 +16,7 @@ const H = 76
 const DRAG_TYPE = 'application/x-icn-node'
 
 const blankWorkflow = () => ({
-  id: uid('wf'), name: 'Untitled workflow', dept: 'sales', description: '', owner: 'u-kanya', uses: 0, rating: 0, version: '0.1',
+  id: uid('wf'), name: 'Untitled workflow', dept: 'sales', description: '', owner: 'u-kanya', uses: 0, version: '0.1',
   nodes: [
     { id: 'n1', type: 'trigger', label: 'ผู้ใช้ส่งคำขอ', x: 40, y: 60 },
     { id: 'n-out', type: 'output', label: 'ส่งผลลัพธ์', x: 700, y: 60 },

@@ -58,6 +58,8 @@ const initialState = () => ({
   favorites: ['agent-sales-proposal', 'agent-research', 'agent-customer-insight'],
   toasts: [],
   shareRequests: seedShareRequests(),
+  // Feedback on Artifacts, keyed by Run: { verdict: 'up' | 'down', reason? }.
+  feedback: {},
   auditLog: AUDIT_LOG,
 })
 
@@ -86,6 +88,8 @@ function reducer(state, action) {
       const exists = state.workflows.some((w) => w.id === action.workflow.id)
       return { ...state, workflows: exists ? state.workflows.map((w) => (w.id === action.workflow.id ? action.workflow : w)) : [...state.workflows, action.workflow] }
     }
+    case 'giveFeedback':
+      return { ...state, feedback: { ...state.feedback, [action.runId]: action.feedback } }
     case 'requestCompanyShare':
       return { ...state, shareRequests: [...state.shareRequests, action.request] }
     case 'decideShareRequest': {
@@ -179,6 +183,8 @@ export function AppStoreProvider({ children }) {
       attachSkill: (skillId, agentIds) => dispatch({ type: 'attachSkill', skillId, agentIds }),
       saveWorkflow: (workflow) => dispatch({ type: 'saveWorkflow', workflow }),
       toggleFavorite: (id) => dispatch({ type: 'toggleFavorite', id }),
+      /** Record (or change) the user's Feedback on a Run's Artifact; `reason` is optional and only kept with 👎. */
+      giveFeedback: (runId, verdict, reason) => dispatch({ type: 'giveFeedback', runId, feedback: reason ? { verdict, reason } : { verdict } }),
       /** The Admin approves (`approve` true) or sends back a Company sharing request; either way it is written to the audit log. */
       decideShareRequest: (id, approve) => dispatch({ type: 'decideShareRequest', id, approve, now: Date.now() }),
       // The first render's setter is enough: it only uses React's stable setter and the fixed storage key.

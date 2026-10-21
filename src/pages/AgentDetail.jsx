@@ -1,12 +1,13 @@
 import { Link, useParams } from 'react-router-dom'
-import { ArrowLeft, Copy, FileText, History, Lock, Play, Workflow, Wrench, BookOpen, Puzzle } from 'lucide-react'
+import { ArrowLeft, Copy, ThumbsUp, FileText, History, Lock, Play, Workflow, Wrench, BookOpen, Puzzle } from 'lucide-react'
 import { isAwaitingCompanyShare, useStore } from '../store/AppStore'
 import { DATA_CLASSES, deptById, knowledgeById, modelById, toolById, userById } from '../data/catalog'
 import { fmt } from '../lib/utils'
+import { feedbackLabel, feedbackSummary } from '../lib/feedback'
 import { skillLink } from '../lib/routes'
 import { Card, CardHeader, EmptyState } from '../components/ui/Card'
 import Button from '../components/ui/Button'
-import Badge, { DeptBadge, ModelBadge, Rating, ShareBadge } from '../components/ui/Badge'
+import Badge, { DeptBadge, ModelBadge, ShareBadge } from '../components/ui/Badge'
 import EntityIcon from '../components/agents/EntityIcon'
 import { FavoriteButton } from '../components/agents/AgentCard'
 import { Avatar } from '../components/ui/Overlay'
@@ -29,6 +30,7 @@ export default function AgentDetail() {
   }
   const model = modelById(agent.model)
   const owner = userById(agent.owner)
+  const summary = feedbackSummary(agent, state)
   const skills = agent.skills.map((s) => state.skills.find((x) => x.id === s)).filter(Boolean)
   const workflows = state.workflows.filter((w) => w.nodes.some((n) => n.ref === agent.id))
   const runs = state.runs.filter((r) => r.steps.some((s) => s.agentId === agent.id)).slice(0, 4)
@@ -51,7 +53,7 @@ export default function AgentDetail() {
             <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-slate-500">
               <DeptBadge dept={agent.dept} />
               <ShareBadge share={agent.share} awaiting={isAwaitingCompanyShare(state, 'agent', agent.id)} />
-              <Rating value={agent.rating || 0} />
+              <span className="flex items-center gap-1"><ThumbsUp className="size-3.5" aria-hidden />{feedbackLabel(summary)}</span>
               <span>{fmt(agent.uses)} ครั้งที่ใช้งาน</span>
               <span className="flex items-center gap-1.5"><Avatar name={owner.name} size="sm" /> {owner.name}</span>
               <span>อัปเดต {agent.updated}</span>

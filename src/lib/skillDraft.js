@@ -33,7 +33,7 @@ export function skillFromForm(form, { owner }) {
   const fields = { ...form }
   delete fields.based // only shown while drafting
   return {
-    id: uid('skill'), ...fields, name: form.name.trim(), purpose: form.purpose.trim(), owner, rating: 0, uses: 0, version: '1.0',
+    id: uid('skill'), ...fields, name: form.name.trim(), purpose: form.purpose.trim(), owner, uses: 0, version: '1.0',
     versions: [{ v: '1.0', date: new Date().toISOString().slice(0, 10), by: owner, note: 'สร้างใหม่' }],
   }
 }

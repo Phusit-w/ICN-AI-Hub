@@ -16,6 +16,7 @@ import EntityIcon from '../components/agents/EntityIcon'
 import Pipeline from '../components/workflow/Pipeline'
 import ArtifactView from '../components/workflow/ArtifactView'
 import SaveForReuse from '../components/workflow/SaveForReuse'
+import Feedback from '../components/workflow/Feedback'
 import ComposerPick, { pickFromParams, usePick } from '../components/workflow/ComposerPick'
 import ReuseRow from '../components/workflow/ReuseRow'
 import DepartmentAgents from '../components/agents/DepartmentAgents'
@@ -106,7 +107,7 @@ function StepChips({ steps, onRemove }) {
 
 /**
  * Under a finished Artifact, for chat and multi-Agent Runs alike: "ดาวน์โหลด" first, "บันทึกไว้ใช้ซ้ำ" beside it,
- * the rest in "⋯". Only the latest Run's download is brand-coloured, so the page keeps one primary button.
+ * the rest in "⋯", then 👍/👎 Feedback. Only the latest Run's download is brand-coloured, so the page keeps one primary button.
  */
 function ArtifactActions({ run, latest, onShowSteps }) {
   const { actions } = useStore()
@@ -119,6 +120,7 @@ function ArtifactActions({ run, latest, onShowSteps }) {
         { label: 'แชร์', icon: Share2, onSelect: () => actions.toast('คัดลอกลิงก์สำหรับแชร์แล้ว') },
         { label: 'ดูขั้นตอน', icon: ListChecks, onSelect: onShowSteps },
       ]} />
+      <Feedback run={run} />
     </div>
   )
 }

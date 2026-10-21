@@ -8,9 +8,9 @@ Spec: `.scratch/demo-two-views/spec.md` (stories 27–33).
 
 **Status:** ready-for-agent
 
-- [ ] 👍/👎 under each finished Artifact; 👎 offers an optional reason; the verdict can be changed
-- [ ] Agent page shows helpful % and count, updating right after the user's Feedback
-- [ ] An Agent with no Feedback says so instead of 0%
-- [ ] No stars on Agent, Skill or Workflow cards or pages; no rating sort option
-- [ ] No rating field left in mock data or drafts
-- [ ] Journeys cover giving, changing and the summary update; existing journeys asserting ratings are updated
+- [x] 👍/👎 under each finished Artifact; 👎 offers an optional reason; the verdict can be changed
+- [x] Agent page shows helpful % and count, updating right after the user's Feedback
+- [x] An Agent with no Feedback says so instead of 0%
+- [x] No stars on Agent, Skill or Workflow cards or pages; no rating sort option
+- [x] No rating field left in mock data or drafts
+- [x] Journeys cover giving, changing and the summary update; existing journeys asserting ratings are updated

@@ -34,7 +34,7 @@ export function defaultReuseName(thread, kind) {
 
 /** A left-to-right chain: trigger → each step → output. `refs` are `{ type: 'agent'|'skill', ref, label }`. */
 export function linearWorkflow({ name, description, dept, owner, refs }) {
-  const empty = { id: uid('wf'), name, dept, owner, uses: 0, rating: 0, version: '0.1', description, nodes: [], edges: [] }
+  const empty = { id: uid('wf'), name, dept, owner, uses: 0, version: '0.1', description, nodes: [], edges: [] }
   return withLinearSteps(empty, refs)
 }
 
@@ -59,7 +59,7 @@ export function linearSteps(workflow) {
 }
 
 /**
- * The same Workflow (id, owner, uses, rating, version, trigger and output kept) rebuilt as a straight chain of `refs`.
+ * The same Workflow (id, owner, uses, version, trigger and output kept) rebuilt as a straight chain of `refs`.
  * Refs that came from `linearSteps` keep their node ids.
  */
 export function withLinearSteps(workflow, refs) {

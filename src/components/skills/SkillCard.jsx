@@ -2,7 +2,7 @@ import { Plus } from 'lucide-react'
 import { userById } from '../../data/catalog'
 import { fmtCompact } from '../../lib/utils'
 import EntityIcon from '../agents/EntityIcon'
-import Badge, { Rating, ShareBadge } from '../ui/Badge'
+import Badge, { ShareBadge } from '../ui/Badge'
 import Button from '../ui/Button'
 
 /** `awaiting`: sharing this Skill with the whole company waits for the Admin. */
@@ -19,7 +19,7 @@ export default function SkillCard({ skill, usedBy, awaiting, onOpen, onAttach })
       <p className="mt-3 line-clamp-2 min-h-10 text-[13px] leading-relaxed text-slate-600">{skill.purpose}</p>
       <div className="mt-3 flex items-center justify-between text-xs text-slate-500">
         <span>ใช้กับผู้ช่วย <span className="font-medium text-slate-700">{usedBy}</span> ตัว</span>
-        <span className="flex items-center gap-3"><Rating value={skill.rating} /><span>ใช้ {fmtCompact(skill.uses)} ครั้ง</span></span>
+        <span>ใช้ {fmtCompact(skill.uses)} ครั้ง</span>
       </div>
       <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-3">
         <div className="flex min-w-0 items-center gap-2 text-xs text-slate-500">

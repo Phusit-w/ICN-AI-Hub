@@ -1,4 +1,4 @@
-import { CircleCheck, CircleDashed, Cloud, LoaderCircle, Server, Star, Undo2, Lock, Users, Building2, Shuffle, Hourglass } from 'lucide-react'
+import { CircleCheck, CircleDashed, Cloud, LoaderCircle, Server, Undo2, Lock, Users, Building2, Shuffle, Hourglass } from 'lucide-react'
 import { deptById, modelById } from '../../data/catalog'
 import { cn } from '../../lib/utils'
 
@@ -74,11 +74,3 @@ export function ShareBadge({ share, awaiting }) {
   return <>{badge}<Badge tone="warning" icon={Hourglass}>รออนุมัติ</Badge></>
 }
 
-export function Rating({ value }) {
-  return (
-    <span className="inline-flex items-center gap-1 text-xs font-medium text-slate-600">
-      <Star className="size-3.5 fill-amber-400 text-amber-400" aria-hidden />
-      {value.toFixed(1)}
-    </span>
-  )
-}

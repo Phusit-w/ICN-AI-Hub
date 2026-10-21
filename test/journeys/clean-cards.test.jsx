@@ -4,7 +4,7 @@ import { mainMenu, startJourney, newChatLink } from '../journey'
 
 // Ticket 08: Agent and Workflow cards show only an icon, name, one-line description and "ใช้งาน".
 // The rest of the card opens details. The Favourite star sits on the card (shown on hover and keyboard focus).
-// Uses, rating and version live on the detail pages.
+// Uses and version live on the detail pages.
 
 const agentList = () => screen.getByRole('list', { name: 'รายการผู้ช่วย' })
 const workflowList = (name) => screen.getByRole('list', { name })
@@ -41,7 +41,7 @@ describe('Clean Agent cards', () => {
     expect(within(screen.getByRole('region', { name: 'ใช้ซ้ำ' })).getByRole('button', { name: /IT Support Agent/ })).toBeInTheDocument()
   })
 
-  it('the detail page shows uses, rating and version', () => {
+  it('the detail page shows uses and version', () => {
     startJourney('/agents/agent-it-support')
     expect(screen.getByText(/ครั้งที่ใช้งาน/)).toBeInTheDocument()
     expect(screen.getByText(/^v\d/)).toBeInTheDocument()
@@ -71,7 +71,7 @@ describe('Clean Workflow cards', () => {
     expect(card.textContent).not.toMatch(NUMBERS)
   })
 
-  it('open the Workflow from the card, which shows uses, rating and version', async () => {
+  it('open the Workflow from the card, which shows uses and version', async () => {
     const app = startJourney('/workflows')
     await app.click(screen.getByRole('link', { name: 'Market Research Report' }))
     expect(app.url()).toBe('/workflows?id=wf-market-report')
