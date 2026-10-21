@@ -8,6 +8,6 @@ Spec: `.scratch/demo-two-views/spec.md` (stories 45, 46).
 
 **Status:** ready-for-agent
 
-- [ ] Document Artifact preview shows the ICN logo and company name above the content
-- [ ] Table, image and chat Artifacts show no letterhead
-- [ ] Journey covers a document Run and a chat answer
+- [x] Document Artifact preview shows the ICN logo and company name above the content
+- [x] Table, image and chat Artifacts show no letterhead
+- [x] Journey covers a document Run and a chat answer

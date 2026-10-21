@@ -73,6 +73,7 @@ export function outputFor(step, run) {
     case 'document':
       return {
         type: 'doc', title: isProposal(run) ? 'Proposal (ร่าง).docx' : 'Report (ร่าง).docx',
+        template: isProposal(run) ? 'Sales Proposal v3' : 'ICN Corporate Report',
         sections: [
           { heading: '1. Executive Summary', body: `เอกสารนี้นำเสนอแนวทางสำหรับ "${subject}" โดยเน้นผลลัพธ์ที่วัดได้ภายใน 6 เดือน และใช้ทรัพยากรเดิมของลูกค้าให้มากที่สุด` },
           { heading: '2. ความเข้าใจความต้องการ', body: 'สรุป Requirement 4 กลุ่มหลัก ได้แก่ การติดตามสต็อก การเชื่อมต่อระบบเดิม Dashboard และการใช้งานผ่านมือถือ' },

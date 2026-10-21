@@ -1,6 +1,9 @@
 import { CircleAlert, CircleCheck } from 'lucide-react'
 import logo from '../../assets/icn-logo.png'
 
+/** The company name on the letterhead, as on ICN's organization chart. */
+const COMPANY_NAME = 'Information and Communication Networks Public Company Limited'
+
 function Diagram({ nodes }) {
   const w = 150, gap = 40, h = 56
   const total = nodes.length * w + (nodes.length - 1) * gap
@@ -57,13 +60,15 @@ export default function ArtifactView({ artifact }) {
         </div>
       )
     case 'doc':
+      // Only documents carry the letterhead, as a real one would; tables, images and chat answers don't.
       return (
-        <div className="rounded-lg border border-slate-200 bg-white px-6 py-5 shadow-xs">
-          <div className="mb-4 flex items-center justify-between border-b border-slate-100 pb-3">
-            <img src={logo} alt="ICN" className="h-7 w-auto rounded" />
-            <span className="text-[11px] text-slate-400">Template: Sales Proposal v3</span>
-          </div>
-          <div className="space-y-4">
+        <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-xs">
+          <header aria-label="หัวจดหมาย ICN" className="flex items-center gap-3 border-b-4 border-brand-600 bg-slate-50 px-6 py-3">
+            <img src={logo} alt="ICN" className="h-9 w-auto rounded" />
+            <p className="min-w-0 flex-1 text-xs leading-snug font-semibold text-slate-800">{COMPANY_NAME}</p>
+            <span className="hidden text-[11px] text-slate-400 sm:inline">Template: {artifact.template}</span>
+          </header>
+          <div className="space-y-4 px-6 py-5">
             {artifact.sections.map((s) => (
               <section key={s.heading}>
                 <h4 className="text-sm font-semibold text-slate-900">{s.heading}</h4>
