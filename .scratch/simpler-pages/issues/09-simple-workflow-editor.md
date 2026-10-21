@@ -6,7 +6,7 @@ Spec: `.scratch/simpler-pages/spec.md` (stories 44–45; decision "Workflow edit
 
 **Blocked by:** 01
 
-**Status:** ready-for-agent
+**Status:** resolved
 
 - [ ] Opening a Workflow to edit shows the simple editor first
 - [ ] The detailed builder is reached from a low-emphasis "ขั้นสูง" link

@@ -16,7 +16,7 @@ Spec: `.scratch/simpler-pages/spec.md` (Home stories 1–11, 23; decisions "Reus
 
 **Blocked by:** 01
 
-**Status:** ready-for-agent
+**Status:** resolved
 
 - [ ] Journey test: clicking a Favourite agent in the reuse row fills the command box and the URL stays on Home (1 click)
 - [ ] Journey test: clicking a Workflow in the reuse row fills the command box and the URL stays on Home (1 click), and sending runs it with no Plan confirmation

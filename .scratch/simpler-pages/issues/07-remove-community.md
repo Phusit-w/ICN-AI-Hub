@@ -11,7 +11,7 @@ Spec: `.scratch/simpler-pages/spec.md` (stories 29, 35–36, 39, 43, 46, 53; dec
 
 **Blocked by:** 05, 06
 
-**Status:** ready-for-agent
+**Status:** resolved
 
 - [ ] Journey test: the old community link lands on the Agents page with the "popular" filter on
 - [ ] Journey test: from Home, finding a shared Agent and using it takes ≤ 2 clicks (journey 5), and the same for a shared Workflow

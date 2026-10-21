@@ -10,7 +10,7 @@ Spec: `.scratch/simpler-pages/spec.md` (stories 32–34, 37–38, 42; decision "
 
 **Blocked by:** 07 (same pages)
 
-**Status:** ready-for-agent
+**Status:** resolved
 
 - [ ] Agent and Workflow cards share the same shape: icon, name, one-line description, "ใช้งาน"
 - [ ] Clicking a card outside the button opens its details, and clicking "ใช้งาน" doesn't

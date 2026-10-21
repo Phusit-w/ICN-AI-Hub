@@ -6,7 +6,7 @@ Spec: `.scratch/simpler-pages/spec.md` (stories 51–52; decision "Governance la
 
 **Blocked by:** 01
 
-**Status:** ready-for-agent
+**Status:** resolved
 
 - [ ] The 4 headline numbers are visible at the top without scrolling on desktop
 - [ ] Each existing detail section is reachable from a tab below the numbers

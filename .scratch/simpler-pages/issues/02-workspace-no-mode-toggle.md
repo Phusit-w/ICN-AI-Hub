@@ -13,7 +13,7 @@ Spec: `.scratch/simpler-pages/spec.md` (Workspace stories 12–19, 24–25; deci
 
 **Blocked by:** 01
 
-**Status:** ready-for-agent
+**Status:** resolved
 
 - [ ] No mode toggle and no saved mode preference remain, and the word "Workflow" is not used for a view mode anywhere in the Workspace UI
 - [ ] Journey test: a short general question gets an answer with no extra click

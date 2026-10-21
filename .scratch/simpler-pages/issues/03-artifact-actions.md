@@ -6,7 +6,7 @@ Spec: `.scratch/simpler-pages/spec.md` (stories 20–22; decision "Actions under
 
 **Blocked by:** 02 (same part of the Workspace)
 
-**Status:** ready-for-agent
+**Status:** resolved
 
 - [ ] Exactly one primary button under a finished Artifact, and it is "ดาวน์โหลด"
 - [ ] "บันทึกไว้ใช้ซ้ำ" is visible without opening any menu

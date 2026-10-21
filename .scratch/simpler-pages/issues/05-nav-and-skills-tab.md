@@ -13,7 +13,7 @@ Spec: `.scratch/simpler-pages/spec.md` (stories 26–28, 30, 40–41; decisions 
 
 **Blocked by:** 01
 
-**Status:** ready-for-agent
+**Status:** resolved
 
 - [ ] Journey test: the main menu has exactly 5 items, in the order above
 - [ ] Journey test: an old Skills link lands on the Skills tab of the Agents page

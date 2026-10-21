@@ -6,7 +6,7 @@ Spec: `.scratch/simpler-pages/spec.md` (stories 54–57; decision "Tour").
 
 **Blocked by:** 02, 04, 05, 07
 
-**Status:** ready-for-agent
+**Status:** resolved
 
 - [ ] The tour has at most 6 steps, in the order above
 - [ ] Journey test: every tour step's target exists on its page

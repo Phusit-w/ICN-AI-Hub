@@ -1,6 +1,6 @@
 # Spec: ทุกหน้าใช้ง่าย คลิกน้อย และ Clean
 
-Status: ready-for-agent
+Status: resolved
 
 ## Problem Statement
 

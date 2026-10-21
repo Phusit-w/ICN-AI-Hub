@@ -10,7 +10,7 @@ Spec: `.scratch/simpler-pages/spec.md` (stories 47–50; decision "Creation page
 
 **Blocked by:** 05
 
-**Status:** ready-for-agent
+**Status:** resolved
 
 - [ ] Create Skill has a describe box, an AI-fill action and a create button on one page
 - [ ] Extra Skill settings are behind "ตั้งค่าขั้นสูง"

@@ -6,7 +6,7 @@ Spec: `.scratch/simpler-pages/spec.md` (Testing Decisions).
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** resolved
 
 - [ ] Vitest, React Testing Library, user-event and jsdom are dev dependencies, and `npm test` runs the suite once and exits
 - [ ] A small helper counts user clicks during a journey, so a test can assert "finished within N clicks"
