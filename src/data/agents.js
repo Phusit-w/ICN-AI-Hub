@@ -265,7 +265,7 @@ export const AGENTS = [
     instruction: 'Follow the listed-company minutes format: attendees, agenda, resolutions, votes. Keep it factual.',
     model: 'icn-llama', classification: 'confidential', share: 'department', skills: ['skill-meeting-summary', 'skill-report-format'], knowledge: ['kb-policies'],
     output: { format: 'Word document', language: 'TH', template: 'Board Minutes' },
-    owner: 'u-ratree', rating: 4.7, uses: 210, version: '1.0', updated: '2026-09-15',
+    owner: 'u-sudarat', rating: 4.7, uses: 210, version: '1.0', updated: '2026-09-15',
     examples: ['ร่างรายงานการประชุมกรรมการครั้งที่ 5', 'สรุปรายงานจาก 7 ฝ่ายเป็น 1 หน้าให้ CEO'],
   }),
   agent({
@@ -274,7 +274,7 @@ export const AGENTS = [
     instruction: 'Check the document against company policies. Cite the policy clause for every finding.',
     model: 'icn-llama', classification: 'confidential', share: 'department', skills: ['skill-compliance', 'skill-citation'], knowledge: ['kb-policies'],
     output: { format: 'Excel table', language: 'TH', template: 'Audit Findings' },
-    owner: 'u-ratree', rating: 4.6, uses: 180, version: '1.0', updated: '2026-08-28',
+    owner: 'u-sudarat', rating: 4.6, uses: 180, version: '1.0', updated: '2026-08-28',
     examples: ['ตรวจขั้นตอนจัดซื้อนี้เทียบระเบียบ'],
   }),
 ]

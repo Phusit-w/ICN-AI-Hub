@@ -25,7 +25,7 @@ export const USERS = {
   'u-ploy': { id: 'u-ploy', name: 'Ploy K.', title: 'Bid Specialist', dept: 'bid' },
   'u-wichai': { id: 'u-wichai', name: 'Wichai N.', title: 'Project Manager', dept: 'project' },
   'u-malee': { id: 'u-malee', name: 'Malee P.', title: 'Maintenance Supervisor', dept: 'maintenance' },
-  'u-ratree': { id: 'u-ratree', name: 'Ratree S.', title: 'Executive Secretary', dept: 'exec' },
+  'u-sudarat': { id: 'u-sudarat', name: 'Sudarat K.', title: 'Executive Secretary', dept: 'exec' },
 }
 export const CURRENT_USER_ID = 'u-kanya'
 export const userById = (id) => USERS[id] ?? { id, name: 'Unknown', title: '', dept: 'core' }
