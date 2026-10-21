@@ -40,16 +40,3 @@ export function ItemCard({ icon, tone, name, description, to, useTo, favoriteId,
     </li>
   )
 }
-
-/** One-line row for side lists (Home, Detail). */
-export function AgentRow({ agent, meta }) {
-  return (
-    <Link to={`/agents/${agent.id}`} className="flex items-center gap-3 rounded-lg px-2 py-2 transition hover:bg-slate-50">
-      <EntityIcon icon={agent.kind} size="sm" />
-      <div className="min-w-0 flex-1">
-        <div className="truncate text-sm font-medium text-slate-800">{agent.name}</div>
-        <div className="truncate text-xs text-slate-500">{meta ?? agent.description}</div>
-      </div>
-    </Link>
-  )
-}

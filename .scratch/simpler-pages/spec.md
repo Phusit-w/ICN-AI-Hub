@@ -175,3 +175,12 @@ Status: resolved
 - There is a shared demo link of this prototype, so old routes must keep working through redirects.
 - `docs/DESIGN.md` describes the sitemap with 7 menus and the community page. Update it to match once the work lands.
 - No ADR was written. Every decision is easy to reverse in a prototype.
+
+## Later changes (2026-10-21, after this spec was resolved)
+
+- Chat history moved into the main sidebar, and the top bar became a quiet bar, as in ChatGPT, Claude and Gemini.
+- Home was merged into the new-chat screen, which the app now opens on. It has the greeting, the composer, the "ใช้ซ้ำ" row and the first-visit card. The menu is now "แชตใหม่" plus 3 items, and "งานของฉัน" is replaced by the sidebar's chat history. Journey 3 opens a past Run from that history in 1 click. The tour has 5 steps.
+- Removed:
+  - the notification bell, which did nothing
+  - the Favourites chip row on the Agents page, which repeated the "ใช้ซ้ำ" row
+  - recommendations shown before the user says what the job is

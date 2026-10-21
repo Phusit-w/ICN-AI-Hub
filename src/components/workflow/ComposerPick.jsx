@@ -5,7 +5,7 @@ import { DEPARTMENTS, deptById } from '../../data/catalog'
 import { cn } from '../../lib/utils'
 
 // A pick is what the user chose for a request: { agentId } or { workflowId }, never both,
-// or {} when the system chooses. Home's command box and the Workspace composer share it.
+// or {} when the system chooses. The composer and the "ใช้ซ้ำ" row share it.
 
 const toPick = (agentId, workflowId) => (workflowId ? { workflowId } : agentId ? { agentId } : {})
 

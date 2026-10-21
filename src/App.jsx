@@ -1,6 +1,5 @@
 import { Navigate, Route, Routes, useSearchParams } from 'react-router-dom'
 import AppShell from './components/layout/AppShell'
-import Home from './pages/Home'
 import Workspace from './pages/Workspace'
 import AgentLibrary from './pages/AgentLibrary'
 import AgentDetail from './pages/AgentDetail'
@@ -20,7 +19,8 @@ export default function App() {
   return (
     <Routes>
       <Route element={<AppShell />}>
-        <Route index element={<Home />} />
+        {/* New chat is the home screen, as in ChatGPT, Claude or Gemini. */}
+        <Route index element={<Navigate to="/workspace" replace />} />
         <Route path="workspace" element={<Workspace />} />
         <Route path="agents" element={<AgentLibrary />} />
         <Route path="agents/new" element={<CreateAgent />} />

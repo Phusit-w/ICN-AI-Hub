@@ -53,7 +53,7 @@ export function HelpButton() {
   )
 }
 
-/** First-visit introduction on Home; dismissal is remembered per browser. */
+/** First-visit introduction on the new-chat screen; dismissal is remembered per browser. */
 export function WelcomeCard() {
   const [hidden, setHidden] = useState(readSeen)
   const { start } = useTour()

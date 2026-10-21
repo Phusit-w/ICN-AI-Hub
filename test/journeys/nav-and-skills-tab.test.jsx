@@ -2,28 +2,44 @@ import { describe, expect, it } from 'vitest'
 import { screen, within } from '@testing-library/react'
 import { mainMenu, startJourney } from '../journey'
 
-const MENU = ['หน้าหลัก', 'สั่งงาน AI', 'สายงาน', 'ผู้ช่วย AI', 'ภาพรวมและการกำกับดูแล']
+// "แชตใหม่" sits above the menu and is the home screen, so the menu itself has 3 items.
+const MENU = ['สายงาน', 'ผู้ช่วย AI', 'ภาพรวมและการกำกับดูแล']
 
 /** Menu item names; a live count badge (e.g. "2" running Runs) is not part of the item's name. */
 const menuItems = (nav) => within(nav).getAllByRole('link').map((l) => l.getAttribute('aria-label') ?? l.textContent.replace(/\d+$/, ''))
 
 const skillDialog = (name) => screen.getByRole('dialog', { name })
 
-describe('Navigation: five-item main menu', () => {
-  it('the main menu has exactly 5 items, in order, with governance in its own group at the bottom', () => {
+describe('Navigation: new chat plus a three-item menu', () => {
+  it('the app opens on new chat: greeting, composer and the reuse row, with "แชตใหม่" marked as the current page', () => {
+    const app = startJourney('/')
+    expect(app.url()).toBe('/workspace')
+    expect(screen.getByRole('heading', { level: 1, name: /วันนี้ให้ช่วยอะไรดี/ })).toBeInTheDocument()
+    expect(screen.getByRole('region', { name: 'ใช้ซ้ำ' })).toBeInTheDocument()
+    expect(screen.getAllByRole('link', { name: 'แชตใหม่' })[0]).toHaveAttribute('aria-current', 'page')
+  })
+
+  it('the Agents page recommends only once the user says what the job is', async () => {
+    const app = startJourney('/agents')
+    expect(screen.queryByRole('heading', { name: 'แนะนำสำหรับงานนี้' })).toBeNull()
+    await app.type(screen.getByRole('textbox', { name: /ค้นหาผู้ช่วย/ }), 'VPN')
+    expect(screen.getByRole('heading', { name: 'แนะนำสำหรับงานนี้' })).toBeInTheDocument()
+  })
+
+  it('the main menu has exactly 3 items, in order, with governance in its own group at the bottom', () => {
     startJourney()
     expect(menuItems(mainMenu())).toEqual(MENU)
     const groups = within(mainMenu()).getAllByRole('list')
     expect(within(groups.at(-1)).getAllByRole('link').map((l) => l.textContent)).toEqual(['ภาพรวมและการกำกับดูแล'])
   })
 
-  it('the collapsed icon-only menu shows the same 5 items', async () => {
+  it('the collapsed icon-only menu shows the same 3 items', async () => {
     const app = startJourney()
     await app.click(screen.getByRole('button', { name: 'ย่อแถบเมนู' }))
     expect(within(mainMenu()).getAllByRole('link').map((l) => l.getAttribute('aria-label'))).toEqual(MENU)
   })
 
-  it('the mobile menu shows the same 5 items', async () => {
+  it('the mobile menu shows the same 3 items', async () => {
     const app = startJourney()
     await app.click(screen.getByRole('button', { name: 'เปิดเมนู' }))
     const mobile = within(screen.getByRole('dialog')).getByRole('navigation', { name: 'Main' })

@@ -1,34 +1,36 @@
 import { describe, expect, it } from 'vitest'
 import { screen, within } from '@testing-library/react'
-import { expectArtifactShown, expectWithinBudget, mainMenu, startJourney } from '../journey'
+import {
+  expectAgentPicked, expectArtifactShown, expectWithinBudget, expectWorkflowPicked, mainMenu, newChatLink, startJourney,
+} from '../journey'
 
-// Journey 2: reuse a Favourite agent or a Workflow. Budget: 1 click, and the user stays on Home.
+// Journey 2: reuse a Favourite agent or a Workflow. Budget: 1 click, and the user stays on the new-chat screen.
 // "Sales Proposal Agent" is a default Favourite; "Market Research Report" is a Workflow the user ran recently.
 
-/** Home's command box, where a reused Agent or Workflow should show up. */
-const homeCommandBox = (app) => app.box('สั่งงาน AI').closest('form')
+/** The new-chat composer, where a reused Agent or Workflow should show up. */
+const homeCommandBox = (app) => app.box('ข้อความ').closest('form')
 
-/** The "ใช้ซ้ำ" row under Home's command box. */
+/** The "ใช้ซ้ำ" row under the new-chat composer. */
 const reuseRow = () => screen.getByRole('region', { name: 'ใช้ซ้ำ' })
 
 describe('Journey 2: reuse a Favourite agent or a Workflow', () => {
-  it('clicking a Favourite agent fills it into the command box in 1 click without leaving Home', async () => {
+  it('clicking a Favourite agent fills it into the command box in 1 click without leaving new chat', async () => {
     const app = startJourney()
 
     await app.click(within(reuseRow()).getByRole('button', { name: /Sales Proposal Agent/ }))
 
-    expect(app.url()).toBe('/')
-    expect(within(homeCommandBox(app)).getByText(/Sales Proposal Agent/)).toBeVisible()
+    expect(app.url()).toBe('/workspace')
+    expectAgentPicked('Sales Proposal Agent')
     expectWithinBudget(app, 1)
   })
 
-  it('clicking a Workflow fills it into the command box in 1 click without leaving Home', async () => {
+  it('clicking a Workflow fills it into the command box in 1 click without leaving new chat', async () => {
     const app = startJourney()
 
     await app.click(within(reuseRow()).getByRole('button', { name: /Market Research Report/ }))
 
-    expect(app.url()).toBe('/')
-    expect(within(homeCommandBox(app)).getByText(/Market Research Report/)).toBeVisible()
+    expect(app.url()).toBe('/workspace')
+    expectWorkflowPicked('Market Research Report')
     expectWithinBudget(app, 1)
   })
 
@@ -36,8 +38,8 @@ describe('Journey 2: reuse a Favourite agent or a Workflow', () => {
     const app = startJourney()
 
     await app.click(within(reuseRow()).getByRole('button', { name: /Market Research Report/ }))
-    await app.type(app.box('สั่งงาน AI'), 'ตลาดหุ่นยนต์คลังสินค้าในไทย')
-    await app.click(screen.getByRole('button', { name: 'ส่งงาน' }))
+    await app.type(app.box('ข้อความ'), 'ตลาดหุ่นยนต์คลังสินค้าในไทย')
+    await app.click(screen.getByRole('button', { name: 'ส่ง' }))
 
     expect(app.url()).toMatch(/^\/workspace\?run=/)
     expect(screen.queryByRole('button', { name: 'เริ่มเลย' })).not.toBeInTheDocument()
@@ -51,7 +53,7 @@ describe('Journey 2: reuse a Favourite agent or a Workflow', () => {
     const app = startJourney()
 
     await app.click(within(reuseRow()).getByRole('button', { name: /Sales Proposal Agent/ }))
-    await app.type(app.box('สั่งงาน AI'), 'สรุปจุดขายของระบบ Smart Warehouse สำหรับลูกค้าค้าปลีกรายใหญ่{Enter}')
+    await app.type(app.box('ข้อความ'), 'สรุปจุดขายของระบบ Smart Warehouse สำหรับลูกค้าค้าปลีกรายใหญ่{Enter}')
 
     expect(app.url()).toMatch(/^\/workspace\?run=/)
     expect(screen.queryByRole('button', { name: 'เริ่มเลย' })).not.toBeInTheDocument()
@@ -64,7 +66,7 @@ describe('Journey 2: reuse a Favourite agent or a Workflow', () => {
     await app.click(within(reuseRow()).getByRole('button', { name: /Sales Proposal Agent/ }))
     await app.click(within(homeCommandBox(app)).getByRole('button', { name: 'กลับไปเลือกผู้ช่วยอัตโนมัติ' }))
 
-    expect(within(homeCommandBox(app)).queryByText(/Sales Proposal Agent/)).not.toBeInTheDocument()
+    expect(screen.getByRole('combobox', { name: 'เลือกผู้ช่วย' })).toHaveDisplayValue(/อัตโนมัติ/)
   })
 
   it('picking a Workflow replaces a picked Agent: one pick at a time', async () => {
@@ -73,19 +75,19 @@ describe('Journey 2: reuse a Favourite agent or a Workflow', () => {
     await app.click(within(reuseRow()).getByRole('button', { name: /Sales Proposal Agent/ }))
     await app.click(within(reuseRow()).getByRole('button', { name: /Market Research Report/ }))
 
-    expect(within(homeCommandBox(app)).getByText(/Market Research Report/)).toBeVisible()
-    expect(within(homeCommandBox(app)).queryByText(/Sales Proposal Agent/)).not.toBeInTheDocument()
+    expectWorkflowPicked('Market Research Report')
+    expect(screen.queryByRole('combobox', { name: 'เลือกผู้ช่วย' })).toBeNull() // a Workflow pick replaces the Agent picker
   })
 
   it('something saved for reuse from a finished Run shows up in the reuse row', async () => {
     const app = startJourney()
 
     await app.click(within(reuseRow()).getByRole('button', { name: /Sales Proposal Agent/ }))
-    await app.type(app.box('สั่งงาน AI'), 'สรุปจุดขายของระบบ Smart Warehouse สำหรับลูกค้าค้าปลีกรายใหญ่{Enter}')
+    await app.type(app.box('ข้อความ'), 'สรุปจุดขายของระบบ Smart Warehouse สำหรับลูกค้าค้าปลีกรายใหญ่{Enter}')
     await app.letRunsFinish()
     await app.click(screen.getByRole('button', { name: /บันทึกไว้ใช้ซ้ำ/ }))
     await app.click(screen.getByRole('button', { name: 'บันทึก' }))
-    await app.click(within(mainMenu()).getByRole('link', { name: /หน้าหลัก/ }))
+    await app.click(newChatLink())
 
     expect(within(reuseRow()).getByRole('button', { name: /ผู้ช่วยสรุปจุดขายของระบบ Smart Warehouse/ })).toBeVisible()
   })
@@ -96,7 +98,7 @@ describe('Journey 2: reuse a Favourite agent or a Workflow', () => {
     await app.click(within(mainMenu()).getByRole('link', { name: /ผู้ช่วย AI/ }))
     // A starred Agent can show twice (recommended and in the list), so unstar until none is left.
     while (screen.queryAllByRole('button', { name: 'นำออกจาก Favorite' }).length) await app.click(screen.getAllByRole('button', { name: 'นำออกจาก Favorite' })[0])
-    await app.click(within(mainMenu()).getByRole('link', { name: /หน้าหลัก/ }))
+    await app.click(newChatLink())
 
     expect(within(reuseRow()).queryByRole('button', { name: /Sales Proposal Agent/ })).not.toBeInTheDocument()
     expect(within(reuseRow()).getByText(/กดดาว/)).toBeVisible()

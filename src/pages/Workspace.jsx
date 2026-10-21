@@ -17,13 +17,20 @@ import Pipeline from '../components/workflow/Pipeline'
 import ArtifactView from '../components/workflow/ArtifactView'
 import SaveForReuse from '../components/workflow/SaveForReuse'
 import ComposerPick, { pickFromParams, usePick } from '../components/workflow/ComposerPick'
+import ReuseRow from '../components/workflow/ReuseRow'
+import { WelcomeCard } from '../components/layout/Help'
+import { userById } from '../data/catalog'
+import { reuseItems } from '../lib/reuse'
 import logo from '../assets/icn-logo.png'
 
-const SUGGESTIONS = [
-  'ทำ Proposal ระบบ Smart Warehouse ให้ลูกค้า Siam Logistics',
-  'ช่วยค้นข้อมูลตลาด EV Charger สรุปเป็นรายงาน และสร้างภาพประกอบ',
-  'นโยบายวันลาพักร้อนสะสมได้กี่วัน',
-  'VPN ต่อไม่ได้ตั้งแต่เช้า',
+// One-tap examples for a newcomer who doesn't know what to ask yet.
+const EXAMPLES = [
+  { label: 'ทำ Proposal ให้ลูกค้า', prompt: 'ทำ Proposal ระบบ Smart Warehouse ให้ลูกค้า Thai Retail Group' },
+  { label: 'ค้นข้อมูล สรุปรายงาน พร้อมภาพ', prompt: 'ช่วยค้นข้อมูลตลาด Solar Rooftop สรุปเป็นรายงาน และสร้างภาพประกอบ' },
+  { label: 'ถามระเบียบ / สวัสดิการ', prompt: 'นโยบายวันลาพักร้อนสะสมได้กี่วัน' },
+  { label: 'แจ้งปัญหา IT', prompt: 'VPN ต่อไม่ได้ตั้งแต่เช้า' },
+  { label: 'ทำรายงานปิดงบประจำเดือน', prompt: 'ทำรายงานปิดงบเดือนตุลาคม พร้อมกระทบยอด Invoice' },
+  { label: 'วิเคราะห์ยอดขายจาก Excel', prompt: 'วิเคราะห์ยอดขาย Q3 รายภาค และสรุปเป็นรายงาน' },
 ]
 
 /** The deliverable to show first: the document if there is one, otherwise the last real output. */
@@ -32,9 +39,8 @@ function finalStep(run) {
   return outputs.find((s) => s.output.type === 'doc') ?? outputs.filter((s) => s.output.type !== 'checklist').at(-1) ?? outputs.at(-1)
 }
 
-function Composer({ onSend, initialAgentId, initialWorkflowId }) {
+function Composer({ onSend, pick, onPickChange, ...props }) {
   const [text, setText] = useState('')
-  const [pick, setPick] = usePick(initialAgentId, initialWorkflowId)
   const [files, setFiles] = useState([])
   const ref = useRef(null)
   useEffect(() => { ref.current?.focus() }, [])
@@ -46,7 +52,7 @@ function Composer({ onSend, initialAgentId, initialWorkflowId }) {
   }
   return (
     <div className="mx-auto w-full max-w-3xl">
-      <form onSubmit={(e) => { e.preventDefault(); send() }} className="rounded-2xl border border-slate-200 bg-white p-2 shadow-sm focus-within:border-brand-400 focus-within:ring-4 focus-within:ring-brand-100">
+      <form {...props} onSubmit={(e) => { e.preventDefault(); send() }} className="rounded-2xl border border-slate-200 bg-white p-2 text-left shadow-sm focus-within:border-brand-400 focus-within:ring-4 focus-within:ring-brand-100">
         <textarea
           ref={ref} value={text} onChange={(e) => setText(e.target.value)} rows={1} aria-label="ข้อความ"
           onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() } }}
@@ -56,7 +62,7 @@ function Composer({ onSend, initialAgentId, initialWorkflowId }) {
         <AttachmentList files={files} onRemove={(id) => setFiles((fs) => fs.filter((f) => f.id !== id))} />
         <div className="flex items-center gap-1 px-1">
           <AttachButton onAdd={(added) => setFiles((fs) => [...fs, ...added])} />
-          <ComposerPick pick={pick} onChange={setPick} chooseAgent />
+          <ComposerPick pick={pick} onChange={onPickChange} chooseAgent />
           <button type="submit" disabled={!text.trim()} aria-label="ส่ง" className="ml-auto flex size-9 items-center justify-center rounded-full bg-brand-600 text-white transition hover:bg-brand-700 disabled:bg-slate-200 disabled:text-slate-400">
             <ArrowUp className="size-5" />
           </button>
@@ -183,26 +189,12 @@ function AssistantMessage({ run, latest, onShowSteps }) {
   )
 }
 
-function ChatView({ thread, onShowSteps, onSuggest }) {
+function ChatView({ thread, onShowSteps }) {
   const bottom = useRef(null)
   const last = thread.at(-1)
   const progressKey = last ? `${last.id}:${last.status}:${last.current}` : ''
   useEffect(() => { bottom.current?.scrollIntoView({ block: 'end', behavior: 'smooth' }) }, [progressKey, thread.length])
 
-  if (!thread.length) {
-    return (
-      <div className="flex h-full flex-col items-center justify-center px-4 text-center">
-        <span className="flex size-12 items-center justify-center rounded-2xl bg-brand-50 text-brand-600"><Sparkles className="size-6" /></span>
-        <h1 className="mt-4 text-2xl font-semibold tracking-tight text-slate-900">วันนี้ให้ช่วยอะไรดี?</h1>
-        <p className="mt-1 text-sm text-slate-500">ถามคำถาม หรือสั่งงานใหญ่ก็ได้ ระบบจะเลือกผู้ช่วย AI ที่เหมาะให้เอง</p>
-        <div className="mt-6 grid w-full max-w-2xl gap-2 sm:grid-cols-2">
-          {SUGGESTIONS.map((s) => (
-            <button key={s} type="button" onClick={() => onSuggest(s)} className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-left text-sm text-slate-600 transition hover:border-brand-300 hover:text-slate-900">{s}</button>
-          ))}
-        </div>
-      </div>
-    )
-  }
   return (
     <div className="mx-auto max-w-3xl space-y-8 px-1 py-6">
       {thread.map((run) => (
@@ -315,6 +307,38 @@ function StepsPanel({ run, onClose }) {
   )
 }
 
+/**
+ * The screen the app opens on, as in ChatGPT, Claude or Gemini: a greeting, the composer, and the "ใช้ซ้ำ" row.
+ * Past chats are in the sidebar's chat history. Examples show only until the user has a Run of their own.
+ */
+function NewChat({ pick, onPickChange, onSend }) {
+  const { state } = useStore()
+  const me = userById(state.userId)
+  const hasRuns = state.runs.some((r) => r.owner === state.userId)
+  return (
+    <div className="min-h-0 flex-1 overflow-y-auto">
+      <div className="mx-auto max-w-3xl space-y-8 px-1 pt-2 pb-6 lg:pt-6">
+        <WelcomeCard />
+        <section className="text-center">
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">สวัสดี คุณ{me.name.split(' ')[0]} วันนี้ให้ช่วยอะไรดี?</h1>
+          <p className="mt-2 mb-6 text-sm text-slate-500">พิมพ์งานที่ต้องการเป็นภาษาปกติ ระบบจะเลือกผู้ช่วย AI ที่เหมาะให้เอง</p>
+          <Composer data-tour="home-command" pick={pick} onPickChange={onPickChange} onSend={onSend} />
+          {!hasRuns && (
+            <ul aria-label="ตัวอย่างงาน" className="mt-4 flex flex-wrap justify-center gap-2">
+              {EXAMPLES.map((x) => (
+                <li key={x.label}>
+                  <button type="button" onClick={() => onSend(x.prompt, pick, [])} className="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-600 transition hover:bg-slate-200 hover:text-slate-900">{x.label}</button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+        <ReuseRow items={reuseItems(state)} pick={pick} onPick={onPickChange} hasFavorites={state.favorites.length > 0} />
+      </div>
+    </div>
+  )
+}
+
 export default function Workspace() {
   const { state, actions } = useStore()
   const [params, setParams] = useSearchParams()
@@ -323,6 +347,7 @@ export default function Workspace() {
   const handled = useRef(null)
   const q = params.get('q')
 
+  const [pick, setPick] = usePick(params.get('agent'), params.get('workflow'))
   const run = state.runs.find((r) => r.id === params.get('run')) ?? null
   const thread = useMemo(() => (run ? runsOfThread(state.runs, run.threadId) : []), [state.runs, run])
 
@@ -345,16 +370,22 @@ export default function Workspace() {
   return (
     <div className="flex h-[calc(100dvh-5.5rem)] gap-6 lg:h-[calc(100dvh-6rem)]">
       <section className="flex min-w-0 flex-1 flex-col">
-        <div className="flex items-center gap-3 pb-3">
-          <Button size="sm" icon={Plus} onClick={() => setParams({})} className="lg:hidden">แชตใหม่</Button>
-          <p className="hidden min-w-0 truncate text-sm font-medium text-slate-700 sm:block">{run ? thread[0]?.title : 'แชตใหม่'}</p>
-        </div>
-        <div className="min-h-0 flex-1 overflow-y-auto">
-          <ChatView thread={thread} onSuggest={(s) => send(s)} onShowSteps={setStepsRunId} />
-        </div>
-        <div className="pt-3">
-          <Composer initialAgentId={params.get('agent')} initialWorkflowId={params.get('workflow')} onSend={(p, pick, files) => send(p, pick, run?.threadId, files)} />
-        </div>
+        {run ? (
+          <>
+            <div className="flex items-center gap-3 pb-3">
+              <Button size="sm" icon={Plus} onClick={() => setParams({})} className="lg:hidden">แชตใหม่</Button>
+              <p className="hidden min-w-0 truncate text-sm font-medium text-slate-700 sm:block">{thread[0]?.title}</p>
+            </div>
+            <div className="min-h-0 flex-1 overflow-y-auto">
+              <ChatView thread={thread} onShowSteps={setStepsRunId} />
+            </div>
+            <div className="pt-3">
+              <Composer pick={pick} onPickChange={setPick} onSend={(p, pk, files) => send(p, pk, run.threadId, files)} />
+            </div>
+          </>
+        ) : (
+          <NewChat pick={pick} onPickChange={setPick} onSend={(p, pk, files) => send(p, pk, undefined, files)} />
+        )}
       </section>
       {stepsRun && <StepsPanel key={stepsRun.id} run={stepsRun} onClose={() => setStepsRunId(null)} />}
     </div>

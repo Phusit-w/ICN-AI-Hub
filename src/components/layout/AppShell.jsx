@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import {
-  Bell, Bot, LayoutDashboard, Menu, PanelLeftClose, PanelLeftOpen, Search, ShieldCheck, Sparkles, SquarePen, Workflow, X,
+  Bot, Menu, PanelLeftClose, PanelLeftOpen, Search, ShieldCheck, SquarePen, Workflow, X,
 } from 'lucide-react'
 import { useStore } from '../../store/AppStore'
 import { userById } from '../../data/catalog'
@@ -18,8 +18,6 @@ import logo from '../../assets/icn-logo.png'
 
 const NAV = [
   { section: 'งานของฉัน', items: [
-    { to: '/', label: 'หน้าหลัก', icon: LayoutDashboard, end: true },
-    { to: '/workspace', label: 'สั่งงาน AI', icon: Sparkles, live: true },
     { to: '/workflows', label: 'สายงาน', icon: Workflow },
     { to: '/agents', label: 'ผู้ช่วย AI', icon: Bot },
   ] },
@@ -75,18 +73,19 @@ function ChatHistory({ onNavigate }) {
 }
 
 /**
- * The one sidebar, laid out like ChatGPT, Claude or Gemini: new chat and search on top, then the menu,
+ * The one sidebar, laid out like ChatGPT, Claude or Gemini: new chat (the home screen) and search on top, then the menu,
  * the chat history filling the middle, and the user at the bottom.
  * `collapsed` shrinks it to an icon rail without the history; labels move into tooltips. Only the desktop sidebar collapses.
  */
 function Sidebar({ onNavigate, collapsed = false, onToggle, onSearch, focusSearch = false }) {
   const { state } = useStore()
   const me = userById(state.userId)
-  const running = state.runs.filter((r) => r.status === 'running').length
+  const { pathname, search } = useLocation()
+  const onNewChat = pathname === '/workspace' && !new URLSearchParams(search).has('run')
   return (
     <div className={cn('flex h-full flex-col py-3', collapsed ? 'px-2' : 'px-3')}>
       <div className={cn('flex items-center', collapsed ? 'flex-col gap-2' : 'justify-between pl-2')}>
-        <Link to="/" onClick={onNavigate} title="ICN AI Hub" className="flex items-center gap-2.5">
+        <Link to="/workspace" onClick={onNavigate} title="ICN AI Hub" className="flex items-center gap-2.5">
           <img src={logo} alt="ICN" className="size-8 rounded-lg ring-1 ring-slate-200" />
           {!collapsed && <span className="text-sm font-semibold text-slate-900">ICN AI Hub</span>}
         </Link>
@@ -101,7 +100,8 @@ function Sidebar({ onNavigate, collapsed = false, onToggle, onSearch, focusSearc
       <div className="mt-3 space-y-1">
         <Link
           to="/workspace" onClick={onNavigate} data-tour="new-task" title={collapsed ? 'แชตใหม่' : undefined} aria-label={collapsed ? 'แชตใหม่' : undefined}
-          className={cn(itemClass(false), 'border border-slate-200 bg-white shadow-sm', collapsed ? 'justify-center py-2' : 'px-2 py-2')}
+          aria-current={onNewChat ? 'page' : undefined}
+          className={cn(itemClass(false), 'border bg-white shadow-sm', onNewChat ? 'border-brand-300 text-slate-900' : 'border-slate-200', collapsed ? 'justify-center py-2' : 'px-2 py-2')}
         >
           <SquarePen className="size-[18px]" aria-hidden />{!collapsed && 'แชตใหม่'}
         </Link>
@@ -117,21 +117,14 @@ function Sidebar({ onNavigate, collapsed = false, onToggle, onSearch, focusSearc
               ? <hr className="mx-2 mb-3 border-slate-200" />
               : <p className="mb-1 px-2 text-[11px] font-medium text-slate-400">{group.section}</p>)}
             <ul className="space-y-0.5">
-              {group.items.map(({ to, label, icon: Icon, end, live }) => (
+              {group.items.map(({ to, label, icon: Icon }) => (
                 <li key={to}>
                   <NavLink
-                    to={to} end={end} onClick={onNavigate} title={collapsed ? label : undefined} aria-label={collapsed ? label : undefined}
+                    to={to} onClick={onNavigate} title={collapsed ? label : undefined} aria-label={collapsed ? label : undefined}
                     className={({ isActive }) => cn(itemClass(isActive), collapsed ? 'justify-center py-2' : 'px-2 py-1.5')}
                   >
                     <Icon className="size-[18px]" aria-hidden />
                     {!collapsed && <span className="flex-1">{label}</span>}
-                    {live && running > 0 && (collapsed
-                      ? <span className="absolute top-1 right-1.5 size-2 animate-pulse rounded-full bg-brand-500 ring-2 ring-slate-50" />
-                      : (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-1.5 text-[11px] font-semibold text-brand-700">
-                          <span className="size-1.5 animate-pulse rounded-full bg-brand-500" />{running}
-                        </span>
-                      ))}
                   </NavLink>
                 </li>
               ))}
@@ -228,21 +221,17 @@ export default function AppShell() {
         </div>
       )}
 
-      {/* A quiet top bar, as in ChatGPT, Claude or Gemini: no border and no search; the menu on phones, then help and alerts. */}
+      {/* A quiet top bar, as in ChatGPT, Claude or Gemini: no border and no search; the menu on phones, then help. */}
       <header className="sticky top-0 z-20 flex h-14 items-center gap-2 bg-canvas/90 px-4 backdrop-blur sm:px-6">
         <button type="button" onClick={() => setMenuOpen(true)} className="rounded-md p-1.5 text-slate-600 hover:bg-slate-100 lg:hidden" aria-label="เปิดเมนู">
           <Menu className="size-5" />
         </button>
-        <Link to="/" className="flex items-center gap-2 lg:hidden">
+        <Link to="/workspace" className="flex items-center gap-2 lg:hidden">
           <img src={logo} alt="ICN" className="size-7 rounded-md ring-1 ring-slate-200" />
           <span className="text-sm font-semibold text-slate-900">ICN AI Hub</span>
         </Link>
         <div className="ml-auto flex items-center gap-1">
           <HelpButton />
-          <button type="button" className="relative rounded-lg p-2 text-slate-500 hover:bg-slate-100" aria-label="การแจ้งเตือน">
-            <Bell className="size-[18px]" />
-            <span className="absolute top-1.5 right-1.5 size-2 rounded-full bg-rose-500 ring-2 ring-white" />
-          </button>
         </div>
       </header>
 

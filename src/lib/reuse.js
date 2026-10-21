@@ -107,7 +107,7 @@ export function agentFromRun(run, thread, { name, owner, agents }) {
 }
 
 /**
- * Home's "ใช้ซ้ำ" row: what the user saved for reuse (newest first), their Favourite agents, then the
+ * The new-chat screen's "ใช้ซ้ำ" row: what the user saved for reuse (newest first), their Favourite agents, then the
  * Workflows they ran recently or made themselves. Each item is `{ kind: 'agent'|'workflow', item, pick }`.
  */
 export function reuseItems({ runs, agents, workflows, favorites, userId }, max = 8) {

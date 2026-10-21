@@ -1,12 +1,12 @@
 /**
  * Shared harness for whole-app journey tests (spec: .scratch/simpler-pages/spec.md, Testing Decisions).
  *
- * A journey renders the whole app in an in-memory router (Home by default), drives it like a user
+ * A journey renders the whole app in an in-memory router (the new-chat screen by default), drives it like a user
  * with clicks and typing, and asserts what the user can see: roles, accessible names, text, the URL.
  * Clicks are counted so a test can assert the journey's click budget. Typing is not counted.
  *
- *   const app = startJourney()                 // whole app at Home, fake timers on
- *   await app.type(app.box('สั่งงาน AI'), '…')  // focus + type, not counted
+ *   const app = startJourney()                 // whole app at new chat, fake timers on
+ *   await app.type(app.box('ข้อความ'), '…')     // focus + type, not counted
  *   await app.click(screen.getByRole(...))     // counted
  *   await app.letRunsFinish()                  // advance fake time until Runs complete
  *   app.url()                                  // '/workspace?run=…'
@@ -33,7 +33,7 @@ function Root() {
   )
 }
 
-/** Render the whole app at `route` (Home by default) and return a click-counting driver. */
+/** Render the whole app at `route` (the new-chat screen by default) and return a click-counting driver. */
 export function startJourney(route = '/') {
   vi.useFakeTimers()
   const router = createMemoryRouter([{ path: '*', element: <Root /> }], { initialEntries: [route] })
@@ -101,6 +101,9 @@ export function actionFor(itemName, action) {
   }
   throw new Error(`No "${action}" control next to "${itemName}"`)
 }
+
+/** The sidebar's "แชตใหม่": the new-chat screen the app opens on. */
+export const newChatLink = () => screen.getAllByRole('link', { name: 'แชตใหม่' })[0]
 
 /** The main menu (sidebar navigation). */
 export function mainMenu() {

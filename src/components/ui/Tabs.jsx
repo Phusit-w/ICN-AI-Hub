@@ -35,7 +35,7 @@ export default function Tabs({ tabs, label, value, defaultValue, onChange, class
 
   return (
     <div className={className}>
-      <div {...listProps} role="tablist" aria-label={label} onKeyDown={onKeyDown} className="flex gap-1 overflow-x-auto border-b border-slate-200">
+      <div {...listProps} role="tablist" aria-label={label} onKeyDown={onKeyDown} className="flex gap-1 overflow-x-auto overflow-y-hidden border-b border-slate-200">
         {tabs.map((t) => {
           const on = t.id === selected
           return (

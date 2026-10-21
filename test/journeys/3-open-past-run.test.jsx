@@ -4,10 +4,10 @@ import { expectArtifactShown, expectWithinBudget, startJourney } from '../journe
 
 // Journey 3: open a past Run. Budget: 1 click.
 describe('Journey 3: open a past Run', () => {
-  it('an employee opens a finished Run from "งานของฉัน" on Home and sees its Artifact in 1 click', async () => {
+  it('an employee opens a finished Run from the sidebar chat history and sees its Artifact in 1 click', async () => {
     const app = startJourney()
 
-    await app.click(within(screen.getByRole('region', { name: 'งานของฉัน' })).getByRole('link', { name: /หาข้อมูลตลาด EV Charger/ }))
+    await app.click(within(screen.getByRole('navigation', { name: 'ประวัติแชต' })).getByRole('link', { name: /หาข้อมูลตลาด EV Charger/ }))
 
     expect(app.url()).toMatch(/^\/workspace\?run=/)
     expect(screen.getAllByText(/หาข้อมูลตลาด EV Charger/).length).toBeGreaterThan(0)

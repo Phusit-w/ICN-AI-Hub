@@ -13,7 +13,7 @@ function seedRuns() {
   const ctx = { agents: AGENTS, skills: SKILLS, workflows: WORKFLOWS }
   const seed = (prompt, agoMs, owner = CURRENT_USER_ID, extra = {}) =>
     replayRun(createRun({ prompt, plan: planRequest(prompt, { ...ctx, ...extra }), owner, createdAt: Date.now() - agoMs }), agoMs)
-  // Background runs crawl so Home still shows live workflows throughout a demo.
+  // Background runs crawl so the chat history still shows live work throughout a demo.
   const background = (run) => ({ ...run, speed: 0.04 })
   return [
     background(seed('ทำ Proposal ระบบ Smart Warehouse ให้ลูกค้า Siam Logistics', 13000)),

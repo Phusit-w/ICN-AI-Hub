@@ -10,7 +10,6 @@ import ShareFilterChips from '../components/ui/ShareFilterChips'
 import Button from '../components/ui/Button'
 import { Select } from '../components/ui/Form'
 import Tabs from '../components/ui/Tabs'
-import EntityIcon from '../components/agents/EntityIcon'
 import { ItemCard } from '../components/agents/AgentCard'
 import SkillsTab from './SkillsTab'
 
@@ -61,15 +60,13 @@ function AgentsTab() {
   const filter = shareFilterFrom(params)
 
   const term = q.trim() || need?.q || ''
-  const favorites = state.favorites.map((id) => state.agents.find((a) => a.id === id)).filter(Boolean)
-
-  // Recommendations answer "which one should I use?"; the list below answers "show me everything".
+  // Recommendations answer "which one should I use for this?", so they show once the user says what the job is.
+  // Before that the list below is the answer (Favourites are already one click away on the new-chat screen).
   const picks = useMemo(() => {
     if (need?.dept) return state.agents.filter((a) => a.dept === need.dept).sort(SORTS.popular)
     if (term) return rankByMatch([...state.agents].sort(SORTS.popular), agentSearchText, term)
-    const mine = state.agents.filter((a) => a.dept === me.dept && !favorites.includes(a)).sort(SORTS.popular)
-    return [...favorites, ...mine]
-  }, [state.agents, need, term, favorites, me.dept])
+    return []
+  }, [state.agents, need, term])
   const top = picks.slice(0, 3)
 
   const list = useMemo(() => applyShareFilter(state.agents
@@ -84,8 +81,7 @@ function AgentsTab() {
   return (
     <>
       <section className="text-center">
-        <span className="inline-flex size-12 items-center justify-center rounded-2xl bg-brand-50 text-brand-600"><Sparkles className="size-6" /></span>
-        <h1 className="mt-3 text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">วันนี้อยากให้ช่วยเรื่องอะไร?</h1>
+        <h1 className="mt-3 text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">หาผู้ช่วย AI ที่เหมาะกับงาน</h1>
         <p className="mt-1 text-sm text-slate-500">บอกงานมา เราจะแนะนำผู้ช่วย AI ที่เหมาะที่สุดให้ หรือเลือกเองจากรายการด้านล่าง</p>
         <ShareFilterChips className="mt-4 justify-center overflow-x-auto" />
         <input
@@ -101,31 +97,21 @@ function AgentsTab() {
             >{n.label}</button>
           ))}
         </div>
-        {favorites.length > 0 && (
-          <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
-            <span className="text-xs text-slate-400">ผู้ช่วยประจำของคุณ:</span>
-            {favorites.map((a) => (
-              <Link key={a.id} to={`/workspace?agent=${a.id}`} className="flex items-center gap-2 rounded-full border border-slate-200 bg-white py-1 pr-3 pl-1 text-sm text-slate-700 hover:border-brand-300">
-                <EntityIcon icon={a.kind} size="sm" className="!rounded-full" />{a.name}
-              </Link>
-            ))}
-          </div>
-        )}
       </section>
 
       {/* With a share filter on, the filtered list is the answer, so it moves up in place of the recommendations. */}
-      {!filter && (
+      {!filter && (term || need) && (
         <section className="mt-8">
-          <h2 id="agent-picks" className="mb-3 text-sm font-medium text-slate-500">{term || need ? 'แนะนำสำหรับงานนี้' : 'แนะนำสำหรับคุณ'}</h2>
+          <h2 id="agent-picks" className="mb-3 text-sm font-medium text-slate-500">แนะนำสำหรับงานนี้</h2>
           {typedNoMatch ? <CreateFromSearch q={q.trim()} /> : (
             <ul className="grid gap-4 md:grid-cols-3" aria-labelledby="agent-picks">
-              {top.map((a, i) => <AgentCard key={a.id} agent={a} best={i === 0 && Boolean(term || need)} />)}
+              {top.map((a, i) => <AgentCard key={a.id} agent={a} best={i === 0} />)}
             </ul>
           )}
         </section>
       )}
 
-      <section className={filter ? 'mt-8' : 'mt-10'}>
+      <section className={filter || !(term || need) ? 'mt-8' : 'mt-10'}>
         <div className="mb-3 flex flex-wrap items-center gap-3">
           <h2 className="text-sm font-semibold text-slate-900">ผู้ช่วยทั้งหมด <span className="font-normal text-slate-400">({list.length})</span></h2>
           <button
