@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { ArrowRight, Plus, SlidersHorizontal, Sparkles } from 'lucide-react'
-import { useStore } from '../store/AppStore'
+import { isAdminView, useStore } from '../store/AppStore'
 import { modelById, userById } from '../data/catalog'
 import { cn, matchScore, rankByMatch } from '../lib/utils'
 import { agentSearchText } from '../lib/agentDraft'
@@ -56,7 +56,10 @@ function AgentsTab() {
   const [q, setQ] = useState('')
   const [need, setNeed] = useState(null)
   const [showFilters, setShowFilters] = useState(false)
-  const [location, setLocation] = useState('all')
+  // Choosing by model is the Admin's concern; in the User view the system picks where each Agent runs.
+  const [pickedLocation, setLocation] = useState('all')
+  const showModelFilter = isAdminView(state)
+  const location = showModelFilter ? pickedLocation : 'all'
   const [share, setShare] = useState('all')
   const [sort, setSort] = useState('popular')
   const [params] = useSearchParams()
@@ -125,9 +128,11 @@ function AgentsTab() {
         </div>
         {showFilters && (
           <div className="rise mb-3 flex flex-wrap gap-2">
-            <Select value={location} onChange={(e) => setLocation(e.target.value)} className="w-auto" aria-label="ประเภท Model">
-              <option value="all">ทุก Model</option><option value="local">Local AI</option><option value="cloud">Cloud AI</option><option value="auto">Auto routing</option>
-            </Select>
+            {showModelFilter && (
+              <Select value={location} onChange={(e) => setLocation(e.target.value)} className="w-auto" aria-label="ประเภท Model">
+                <option value="all">ทุก Model</option><option value="local">Local AI</option><option value="cloud">Cloud AI</option><option value="auto">Auto routing</option>
+              </Select>
+            )}
             <Select value={share} onChange={(e) => setShare(e.target.value)} className="w-auto" aria-label="การแชร์">
               <option value="all">ทุกระดับการแชร์</option><option value="company">ทั้งบริษัท</option><option value="department">ในแผนก</option><option value="private">เฉพาะฉัน</option>
             </Select>

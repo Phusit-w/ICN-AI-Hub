@@ -8,6 +8,14 @@ import CreateSkill from './pages/CreateSkill'
 import Workflows from './pages/Workflows'
 import Governance from './pages/Governance'
 import { skillLink } from './lib/routes'
+import { isAdminView, useStore } from './store/AppStore'
+
+// Admin-only pages are guarded at the route, not just hidden from the menu: in the User view an old or shared
+// link (or switching view while on the page) lands on new chat instead.
+function AdminOnly({ children }) {
+  const { state } = useStore()
+  return isAdminView(state) ? children : <Navigate to="/workspace" replace />
+}
 
 // Skills moved into a tab of the Agents page; old links (shared demo links too) keep their open Skill.
 function OldSkillsLink() {
@@ -30,7 +38,7 @@ export default function App() {
         <Route path="workflows" element={<Workflows />} />
         {/* The Community page is gone; shared items are found with the Agents page's "popular" filter. */}
         <Route path="community" element={<Navigate to="/agents?filter=popular" replace />} />
-        <Route path="governance" element={<Governance />} />
+        <Route path="governance" element={<AdminOnly><Governance /></AdminOnly>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

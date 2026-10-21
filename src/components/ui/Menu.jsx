@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react'
-import { MoreHorizontal } from 'lucide-react'
+import { Check, MoreHorizontal } from 'lucide-react'
 import { cn } from '../../lib/utils'
 import Button from './Button'
 
@@ -7,9 +7,11 @@ import Button from './Button'
  * A "⋯" button that opens a small menu of less-used actions (WAI-ARIA menu button pattern).
  * One click opens it. From the keyboard: Enter, Space or ↓ opens on the first item, ↑ on the last;
  * ↑/↓ move (wrapping), Home/End jump, Enter runs an item, Escape closes and returns focus, Tab closes.
- * `items` are `{ label, icon, onSelect }`; the menu opens upwards since it sits at the bottom of a message.
+ * `items` are `{ label, icon, onSelect }`, plus `checked` for a pick-one choice (shown as a menuitemradio with a tick).
+ * The menu opens upwards since it sits at the bottom of a message or of the sidebar.
+ * `children`, when given, replace the "⋯" icon inside the trigger, styled by `triggerClassName`.
  */
-export default function Menu({ items, label = 'ตัวเลือกเพิ่มเติม', className }) {
+export default function Menu({ items, label = 'ตัวเลือกเพิ่มเติม', className, children, triggerClassName }) {
   const [open, setOpen] = useState(false)
   const [active, setActive] = useState(0)
   const box = useRef(null)
@@ -46,13 +48,16 @@ export default function Menu({ items, label = 'ตัวเลือกเพิ
     else if (e.key === 'Tab') close(false)
   }
 
+  const triggerProps = {
+    ref: trigger, 'aria-label': label, title: label, 'aria-haspopup': 'menu', 'aria-expanded': open, 'aria-controls': open ? id : undefined,
+    onClick: () => (open ? close(false) : show(0)), onKeyDown: onTriggerKey,
+  }
+
   return (
     <div ref={box} className={cn('relative', className)}>
-      <Button
-        ref={trigger} size="icon" variant="ghost" icon={MoreHorizontal} aria-label={label} title={label}
-        aria-haspopup="menu" aria-expanded={open} aria-controls={open ? id : undefined}
-        onClick={() => (open ? close(false) : show(0))} onKeyDown={onTriggerKey}
-      />
+      {children
+        ? <button type="button" {...triggerProps} className={triggerClassName}>{children}</button>
+        : <Button {...triggerProps} size="icon" variant="ghost" icon={MoreHorizontal} />}
       {open && (
         <ul
           id={id} role="menu" aria-label={label} onKeyDown={onMenuKey}
@@ -63,11 +68,14 @@ export default function Menu({ items, label = 'ตัวเลือกเพิ
             return (
               <li key={item.label} role="none">
                 <button
-                  ref={(el) => { itemRefs.current[i] = el }} type="button" role="menuitem" tabIndex={i === active ? 0 : -1}
+                  ref={(el) => { itemRefs.current[i] = el }} type="button" tabIndex={i === active ? 0 : -1}
+                  role={item.checked === undefined ? 'menuitem' : 'menuitemradio'} aria-checked={item.checked}
                   onClick={() => select(item)} onMouseEnter={() => setActive(i)}
                   className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-left text-[13px] text-slate-700 hover:bg-slate-100 focus:bg-slate-100 focus:outline-none"
                 >
-                  {Icon && <Icon className="size-4 text-slate-400" aria-hidden />}{item.label}
+                  {Icon && <Icon className="size-4 text-slate-400" aria-hidden />}
+                  <span className="flex-1">{item.label}</span>
+                  {item.checked && <Check className="size-4 text-brand-600" aria-hidden />}
                 </button>
               </li>
             )

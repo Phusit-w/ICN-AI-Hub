@@ -1,7 +1,7 @@
 import { Fragment, useState } from 'react'
 import { Navigate, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { ArrowDown, ArrowUp, ChevronRight, Play, Plus, Save, Sparkles, X } from 'lucide-react'
-import { useStore } from '../store/AppStore'
+import { isAdminView, useStore } from '../store/AppStore'
 import { userById } from '../data/catalog'
 import { planRequest } from '../lib/runs'
 import { linearSteps, linearWorkflow, stepRef, withLinearSteps } from '../lib/reuse'
@@ -97,7 +97,7 @@ function Suggestions({ items }) {
 /**
  * The simple Workflow editor: a plain list of agents to remove, reorder or add, then save or try.
  * Used for the AI's first draft and, by default, for editing a saved straight-chain `workflow` (kept as the same Workflow).
- * Conditions and loops live in the detailed builder, behind "ขั้นสูง".
+ * Conditions and loops live in the detailed builder, behind "ขั้นสูง" (Admin view only).
  */
 function DraftEditor({ initial, workflow, onCancel }) {
   const { state, actions } = useStore()
@@ -165,13 +165,15 @@ function DraftEditor({ initial, workflow, onCancel }) {
           <Button variant="primary" icon={Play} disabled={!canSave} onClick={() => save(tryRun)}>ลองรัน</Button>
         </div>
       </div>
-      <p className="mt-3 text-right text-xs text-slate-400">
-        ต้องการเงื่อนไขหรือให้ส่งงานกลับ?{' '}
-        <button
-          type="button" disabled={!canSave} onClick={() => save((wf) => navigate(`/workflows?id=${wf.id}&advanced=1`))}
-          className="font-medium text-slate-500 underline underline-offset-2 hover:text-brand-700 disabled:no-underline disabled:opacity-50"
-        >ขั้นสูง</button>
-      </p>
+      {isAdminView(state) && (
+        <p className="mt-3 text-right text-xs text-slate-400">
+          ต้องการเงื่อนไขหรือให้ส่งงานกลับ?{' '}
+          <button
+            type="button" disabled={!canSave} onClick={() => save((wf) => navigate(`/workflows?id=${wf.id}&advanced=1`))}
+            className="font-medium text-slate-500 underline underline-offset-2 hover:text-brand-700 disabled:no-underline disabled:opacity-50"
+          >ขั้นสูง</button>
+        </p>
+      )}
     </Card>
   )
 }
@@ -263,21 +265,41 @@ function EditWorkflow({ workflow, steps }) {
   )
 }
 
+/** In the User view, a Workflow with conditions or loops can be used but not edited: the simple editor can't show it. */
+function UseOnly({ workflow }) {
+  return (
+    <div className="mx-auto max-w-3xl pt-2 lg:pt-6">
+      <Card className="rise p-5">
+        <h1 className="text-lg font-semibold text-slate-900">{workflow.name}</h1>
+        <p className="mt-1 text-sm text-slate-500">สายงานนี้มีเงื่อนไขหรือการวนกลับ แอดมินเป็นผู้แก้ไข — คุณกดใช้งานได้ตามปกติ</p>
+        <div className="mt-5 flex justify-end gap-2 border-t border-slate-100 pt-4">
+          <Button variant="ghost" to="/workflows">กลับ</Button>
+          <Button variant="primary" icon={Play} to={runLink(workflow)}>ใช้งาน</Button>
+        </div>
+      </Card>
+    </div>
+  )
+}
+
 /**
  * Landing by default. `?id=` opens that Workflow in the simple editor, or in the detailed builder when it has
  * conditions or loops the simple editor can't show. `&advanced=1` asks for the detailed builder.
+ * The detailed builder is Admin-only: in the User view its links fall back to the simple editor.
  */
 export default function Workflows() {
   const [params] = useSearchParams()
   const location = useLocation()
   const { state } = useStore()
   const id = params.get('id')
+  const admin = isAdminView(state)
   const advanced = params.has('advanced')
+  if (!admin && advanced) return <Navigate replace to={id ? `/workflows?id=${id}` : '/workflows'} />
   if (!id && !advanced) return <Landing />
   const workflow = state.workflows.find((w) => w.id === id)
   const steps = workflow && linearSteps(workflow)
   if (!advanced) {
     if (steps) return <EditWorkflow key={id} workflow={workflow} steps={steps} />
+    if (!admin) return workflow ? <UseOnly workflow={workflow} /> : <Navigate replace to="/workflows" />
     // Stay in the builder from here on, even if the user edits it back into a straight chain.
     return <Navigate replace to={`/workflows?id=${id}&advanced=1`} state={{ notLinear: Boolean(workflow) }} />
   }

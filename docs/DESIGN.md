@@ -49,19 +49,19 @@ Model ──location──▶ Local | Cloud | Auto  (Auto = router picks by data
 
 ## 2. Sitemap
 
-แอปเปิดที่ **แชตใหม่** (แบบ ChatGPT / Claude / Gemini) — ไม่มีหน้าหลักแยก · เมนู 3 รายการ: ไม่มีหน้าชุมชน, ทักษะเป็นแท็บในหน้าผู้ช่วย, Workspace ไม่มีตัวสลับโหมด
+แอปเปิดที่ **แชตใหม่** (แบบ ChatGPT / Claude / Gemini) — ไม่มีหน้าหลักแยก · เมนู 3 รายการ (มุมมอง Admin; มุมมอง User มี 2 — ไม่มีภาพรวมและการกำกับดูแล): ไม่มีหน้าชุมชน, ทักษะเป็นแท็บในหน้าผู้ช่วย, Workspace ไม่มีตัวสลับโหมด · สลับมุมมอง User / Admin ที่เมนูโปรไฟล์ด้านล่าง sidebar (เปิดมาเป็น User, จำไว้ข้าม reload) · รายการที่ทำเครื่องหมาย ★ เป็นของ Admin เท่านั้น: ใน User view ลิงก์ตรงจะพาไปหน้าที่ User เห็นได้
 
 ```
 ICN AI Hub
 ├── แชตใหม่ / แชต (Workspace)         /workspace  (/ เปิดที่นี่; ?q= prompt, ?agent= / ?workflow= pick, ?run= view Run)
 ├── งานของฉัน
-│   ├── สายงาน (Workflows)             /workflows  (?id= simple editor, &advanced=1 detailed builder)
+│   ├── สายงาน (Workflows)             /workflows  (?id= simple editor, &advanced=1 detailed builder ★ → simple editor)
 │   └── ผู้ช่วย AI (Agents)            /agents     (?filter=popular|shared, ?tab=skills, &open= Skill detail)
 │       ├── Agent Detail              /agents/:id
-│       ├── Create Agent              /agents/new  (?q= description, ?from= copy source, ?advanced=1 wizard)
+│       ├── Create Agent              /agents/new  (?q= description, ?from= copy source, ?advanced=1 wizard ★ → quick create)
 │       └── Create Skill              /skills/new  (?q= description, ?advanced=1 full form)
 └── องค์กร
-    └── ภาพรวมและการกำกับดูแล          /governance
+    └── ภาพรวมและการกำกับดูแล          /governance  ★ → แชตใหม่
 
 Old links: / → /workspace · /community → /agents?filter=popular · /skills(?open=id) → /agents?tab=skills(&open=id)
 ```
@@ -120,13 +120,13 @@ Object ทุกตัวมีชุด metadata เดียวกัน: Owne
 
 | Group | Components |
 |---|---|
-| `layout/` | `AppShell` (Sidebar: แชตใหม่, GlobalSearch, เมนู 3 รายการ, ChatHistory, ผู้ใช้; ย่อได้ · Topbar โล่ง (วิธีใช้) · mobile drawer) · `Help` (`TERMS` คำศัพท์รวม Plan, WelcomeCard, ปุ่มวิธีใช้/เริ่มทัวร์) |
+| `layout/` | `AppShell` (Sidebar: แชตใหม่, GlobalSearch, เมนู 3 รายการ, ChatHistory, ผู้ใช้ = เมนูโปรไฟล์สลับมุมมอง; ย่อได้ · Topbar โล่ง (วิธีใช้) · mobile drawer) · `Help` (`TERMS` คำศัพท์รวม Plan, WelcomeCard, ปุ่มวิธีใช้/เริ่มทัวร์) |
 | `tour/` | `Tour` (spotlight + popover, ข้ามขั้นที่มองไม่เห็น) · `steps.js` (5 ขั้น: ช่องสั่งงาน, ใช้ซ้ำ, ค้นหา, ผู้ช่วย AI, พร้อมแล้ว) |
 | `ui/Button` | variants: primary · secondary · ghost · subtle · danger; sizes sm/md/lg/icon; `to` → router Link |
 | `ui/Badge` | `Badge`, `StatusPill` (Waiting/Processing/Completed/Sent back/Ready/Running), `ModelBadge` (Local/Cloud/Auto), `DeptBadge`, `ShareBadge`, `Rating` |
 | `ui/Card` | `Card`, `CardHeader`, `PageHeader`, `StatCard`, `EmptyState`, `ProgressBar` |
 | `ui/Form` | `Field`, `Input`, `Textarea`, `Select`, `SearchInput`, `Toggle`, `Segmented`, `ChoiceCard` (single/multi) |
-| `ui/` (อื่นๆ) | `Tabs` (WAI-ARIA tabs: หน้าผู้ช่วย, Governance) · `Menu` ("⋯") · `ShareFilterChips` (ยอดนิยม / แชร์ให้ฉัน) · `QuickCreate` (บอก → AI กรอก → สร้าง) · `Attachments` · `TypewriterHint` |
+| `ui/` (อื่นๆ) | `Tabs` (WAI-ARIA tabs: หน้าผู้ช่วย, Governance) · `Menu` ("⋯", หรือ trigger ที่กำหนดเอง เช่น เมนูโปรไฟล์) · `ShareFilterChips` (ยอดนิยม / แชร์ให้ฉัน) · `QuickCreate` (บอก → AI กรอก → สร้าง) · `Attachments` · `TypewriterHint` |
 | `ui/Overlay` | `Modal`, `Toaster`, `Avatar` |
 | `agents/` | `EntityIcon` (agent = brand tint, skill = neutral), `AgentCard` (`ItemCard`: การ์ดเดียวกันของ Agent และ Workflow — ไอคอน, ชื่อ, คำอธิบาย 1 บรรทัด, "ใช้งาน"; `FavoriteButton`) |
 | `skills/` | `SkillCard` |

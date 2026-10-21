@@ -68,7 +68,7 @@ describe('Shared items: filter chips and "ใช้งาน"', () => {
 
   it('no page links to the community page any more', () => {
     for (const route of ['/', '/workspace', '/agents', '/agents?tab=skills', '/agents/agent-it-support', '/workflows', '/governance']) {
-      startJourney(route)
+      startJourney(route, { view: route === '/governance' ? 'admin' : 'user' })
       const hrefs = [...document.querySelectorAll('a[href]')].map((a) => a.getAttribute('href'))
       expect(hrefs.filter((h) => h.includes('community')), route).toEqual([])
       cleanup()
@@ -78,7 +78,7 @@ describe('Shared items: filter chips and "ใช้งาน"', () => {
 
 describe('Governance: contributor leaderboard', () => {
   it('the contributors tab shows who made the most-used shared items', async () => {
-    const app = startJourney('/governance')
+    const app = startJourney('/governance', { view: 'admin' })
     await app.click(screen.getByRole('tab', { name: 'ผู้มีส่วนร่วม' }))
     const rows = within(screen.getByRole('tabpanel', { name: 'ผู้มีส่วนร่วม' })).getAllByRole('listitem')
     expect(rows.length).toBe(5)

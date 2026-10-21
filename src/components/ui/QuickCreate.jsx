@@ -6,7 +6,7 @@ import Button from './Button'
 /**
  * The one-page "describe → AI fills → create" flow shared by Create Agent and Create Skill.
  * The user describes what they need, `onFill(text)` drafts the form, the caller renders the
- * fields to check as `children`, and the footer offers "ตั้งค่าขั้นสูง" and the single create button.
+ * fields to check as `children`, and the footer offers "ตั้งค่าขั้นสูง" (only when `onAdvanced` is given) and the single create button.
  * Exactly one button is primary at a time: "ให้ AI กรอกให้" until there is a draft, then the create button.
  */
 export default function QuickCreate({ title, subtitle, describeLabel, placeholder, initial = '', drafted, onFill, createLabel, canCreate, onCreate, onAdvanced, children }) {
@@ -32,8 +32,8 @@ export default function QuickCreate({ title, subtitle, describeLabel, placeholde
       {drafted && (
         <Card className="rise mt-5 space-y-5 p-5">
           {children}
-          <div className="flex items-center justify-between border-t border-slate-100 pt-4">
-            <Button variant="ghost" size="sm" icon={Settings2} onClick={onAdvanced}>ตั้งค่าขั้นสูง</Button>
+          <div className="flex items-center justify-end gap-2 border-t border-slate-100 pt-4">
+            {onAdvanced && <Button variant="ghost" size="sm" icon={Settings2} onClick={onAdvanced} className="mr-auto">ตั้งค่าขั้นสูง</Button>}
             <Button variant="primary" icon={Rocket} onClick={onCreate} disabled={!canCreate}>{createLabel}</Button>
           </div>
         </Card>

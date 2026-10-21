@@ -8,11 +8,11 @@ Spec: `.scratch/demo-two-views/spec.md` (stories 1–13, 16, 23).
 
 **Status:** ready-for-agent
 
-- [ ] Profile menu switches view; the sidebar name/title changes with it
-- [ ] Opens in the User view; the chosen view survives a reload
-- [ ] User view: no governance menu, no "ขั้นสูง" buttons, no model picker; the confidential-data notice still shows
-- [ ] User view: a direct governance link lands on new chat; a detailed-builder link lands on the simple Workflow editor; the step-by-step Agent link lands on quick create
-- [ ] Switching to User while on governance lands on new chat; otherwise the page stays
-- [ ] Admin view sees the governance menu and the "ขั้นสูง" buttons
+- [x] Profile menu switches view; the sidebar name/title changes with it
+- [x] Opens in the User view; the chosen view survives a reload
+- [x] User view: no governance menu, no "ขั้นสูง" buttons, no model picker; the confidential-data notice still shows
+- [x] User view: a direct governance link lands on new chat; a detailed-builder link lands on the simple Workflow editor; the step-by-step Agent link lands on quick create
+- [x] Switching to User while on governance lands on new chat; otherwise the page stays
+- [x] Admin view sees the governance menu and the "ขั้นสูง" buttons
 - [ ] Admin persona's name is fictional and resembles no one on the ICN org chart
-- [ ] Journey harness can start in the Admin view; journeys cover all of the above; existing journeys that visit governance start as Admin
+- [x] Journey harness can start in the Admin view; journeys cover all of the above; existing journeys that visit governance start as Admin

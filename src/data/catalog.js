@@ -26,8 +26,11 @@ export const USERS = {
   'u-wichai': { id: 'u-wichai', name: 'Wichai N.', title: 'Project Manager', dept: 'project' },
   'u-malee': { id: 'u-malee', name: 'Malee P.', title: 'Maintenance Supervisor', dept: 'maintenance' },
   'u-sudarat': { id: 'u-sudarat', name: 'Sudarat K.', title: 'Executive Secretary', dept: 'exec' },
+  'u-tawan': { id: 'u-tawan', name: 'Tawan C.', title: 'IT Administrator', dept: 'it' },
 }
 export const CURRENT_USER_ID = 'u-kanya'
+/** Whose eyes each view looks through: the User view is the current user, the Admin view is the IT Admin. */
+export const VIEW_PERSONAS = { user: CURRENT_USER_ID, admin: 'u-tawan' }
 export const userById = (id) => USERS[id] ?? { id, name: 'Unknown', title: '', dept: 'core' }
 
 export const MODELS = [

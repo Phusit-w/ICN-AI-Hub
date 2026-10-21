@@ -3,13 +3,14 @@ import { Link, NavLink, Outlet, useLocation, useNavigate, useSearchParams } from
 import {
   Bot, Menu, PanelLeftClose, PanelLeftOpen, Search, ShieldCheck, SquarePen, Workflow, X,
 } from 'lucide-react'
-import { useStore } from '../../store/AppStore'
-import { userById } from '../../data/catalog'
+import { isAdminView, useStore } from '../../store/AppStore'
+import { userById, VIEW_PERSONAS } from '../../data/catalog'
 import { cn, isToday } from '../../lib/utils'
 import { skillLink } from '../../lib/routes'
 import { threadsOf } from '../../lib/runs'
 import usePersistentState from '../../lib/usePersistentState'
 import { Avatar, Toaster } from '../ui/Overlay'
+import MenuButton from '../ui/Menu'
 import EntityIcon from '../agents/EntityIcon'
 import { SearchInput } from '../ui/Form'
 import { HelpButton } from './Help'
@@ -21,10 +22,36 @@ const NAV = [
     { to: '/workflows', label: 'สายงาน', icon: Workflow },
     { to: '/agents', label: 'ผู้ช่วย AI', icon: Bot },
   ] },
-  { section: 'องค์กร', items: [
+  { section: 'องค์กร', adminOnly: true, items: [
     { to: '/governance', label: 'ภาพรวมและการกำกับดูแล', icon: ShieldCheck },
   ] },
 ]
+
+const VIEWS = [
+  { id: 'user', label: 'มุมมองผู้ใช้ทั่วไป (User)' },
+  { id: 'admin', label: 'มุมมองแอดมิน (Admin)' },
+]
+
+/** The user at the bottom of the sidebar, as in ChatGPT, Claude or Gemini; clicking it switches the presenter's view. */
+function ProfileMenu({ collapsed }) {
+  const { state, actions } = useStore()
+  const me = userById(VIEW_PERSONAS[state.view])
+  return (
+    <MenuButton
+      label={`โปรไฟล์และมุมมอง: ${me.name}`} className="mt-3 border-t border-slate-200 pt-3"
+      items={VIEWS.map((v) => ({ label: v.label, checked: state.view === v.id, onSelect: () => actions.setView(v.id) }))}
+      triggerClassName={cn(itemClass(false), 'w-full gap-2.5 py-1.5 text-left', collapsed ? 'justify-center' : 'px-2')}
+    >
+      <Avatar name={me.name} />
+      {!collapsed && (
+        <span className="min-w-0 leading-tight">
+          <span className="block truncate text-sm font-medium text-slate-800">{me.name}</span>
+          <span className="block truncate text-[11px] font-normal text-slate-500">{me.title}</span>
+        </span>
+      )}
+    </MenuButton>
+  )
+}
 
 const itemClass = (isActive) => cn(
   'relative flex items-center gap-2.5 rounded-lg text-sm font-medium transition',
@@ -79,7 +106,7 @@ function ChatHistory({ onNavigate }) {
  */
 function Sidebar({ onNavigate, collapsed = false, onToggle, onSearch, focusSearch = false }) {
   const { state } = useStore()
-  const me = userById(state.userId)
+  const nav = NAV.filter((group) => !group.adminOnly || isAdminView(state))
   const { pathname, search } = useLocation()
   const onNewChat = pathname === '/workspace' && !new URLSearchParams(search).has('run')
   return (
@@ -111,7 +138,7 @@ function Sidebar({ onNavigate, collapsed = false, onToggle, onSearch, focusSearc
       </div>
 
       <nav className={cn('mt-4', collapsed ? 'space-y-3' : 'space-y-4')} aria-label="Main">
-        {NAV.map((group, i) => (
+        {nav.map((group, i) => (
           <div key={group.section}>
             {i > 0 && (collapsed
               ? <hr className="mx-2 mb-3 border-slate-200" />
@@ -135,15 +162,7 @@ function Sidebar({ onNavigate, collapsed = false, onToggle, onSearch, focusSearc
 
       {collapsed ? <div className="flex-1" /> : <ChatHistory onNavigate={onNavigate} />}
 
-      <div className={cn('mt-3 flex items-center gap-2.5 border-t border-slate-200 pt-3', collapsed ? 'justify-center' : 'px-2')} title={collapsed ? me.name : undefined}>
-        <Avatar name={me.name} />
-        {!collapsed && (
-          <div className="min-w-0 leading-tight">
-            <div className="truncate text-sm font-medium text-slate-800">{me.name}</div>
-            <div className="truncate text-[11px] text-slate-500">{me.title}</div>
-          </div>
-        )}
-      </div>
+      <ProfileMenu collapsed={collapsed} />
     </div>
   )
 }

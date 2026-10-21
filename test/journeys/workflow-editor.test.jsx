@@ -13,8 +13,8 @@ const stepNames = () => within(screen.getByRole('list', { name: 'ขั้นต
   .getAllByRole('listitem').map((li) => AGENTS.find((name) => within(li).queryByText(name)))
 
 describe('Editing a Workflow', () => {
-  it('opens the simple editor first, with the detailed builder behind "ขั้นสูง"', async () => {
-    const app = startJourney('/workflows')
+  it('opens the simple editor first, with the detailed builder behind "ขั้นสูง" (Admin view)', async () => {
+    const app = startJourney('/workflows', { view: 'admin' })
 
     await app.click(screen.getByRole('link', { name: 'Market Research Report' }))
 
@@ -41,8 +41,8 @@ describe('Editing a Workflow', () => {
     expect(stepNames()).toEqual(['Data Agent', 'Research Agent', 'Document Agent', 'Image Agent'])
   })
 
-  it('opens a Workflow with a condition or loop in the detailed builder, and says why', () => {
-    startJourney('/workflows?id=wf-sales-proposal')
+  it('opens a Workflow with a condition or loop in the detailed builder, and says why (Admin view)', () => {
+    startJourney('/workflows?id=wf-sales-proposal', { view: 'admin' })
 
     expect(screen.getByText(/มีเงื่อนไขหรือการวนกลับ/)).toBeVisible()
     expect(screen.getByRole('button', { name: 'ทดลองรัน' })).toBeVisible()

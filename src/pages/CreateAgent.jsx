@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { ArrowLeft, ArrowRight, Check, Copy, FileUp, Lock, Rocket, X } from 'lucide-react'
-import { useStore } from '../store/AppStore'
+import { isAdminView, useStore } from '../store/AppStore'
 import { DATA_CLASSES, DEPARTMENTS, KNOWLEDGE, MODELS, OUTPUT_FORMATS, TOOLS } from '../data/catalog'
 import { cn } from '../lib/utils'
 import { agentFromForm, BLANK_FORM, draftForm, formFromAgent, INSTRUCTION_STARTERS } from '../lib/agentDraft'
@@ -19,9 +19,9 @@ const KINDS = ['research', 'document', 'sales', 'hr', 'it', 'accounting', 'data'
  * Default way to create an agent: describe it in one box, the AI fills everything in,
  * the user checks name, description, skills and sharing, then creates. Everything else lives in the wizard.
  */
-function QuickCreateAgent({ initial, onCreate, onAdvanced }) {
+function QuickCreateAgent({ initial, initialForm, onCreate, onAdvanced }) {
   const { state } = useStore()
-  const [form, setForm] = useState(() => (initial.trim() ? draftForm(initial, state.agents) : null))
+  const [form, setForm] = useState(() => initialForm ?? (initial.trim() ? draftForm(initial, state.agents) : null))
   const set = (patch) => setForm((f) => ({ ...f, ...patch }))
 
   return (
@@ -30,7 +30,7 @@ function QuickCreateAgent({ initial, onCreate, onAdvanced }) {
       describeLabel="อยากได้ผู้ช่วยแบบไหน" placeholder="เช่น ช่วยร่างอีเมลตอบลูกค้าที่ร้องเรียนเรื่องส่งของช้า ให้สุภาพและเสนอทางแก้"
       initial={initial} drafted={!!form} onFill={(text) => setForm(draftForm(text, state.agents))}
       createLabel="สร้างผู้ช่วย" canCreate={!!form?.name.trim() && !!form?.description.trim()}
-      onCreate={() => onCreate(form)} onAdvanced={() => onAdvanced(form)}
+      onCreate={() => onCreate(form)} onAdvanced={onAdvanced && (() => onAdvanced(form))}
     >
       {form && (
         <>
@@ -41,7 +41,7 @@ function QuickCreateAgent({ initial, onCreate, onAdvanced }) {
               <Field label="ทำอะไร" htmlFor="q-desc"><Textarea id="q-desc" rows={2} value={form.description} onChange={(e) => set({ description: e.target.value })} /></Field>
             </div>
           </div>
-          <Field label={`ทักษะ (${form.skills.length})`} hint={`เริ่มจาก ${form.based} — กด × เพื่อเอาทักษะที่ไม่ต้องการออก`}>
+          <Field label={`ทักษะ (${form.skills.length})`} hint={`${form.based ? `เริ่มจาก ${form.based} — ` : ''}กด × เพื่อเอาทักษะที่ไม่ต้องการออก`}>
             <div className="flex flex-wrap gap-1.5">
               {form.skills.map((id) => {
                 const sk = state.skills.find((x) => x.id === id)
@@ -52,7 +52,7 @@ function QuickCreateAgent({ initial, onCreate, onAdvanced }) {
                   </span>
                 )
               })}
-              {form.skills.length === 0 && <span className="text-xs text-slate-400">ไม่มี — เพิ่มได้ในตั้งค่าขั้นสูง</span>}
+              {form.skills.length === 0 && <span className="text-xs text-slate-400">{onAdvanced ? 'ไม่มี — เพิ่มได้ในตั้งค่าขั้นสูง' : 'ไม่มี'}</span>}
             </div>
           </Field>
           <ShareChoice value={form.share} onChange={(share) => set({ share })} />
@@ -88,6 +88,10 @@ export default function CreateAgent() {
     navigate(`/agents/${agent.id}`)
   }
 
+  // The step-by-step form is Admin-only; in the User view every way in (a copy, `?advanced=1`) uses quick create.
+  if (!isAdminView(state)) {
+    return <QuickCreateAgent initial={params.get('q') ?? ''} initialForm={source && form} onCreate={create} />
+  }
   if (quick) {
     return <QuickCreateAgent initial={params.get('q') ?? ''} onCreate={create} onAdvanced={(f) => { setForm(f); setQuick(false) }} />
   }

@@ -6,6 +6,7 @@
  * Clicks are counted so a test can assert the journey's click budget. Typing is not counted.
  *
  *   const app = startJourney()                 // whole app at new chat, fake timers on
+ *   startJourney('/governance', { view: 'admin' })  // start in the Admin view
  *   await app.type(app.box('ข้อความ'), '…')     // focus + type, not counted
  *   await app.click(screen.getByRole(...))     // counted
  *   await app.letRunsFinish()                  // advance fake time until Runs complete
@@ -17,7 +18,7 @@ import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router-dom'
 import { expect, vi } from 'vitest'
 import App from '../src/App'
-import { AppStoreProvider } from '../src/store/AppStore'
+import { AppStoreProvider, VIEW_STORAGE_KEY } from '../src/store/AppStore'
 import { TourProvider } from '../src/components/tour/Tour'
 
 /** Long enough for any multi-Agent Run, including a review loop back, to complete. */
@@ -33,8 +34,12 @@ function Root() {
   )
 }
 
-/** Render the whole app at `route` (the new-chat screen by default) and return a click-counting driver. */
-export function startJourney(route = '/') {
+/**
+ * Render the whole app at `route` (the new-chat screen by default) and return a click-counting driver.
+ * `view` starts the presenter in the 'user' (default) or 'admin' view, as if they had picked it before a reload.
+ */
+export function startJourney(route = '/', { view } = {}) {
+  if (view) localStorage.setItem(VIEW_STORAGE_KEY, JSON.stringify(view))
   vi.useFakeTimers()
   const router = createMemoryRouter([{ path: '*', element: <Root /> }], { initialEntries: [route] })
   render(<RouterProvider router={router} />)

@@ -54,7 +54,7 @@ describe('Create a Skill the same way as an Agent', () => {
   })
 
   it('Create Agent also has exactly one primary button at each point', async () => {
-    const app = startJourney('/agents/new')
+    const app = startJourney('/agents/new', { view: 'admin' })
     expectOnePrimary('ให้ AI กรอกให้')
     await app.type(app.box('อยากได้ผู้ช่วยแบบไหน'), 'ร่างอีเมลตอบลูกค้า')
     await app.click(screen.getByRole('button', { name: 'ให้ AI กรอกให้' }))

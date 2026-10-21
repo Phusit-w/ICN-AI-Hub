@@ -5,7 +5,7 @@ import { startJourney } from '../journey'
 // Ticket 06: governance shows 4 headline numbers, with details in tabs below.
 describe('Governance: headline numbers and detail tabs', () => {
   it('shows cost, number of Runs, local AI share and policy alerts at the top', () => {
-    startJourney('/governance')
+    startJourney('/governance', { view: 'admin' })
     const headline = screen.getByRole('region', { name: 'ตัวเลขสำคัญ' })
     expect(within(headline).getByText('ค่าใช้จ่ายเดือนนี้')).toBeInTheDocument()
     expect(within(headline).getByText('จำนวนงาน')).toBeInTheDocument()
@@ -16,7 +16,7 @@ describe('Governance: headline numbers and detail tabs', () => {
   })
 
   it('puts each detail section in a tab, one shown at a time', async () => {
-    const app = startJourney('/governance')
+    const app = startJourney('/governance', { view: 'admin' })
     const tabs = within(screen.getByRole('tablist', { name: 'รายละเอียด' })).getAllByRole('tab')
     expect(tabs.map((t) => t.textContent)).toEqual([
       'ค่าใช้จ่ายและ Model', 'แผนก', 'นโยบายข้อมูล', 'สิทธิ์การใช้งาน', 'Audit log', 'ผู้มีส่วนร่วม',
@@ -32,7 +32,7 @@ describe('Governance: headline numbers and detail tabs', () => {
   })
 
   it('moves between tabs with the arrow, Home and End keys', async () => {
-    const app = startJourney('/governance')
+    const app = startJourney('/governance', { view: 'admin' })
     const first = screen.getByRole('tab', { name: 'ค่าใช้จ่ายและ Model' })
     expect(first).toHaveAttribute('tabindex', '0')
     expect(screen.getByRole('tab', { name: 'แผนก' })).toHaveAttribute('tabindex', '-1')
@@ -55,7 +55,7 @@ describe('Governance: headline numbers and detail tabs', () => {
   })
 
   it('keeps a policy switched off after visiting another tab', async () => {
-    const app = startJourney('/governance')
+    const app = startJourney('/governance', { view: 'admin' })
     await app.click(screen.getByRole('tab', { name: 'นโยบายข้อมูล' }))
     const policy = screen.getByRole('switch', { name: 'ห้ามส่งข้อมูลเงินเดือนออกนอก HR' })
     expect(policy).toBeChecked()
@@ -66,7 +66,7 @@ describe('Governance: headline numbers and detail tabs', () => {
   })
 
   it('keeps the tour target for local AI visible by default', () => {
-    startJourney('/governance')
+    startJourney('/governance', { view: 'admin' })
     const target = document.querySelector('[data-tour="gov-local"]')
     expect(target).not.toBeNull()
     expect(target.closest('[hidden]')).toBeNull()

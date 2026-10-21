@@ -5,9 +5,16 @@ import { WORKFLOWS } from '../data/workflows'
 import { CURRENT_USER_ID } from '../data/catalog'
 import { advanceRun, createRun, planRequest, replayRun, startRun } from '../lib/runs'
 import { uid } from '../lib/utils'
+import usePersistentState from '../lib/usePersistentState'
 
 const TICK_MS = 400
 const MIN = 60000
+
+/** Where the presenter's chosen view is kept, so a reload during a presentation stays in it. */
+export const VIEW_STORAGE_KEY = 'icn.view'
+
+/** The one question every page asks about the view: is the presenter looking through the Admin's eyes? */
+export const isAdminView = (state) => state.view === 'admin'
 
 function seedRuns() {
   const ctx = { agents: AGENTS, skills: SKILLS, workflows: WORKFLOWS }
@@ -75,6 +82,8 @@ const StoreContext = createContext(null)
 
 export function AppStoreProvider({ children }) {
   const [state, dispatch] = useReducer(reducer, undefined, initialState)
+  // 'user' | 'admin'. Opens in the User view; anything else in storage counts as the User view.
+  const [view, setView] = usePersistentState(VIEW_STORAGE_KEY, 'user')
 
   // One clock drives every running workflow, so progress continues while the user navigates.
   useEffect(() => {
@@ -120,10 +129,12 @@ export function AppStoreProvider({ children }) {
       attachSkill: (skillId, agentIds) => dispatch({ type: 'attachSkill', skillId, agentIds }),
       saveWorkflow: (workflow) => dispatch({ type: 'saveWorkflow', workflow }),
       toggleFavorite: (id) => dispatch({ type: 'toggleFavorite', id }),
+      // The first render's setter is enough: it only uses React's stable setter and the fixed storage key.
+      setView,
     }
   }, [])
 
-  const value = useMemo(() => ({ state, actions }), [state, actions])
+  const value = useMemo(() => ({ state: { ...state, view: view === 'admin' ? 'admin' : 'user' }, actions }), [state, view, actions])
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>
 }
 

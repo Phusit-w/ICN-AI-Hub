@@ -2,8 +2,10 @@ import { describe, expect, it } from 'vitest'
 import { screen, within } from '@testing-library/react'
 import { mainMenu, startJourney } from '../journey'
 
-// "แชตใหม่" sits above the menu and is the home screen, so the menu itself has 3 items.
+// "แชตใหม่" sits above the menu and is the home screen, so the menu itself has 3 items in the Admin view.
+// The User view has no governance, so its menu has 2 (see view-switch.test.jsx).
 const MENU = ['สายงาน', 'ผู้ช่วย AI', 'ภาพรวมและการกำกับดูแล']
+const admin = { view: 'admin' }
 
 /** Menu item names; a live count badge (e.g. "2" running Runs) is not part of the item's name. */
 const menuItems = (nav) => within(nav).getAllByRole('link').map((l) => l.getAttribute('aria-label') ?? l.textContent.replace(/\d+$/, ''))
@@ -37,20 +39,20 @@ describe('Navigation: new chat plus a three-item menu', () => {
   })
 
   it('the main menu has exactly 3 items, in order, with governance in its own group at the bottom', () => {
-    startJourney()
+    startJourney('/', admin)
     expect(menuItems(mainMenu())).toEqual(MENU)
     const groups = within(mainMenu()).getAllByRole('list')
     expect(within(groups.at(-1)).getAllByRole('link').map((l) => l.textContent)).toEqual(['ภาพรวมและการกำกับดูแล'])
   })
 
   it('the collapsed icon-only menu shows the same 3 items', async () => {
-    const app = startJourney()
+    const app = startJourney('/', admin)
     await app.click(screen.getByRole('button', { name: 'ย่อแถบเมนู' }))
     expect(within(mainMenu()).getAllByRole('link').map((l) => l.getAttribute('aria-label'))).toEqual(MENU)
   })
 
   it('the mobile menu shows the same 3 items', async () => {
-    const app = startJourney()
+    const app = startJourney('/', admin)
     await app.click(screen.getByRole('button', { name: 'เปิดเมนู' }))
     const mobile = within(screen.getByRole('dialog')).getByRole('navigation', { name: 'Main' })
     expect(menuItems(mobile)).toEqual(MENU)

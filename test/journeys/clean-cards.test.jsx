@@ -80,7 +80,7 @@ describe('Clean Workflow cards', () => {
   })
 
   it('a Workflow opened in the detailed builder also shows its numbers', () => {
-    startJourney('/workflows?id=wf-sales-proposal')
+    startJourney('/workflows?id=wf-sales-proposal', { view: 'admin' })
     expect(screen.getByText(/v2\.1/)).toBeInTheDocument()
     expect(screen.getByText(/ใช้ 1.8k ครั้ง/)).toBeInTheDocument()
   })
