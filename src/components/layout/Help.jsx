@@ -76,7 +76,7 @@ export function WelcomeCard() {
         <div className="mt-3 rounded-xl bg-white p-4 ring-1 ring-brand-100"><TermList /></div>
       </details>
       <div className="mt-3 flex flex-wrap items-center gap-2">
-        <Button size="sm" variant="primary" icon={Compass} onClick={() => { close(); start() }}>เริ่มทัวร์แนะนำ (1 นาที)</Button>
+        <Button size="sm" variant="secondary" icon={Compass} onClick={() => { close(); start() }}>เริ่มทัวร์แนะนำ (1 นาที)</Button>
         <Button size="sm" variant="ghost" onClick={close}>เข้าใจแล้ว ไม่ต้องแสดงอีก</Button>
       </div>
     </div>
