@@ -4,7 +4,6 @@ export const KPIS = {
   tasks: 18420, tasksDelta: 12.4,
   costMtd: 182400, costBudget: 260000,
   localShare: 63,
-  activeUsers: 1284, totalUsers: 1650,
   hoursSaved: 6120,
   policyBlocks: 37,
 }

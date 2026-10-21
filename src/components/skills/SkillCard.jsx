@@ -7,7 +7,7 @@ import Button from '../ui/Button'
 
 export default function SkillCard({ skill, usedBy, onOpen, onAttach }) {
   return (
-    <div data-tour="skill-card" className="flex flex-col rounded-xl border border-slate-200 bg-white p-4 transition hover:border-slate-300 hover:shadow-sm">
+    <div className="flex flex-col rounded-xl border border-slate-200 bg-white p-4 transition hover:border-slate-300 hover:shadow-sm">
       <div className="flex items-start gap-3">
         <EntityIcon icon={skill.icon} tone="skill" />
         <div className="min-w-0 flex-1">

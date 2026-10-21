@@ -105,7 +105,7 @@ export default function Home() {
         <p className="mt-2 flex items-center justify-center gap-1.5 text-xs text-slate-400"><ShieldCheck className="size-3.5 text-emerald-500" /> ข้อมูลลับประมวลผลบน AI ภายในบริษัทอัตโนมัติ</p>
         {mine.length === 0 && (
           // Examples help a newcomer see what to ask; once they have Runs they only add clutter.
-          <ul data-tour="home-quick" aria-label="ตัวอย่างงาน" className="mt-4 flex flex-wrap justify-center gap-2">
+          <ul aria-label="ตัวอย่างงาน" className="mt-4 flex flex-wrap justify-center gap-2">
             {EXAMPLES.map((x) => (
               <li key={x.label}>
                 <button type="button" onClick={() => setText(x.prompt)} className="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-600 transition hover:bg-slate-200 hover:text-slate-900">{x.label}</button>

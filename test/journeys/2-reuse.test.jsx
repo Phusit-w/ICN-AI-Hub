@@ -36,13 +36,15 @@ describe('Journey 2: reuse a Favourite agent or a Workflow', () => {
     const app = startJourney()
 
     await app.click(within(reuseRow()).getByRole('button', { name: /Market Research Report/ }))
-    await app.type(app.box('สั่งงาน AI'), 'ตลาดหุ่นยนต์คลังสินค้าในไทย{Enter}')
+    await app.type(app.box('สั่งงาน AI'), 'ตลาดหุ่นยนต์คลังสินค้าในไทย')
+    await app.click(screen.getByRole('button', { name: 'ส่งงาน' }))
 
     expect(app.url()).toMatch(/^\/workspace\?run=/)
     expect(screen.queryByRole('button', { name: 'เริ่มเลย' })).not.toBeInTheDocument()
     await app.letRunsFinish()
     expectArtifactShown()
-    expectWithinBudget(app, 1)
+    // The pick (1 click, journey 2's budget) plus the send, the same click Journey 1 counts: no Plan click.
+    expectWithinBudget(app, 2)
   })
 
   it('sending with a Favourite agent runs it straight away', async () => {

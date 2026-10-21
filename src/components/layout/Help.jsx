@@ -40,7 +40,7 @@ export function HelpButton() {
   const { start } = useTour()
   return (
     <>
-      <button type="button" data-tour="help" onClick={() => setOpen(true)} className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm text-slate-500 hover:bg-slate-100 hover:text-slate-800" aria-label="คำศัพท์และวิธีใช้">
+      <button type="button" onClick={() => setOpen(true)} className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm text-slate-500 hover:bg-slate-100 hover:text-slate-800" aria-label="คำศัพท์และวิธีใช้">
         <CircleHelp className="size-[18px]" /><span className="hidden md:inline">วิธีใช้</span>
       </button>
       <Modal

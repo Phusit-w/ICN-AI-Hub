@@ -129,11 +129,11 @@ Object ทุกตัวมีชุด metadata เดียวกัน: Owne
 | `ui/Form` | `Field`, `Input`, `Textarea`, `Select`, `SearchInput`, `Toggle`, `Segmented`, `ChoiceCard` (single/multi) |
 | `ui/` (อื่นๆ) | `Tabs` (WAI-ARIA tabs: หน้าผู้ช่วย, Governance) · `Menu` ("⋯") · `ShareFilterChips` (ยอดนิยม / แชร์ให้ฉัน) · `QuickCreate` (บอก → AI กรอก → สร้าง) · `Attachments` · `TypewriterHint` |
 | `ui/Overlay` | `Modal`, `Toaster`, `Avatar` |
-| `agents/` | `EntityIcon` (agent = brand tint, skill = neutral), `AgentCard` |
+| `agents/` | `EntityIcon` (agent = brand tint, skill = neutral), `AgentCard` (`ItemCard`: การ์ดเดียวกันของ Agent และ Workflow — ไอคอน, ชื่อ, คำอธิบาย 1 บรรทัด, "ใช้งาน"; `FavoriteButton`; `AgentRow`) |
 | `skills/` | `SkillCard` |
-| `workflow/` | `Pipeline` (panel ขั้นตอน), `RunRow` (live mini-progress), `ArtifactView` (bullets/table/doc/diagram/checklist), `ComposerPick` (Agent หรือ Workflow ที่เลือกในช่องสั่งงาน ใช้ร่วมกัน Home/Workspace), `SaveForReuse` |
+| `workflow/` | `Pipeline` (panel ขั้นตอน), `RunRow` (live mini-progress), `ArtifactView` (bullets/table/doc/diagram/checklist), `ComposerPick` (Agent หรือ Workflow ที่เลือกในช่องสั่งงาน ใช้ร่วมกัน Home/Workspace), `SaveForReuse`, `WorkflowStats` (ใช้กี่ครั้ง, คะแนน, เวอร์ชัน — แสดงในหน้ารายละเอียด ไม่อยู่บนการ์ด) |
 
-Logic: `store/AppStore.jsx` (reducer + one clock for all runs) · `lib/runs.js` (planner: chat หรือ Plan, model router, step engine with loop-back) · `lib/reuse.js` (บันทึกไว้ใช้ซ้ำ) · `lib/mockOutputs.js`
+Logic: `store/AppStore.jsx` (reducer + one clock for all runs) · `lib/runs.js` (planner: chat หรือ Plan, model router, step engine with loop-back) · `lib/reuse.js` (บันทึกไว้ใช้ซ้ำ) · `lib/sharing.js` (ตัวกรองยอดนิยม / แชร์ให้ฉัน) · `lib/routes.js` (ลิงก์ไปแท็บทักษะ) · `lib/agentDraft.js`, `lib/skillDraft.js` (AI กรอกฟอร์มสร้าง) · `lib/mockOutputs.js`
 
 Tests: `test/journeys/` — whole-app journey tests (Vitest + Testing Library) ที่ตรวจ click budget และเป้าหมายของทุกขั้นในทัวร์
 

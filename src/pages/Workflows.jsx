@@ -213,7 +213,7 @@ function Landing() {
 
       {draft ? <DraftEditor key={draft.prompt} initial={draft} onCancel={() => setDraft(null)} /> : (
         <div>
-          <form onSubmit={(e) => { e.preventDefault(); startDraft() }} className="flex items-end gap-2 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm focus-within:border-brand-400 focus-within:ring-4 focus-within:ring-brand-100" data-tour="wf-prompt">
+          <form onSubmit={(e) => { e.preventDefault(); startDraft() }} className="flex items-end gap-2 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm focus-within:border-brand-400 focus-within:ring-4 focus-within:ring-brand-100">
             <div className="relative flex-1">
               <textarea
                 value={text} onChange={(e) => setText(e.target.value)} rows={2} aria-label="อยากให้สายงานทำอะไร"

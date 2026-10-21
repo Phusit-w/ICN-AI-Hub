@@ -1,5 +1,5 @@
 import { Fragment } from 'react'
-import { ArrowRight, RotateCcw, X } from 'lucide-react'
+import { ArrowRight, RotateCcw } from 'lucide-react'
 import EntityIcon from '../agents/EntityIcon'
 import { ModelBadge, StatusPill } from '../ui/Badge'
 import { ProgressBar } from '../ui/Card'
@@ -21,10 +21,9 @@ function Connector({ active, done, vertical }) {
 
 /**
  * Visual chain of agents for one run: which agent is working, which are waiting, which are done.
- * In "planned" mode steps can be removed before the run starts.
  * It runs left to right on wide screens unless `vertical`, e.g. inside a narrow side panel.
  */
-export default function Pipeline({ steps, onRemove, selectedId, onSelect, vertical = false }) {
+export default function Pipeline({ steps, selectedId, onSelect, vertical = false }) {
   return (
     <div className={cn('flex flex-col', !vertical && 'lg:flex-row lg:items-stretch lg:overflow-x-auto lg:pb-2')}>
       {steps.map((s, i) => {
@@ -51,11 +50,6 @@ export default function Pipeline({ steps, onRemove, selectedId, onSelect, vertic
                   <div className="truncate text-[13px] font-semibold text-slate-800">{s.name}</div>
                   <div className="truncate text-[11.5px] text-slate-500">{s.task}</div>
                 </div>
-                {onRemove && (
-                  <button type="button" onClick={(e) => { e.stopPropagation(); onRemove(s.id) }} className="rounded p-0.5 text-slate-400 hover:bg-slate-100 hover:text-rose-500" aria-label={`ลบ ${s.name} ออกจากแผน`}>
-                    <X className="size-3.5" />
-                  </button>
-                )}
               </div>
               <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
                 <StatusPill status={s.status} />

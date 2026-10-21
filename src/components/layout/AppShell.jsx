@@ -47,7 +47,7 @@ function Sidebar({ onNavigate, collapsed = false, onToggle }) {
           ? <Button variant="primary" size="icon" icon={Plus} to="/workspace?new=1" data-tour="new-task" aria-label="สั่งงานใหม่" title="สั่งงานใหม่" className="!size-9" />
           : <Button variant="primary" icon={Plus} to="/workspace?new=1" data-tour="new-task" onClick={onNavigate} className="w-full justify-center">สั่งงานใหม่</Button>}
       </div>
-      <nav data-tour="nav" className={cn('mt-4 flex-1 overflow-y-auto', collapsed ? 'space-y-3 px-2' : 'space-y-5 px-3')} aria-label="Main">
+      <nav className={cn('mt-4 flex-1 overflow-y-auto', collapsed ? 'space-y-3 px-2' : 'space-y-5 px-3')} aria-label="Main">
         {NAV.map((group, i) => (
           <div key={group.section}>
             {collapsed

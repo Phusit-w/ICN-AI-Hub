@@ -83,7 +83,7 @@ function AgentsTab() {
 
   return (
     <>
-      <section className="text-center" data-tour="agents-filters">
+      <section className="text-center">
         <span className="inline-flex size-12 items-center justify-center rounded-2xl bg-brand-50 text-brand-600"><Sparkles className="size-6" /></span>
         <h1 className="mt-3 text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">วันนี้อยากให้ช่วยเรื่องอะไร?</h1>
         <p className="mt-1 text-sm text-slate-500">บอกงานมา เราจะแนะนำผู้ช่วย AI ที่เหมาะที่สุดให้ หรือเลือกเองจากรายการด้านล่าง</p>
@@ -132,7 +132,7 @@ function AgentsTab() {
             type="button" onClick={() => setShowFilters(!showFilters)} aria-pressed={showFilters}
             className={cn('ml-auto inline-flex h-8 items-center gap-1.5 rounded-lg border px-3 text-[13px]', showFilters ? 'border-brand-300 bg-brand-50 text-brand-700' : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300')}
           ><SlidersHorizontal className="size-3.5" /> ตัวกรอง</button>
-          <Button variant="secondary" size="sm" icon={Plus} to="/agents/new" data-tour="agents-create">สร้างผู้ช่วย</Button>
+          <Button variant="secondary" size="sm" icon={Plus} to="/agents/new">สร้างผู้ช่วย</Button>
         </div>
         {showFilters && (
           <div className="rise mb-3 flex flex-wrap gap-2">
@@ -150,7 +150,7 @@ function AgentsTab() {
         {list.length === 0 ? (
           (!typedNoMatch || filter) && <p className="rounded-xl border border-dashed border-slate-200 p-6 text-center text-sm text-slate-400">ไม่มีผู้ช่วยตรงตัวกรองนี้</p>
         ) : (
-          <ul className="grid gap-3 sm:grid-cols-2 md:grid-cols-3" data-tour="agent-card" aria-label="รายการผู้ช่วย">
+          <ul className="grid gap-3 sm:grid-cols-2 md:grid-cols-3" aria-label="รายการผู้ช่วย">
             {list.map((a) => <AgentCard key={a.id} agent={a} />)}
           </ul>
         )}

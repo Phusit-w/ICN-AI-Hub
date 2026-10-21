@@ -7,7 +7,7 @@ import {
 import { useStore } from '../store/AppStore'
 import { AttachButton, AttachmentList } from '../components/ui/Attachments'
 import { ACTIVITIES } from '../lib/mockOutputs'
-import { isChatRun as isChat, runProgress } from '../lib/runs'
+import { isChatRun, runProgress } from '../lib/runs'
 import { clockTime, cn, timeAgo } from '../lib/utils'
 import usePersistentState from '../lib/usePersistentState'
 import { ProgressBar } from '../components/ui/Card'
@@ -39,14 +39,14 @@ function ThreadList({ threads, activeThread, onNew }) {
 
   if (collapsed) {
     return (
-      <aside data-tour="ws-threads" className="hidden shrink-0 flex-col items-center gap-1 lg:flex">
+      <aside className="hidden shrink-0 flex-col items-center gap-1 lg:flex">
         <Button variant="ghost" size="icon" icon={History} onClick={() => setCollapsed(false)} aria-label="แสดงประวัติการสั่งงาน" title="แสดงประวัติการสั่งงาน" />
         <Button variant="ghost" size="icon" icon={Plus} onClick={onNew} aria-label="แชตใหม่" title="แชตใหม่" />
       </aside>
     )
   }
   return (
-    <aside data-tour="ws-threads" className="hidden w-64 shrink-0 flex-col lg:flex">
+    <aside className="hidden w-64 shrink-0 flex-col lg:flex">
       <Button icon={Plus} onClick={onNew} className="justify-center">แชตใหม่</Button>
       <div className="mt-5 mb-1.5 flex items-center justify-between pl-2">
         <p className="text-[11px] font-medium text-slate-400">ประวัติการสั่งงาน</p>
@@ -86,7 +86,7 @@ function Composer({ onSend, initialAgentId, initialWorkflowId }) {
   }
   return (
     <div className="mx-auto w-full max-w-3xl">
-      <form data-tour="ws-composer" onSubmit={(e) => { e.preventDefault(); send() }} className="rounded-2xl border border-slate-200 bg-white p-2 shadow-sm focus-within:border-brand-400 focus-within:ring-4 focus-within:ring-brand-100">
+      <form onSubmit={(e) => { e.preventDefault(); send() }} className="rounded-2xl border border-slate-200 bg-white p-2 shadow-sm focus-within:border-brand-400 focus-within:ring-4 focus-within:ring-brand-100">
         <textarea
           ref={ref} value={text} onChange={(e) => setText(e.target.value)} rows={1} aria-label="ข้อความ"
           onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() } }}
@@ -158,7 +158,7 @@ function ArtifactActions({ run, latest, onShowSteps }) {
 
 function AssistantMessage({ run, latest, onShowSteps }) {
   const { actions } = useStore()
-  const chat = isChat(run)
+  const chat = isChatRun(run)
   const current = run.steps[run.current]
   const final = run.status === 'completed' ? finalStep(run) : null
   const loops = run.steps.reduce((n, s) => n + (s.kind === 'condition' || s.kind === 'review' ? s.loops : 0), 0)
@@ -379,7 +379,7 @@ export default function Workspace() {
     // One rule: a chat answer, or an Agent or Workflow the user picked, starts straight away.
     // Several Agents the system chose itself (even a Workflow matched by keyword) wait at the Plan for "เริ่มเลย".
     const picked = Boolean(pick?.agentId || pick?.workflowId)
-    const id = actions.planRun(prompt, pick ?? {}, state, { threadId, attachments, autoStart: (plan) => picked || isChat(plan) })
+    const id = actions.planRun(prompt, pick ?? {}, state, { threadId, attachments, autoStart: (plan) => picked || isChatRun(plan) })
     setParams({ run: id })
   }
   const stepsRun = thread.find((r) => r.id === stepsRunId) // closes by itself when the user leaves the Thread
