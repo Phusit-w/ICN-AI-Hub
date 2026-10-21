@@ -87,7 +87,8 @@ function Palette({ onAdd }) {
   )
 }
 
-export default function WorkflowBuilder() {
+/** The detailed builder (ขั้นสูง). `notice` explains why the user landed here instead of the simple editor. */
+export default function WorkflowBuilder({ notice }) {
   const { state, actions } = useStore()
   const [params, setParams] = useSearchParams()
   const meta = useNodeMeta()
@@ -188,8 +189,8 @@ export default function WorkflowBuilder() {
     setSelected(null)
   }
   const switchTo = (id) => {
-    if (id === 'new') { const wf = blankWorkflow(); setDraft(wf); setParams({}); setSelected(null); setRunId(null); return }
-    setParams({ id })
+    if (id === 'new') { const wf = blankWorkflow(); setDraft(wf); setParams({ advanced: '1' }); setSelected(null); setRunId(null); return }
+    setParams({ id, advanced: '1' })
   }
 
   const width = Math.max(...draft.nodes.map((n) => n.x)) + W + 120
@@ -213,6 +214,7 @@ export default function WorkflowBuilder() {
           </>
         }
       />
+      {notice && <p role="status" className="mb-4 flex items-center gap-2 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800"><GitBranch className="size-4 shrink-0" />{notice}</p>}
 
       <div className="grid gap-4 xl:grid-cols-[230px_minmax(0,1fr)] 2xl:grid-cols-[240px_minmax(0,1fr)_300px]">
         <Palette onAdd={addNode} />

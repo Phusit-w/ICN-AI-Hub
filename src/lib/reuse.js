@@ -29,10 +29,42 @@ export function defaultReuseName(thread, kind) {
 
 /** A left-to-right chain: trigger → each step → output. `refs` are `{ type: 'agent'|'skill', ref, label }`. */
 export function linearWorkflow({ name, description, dept, owner, refs }) {
-  const work = refs.map((r, i) => ({ id: `n${i + 2}`, type: r.type, ref: r.ref, label: r.label, x: 290 + i * 250, y: 60 }))
-  const nodes = [{ id: 'n1', type: 'trigger', label: 'ผู้ใช้ส่งคำขอ', x: 40, y: 60 }, ...work, { id: 'n-out', type: 'output', label: 'ส่งผลลัพธ์', x: 290 + work.length * 250, y: 60 }]
+  const empty = { id: uid('wf'), name, dept, owner, uses: 0, rating: 0, version: '0.1', description, nodes: [], edges: [] }
+  return withLinearSteps(empty, refs)
+}
+
+/**
+ * The Workflow's agents and skills in order, as refs `{ type, ref, label, nodeId }`, when it is one straight
+ * chain (trigger → steps → output). null when it has conditions, loops or branches the simple editor can't show.
+ */
+export function linearSteps(workflow) {
+  const { nodes, edges } = workflow
+  if (nodes.some((n) => n.type === 'condition') || edges.some((e) => e.kind === 'loop')) return null
+  const next = new Map()
+  for (const e of edges) {
+    if (next.has(e.from)) return null
+    next.set(e.from, e.to)
+  }
+  const chain = []
+  for (let n = nodes.find((x) => x.type === 'trigger'); n && !chain.includes(n); n = nodes.find((x) => x.id === next.get(n.id))) chain.push(n)
+  const steps = chain.slice(1, -1)
+  const straight = chain.length === nodes.length && edges.length === nodes.length - 1 && chain.at(-1)?.type === 'output'
+    && steps.every((n) => n.type === 'agent' || n.type === 'skill')
+  return straight ? steps.map((n) => ({ type: n.type, ref: n.ref, label: n.label, nodeId: n.id })) : null
+}
+
+/**
+ * The same Workflow (id, owner, uses, rating, version, trigger and output kept) rebuilt as a straight chain of `refs`.
+ * Refs that came from `linearSteps` keep their node ids.
+ */
+export function withLinearSteps(workflow, refs) {
+  const trigger = workflow.nodes.find((n) => n.type === 'trigger') ?? { id: 'n1', type: 'trigger', label: 'ผู้ใช้ส่งคำขอ', x: 40, y: 60 }
+  const output = workflow.nodes.find((n) => n.type === 'output') ?? { id: 'n-out', type: 'output', label: 'ส่งผลลัพธ์' }
+  const at = (i) => ({ x: trigger.x + (i + 1) * 250, y: trigger.y })
+  const work = refs.map((r, i) => ({ id: r.nodeId ?? uid('n'), type: r.type, ref: r.ref, label: r.label, ...at(i) }))
+  const nodes = [trigger, ...work, { ...output, ...at(work.length) }]
   const edges = nodes.slice(1).map((n, i) => ({ id: uid('e'), from: nodes[i].id, to: n.id }))
-  return { id: uid('wf'), name, dept, owner, uses: 0, rating: 0, version: '0.1', description, nodes, edges }
+  return { ...workflow, nodes, edges }
 }
 
 export function workflowFromRun(run, thread, { name, owner, dept }) {
