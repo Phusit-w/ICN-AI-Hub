@@ -104,12 +104,15 @@ describe('Workspace: chat or Plan, decided by the system', () => {
     expect(screen.queryByRole('complementary', { name: 'ขั้นตอนการทำงาน' })).toBeNull()
   })
 
-  it('the Thread history still collapses and expands', async () => {
-    const app = startJourney('/workspace')
+  it('chat history sits in the sidebar on every page, and one click opens a past Thread', async () => {
+    const app = startJourney('/agents')
+    const history = screen.getByRole('navigation', { name: 'ประวัติการคุย' })
 
-    await app.click(screen.getByRole('button', { name: 'ซ่อนประวัติการสั่งงาน' }))
-    await app.click(screen.getByRole('button', { name: 'แสดงประวัติการสั่งงาน' }))
-    expect(screen.getByRole('button', { name: 'ซ่อนประวัติการสั่งงาน' })).toBeVisible()
+    await app.click(within(history).getByRole('link', { name: /หาข้อมูลตลาด EV Charger/ }))
+
+    expect(app.url()).toMatch(/^\/workspace\?run=/)
+    expect(within(screen.getByRole('navigation', { name: 'ประวัติการคุย' })).getByRole('link', { current: 'page' })).toHaveTextContent(/หาข้อมูลตลาด EV Charger/)
+    expectWithinBudget(app, 1)
   })
 
   it('sensitive data still shows the internal-AI notice', async () => {

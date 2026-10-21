@@ -89,6 +89,16 @@ const AGENT_RULES = [
 /** A Run, or the Plan for one, that is a single chat answer from ICN Assistant rather than work for Agents. */
 export const isChatRun = (run) => run.steps.length === 1 && run.steps[0].kind === 'chat'
 
+/** Threads, newest first: each is { id, title (its first Run's), latest Run }. */
+export function threadsOf(runs) {
+  const byId = new Map()
+  ;[...runs].sort((a, b) => a.createdAt - b.createdAt).forEach((r) => {
+    const t = byId.get(r.threadId) ?? { id: r.threadId, title: r.title }
+    byId.set(r.threadId, { ...t, latest: r })
+  })
+  return [...byId.values()].sort((a, b) => b.latest.createdAt - a.latest.createdAt)
+}
+
 /** Decide which agents should handle a free-text request. */
 export function planRequest(prompt, { agents, skills, workflows, agentId, workflowId }) {
   const sensitive = isSensitive(prompt)

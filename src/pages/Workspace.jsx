@@ -1,15 +1,14 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
-import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
+import { useLocation, useSearchParams } from 'react-router-dom'
 import {
-  ArrowRight, ArrowUp, ChevronsLeft, CircleCheck, CircleDashed, Copy, Download, History, ListChecks, LoaderCircle,
+  ArrowRight, ArrowUp, CircleCheck, CircleDashed, Copy, Download, ListChecks, LoaderCircle,
   Play, Plus, Share2, ShieldCheck, Sparkles, Undo2, X,
 } from 'lucide-react'
 import { useStore } from '../store/AppStore'
 import { AttachButton, AttachmentList } from '../components/ui/Attachments'
 import { ACTIVITIES } from '../lib/mockOutputs'
 import { isChatRun, runProgress } from '../lib/runs'
-import { clockTime, cn, timeAgo } from '../lib/utils'
-import usePersistentState from '../lib/usePersistentState'
+import { clockTime, cn } from '../lib/utils'
 import { ProgressBar } from '../components/ui/Card'
 import Button from '../components/ui/Button'
 import Menu from '../components/ui/Menu'
@@ -31,45 +30,6 @@ const SUGGESTIONS = [
 function finalStep(run) {
   const outputs = run.steps.filter((s) => s.output)
   return outputs.find((s) => s.output.type === 'doc') ?? outputs.filter((s) => s.output.type !== 'checklist').at(-1) ?? outputs.at(-1)
-}
-
-function ThreadList({ threads, activeThread, onNew }) {
-  const navigate = useNavigate()
-  const [collapsed, setCollapsed] = usePersistentState('icn.workspace.historyCollapsed', false)
-
-  if (collapsed) {
-    return (
-      <aside className="hidden shrink-0 flex-col items-center gap-1 lg:flex">
-        <Button variant="ghost" size="icon" icon={History} onClick={() => setCollapsed(false)} aria-label="แสดงประวัติการสั่งงาน" title="แสดงประวัติการสั่งงาน" />
-        <Button variant="ghost" size="icon" icon={Plus} onClick={onNew} aria-label="แชตใหม่" title="แชตใหม่" />
-      </aside>
-    )
-  }
-  return (
-    <aside className="hidden w-64 shrink-0 flex-col lg:flex">
-      <Button icon={Plus} onClick={onNew} className="justify-center">แชตใหม่</Button>
-      <div className="mt-5 mb-1.5 flex items-center justify-between pl-2">
-        <p className="text-[11px] font-medium text-slate-400">ประวัติการสั่งงาน</p>
-        <Button variant="ghost" size="icon" icon={ChevronsLeft} onClick={() => setCollapsed(true)} aria-label="ซ่อนประวัติการสั่งงาน" title="ซ่อนประวัติการสั่งงาน" className="!size-6 text-slate-400" />
-      </div>
-      <ul className="flex-1 space-y-0.5 overflow-y-auto">
-        {threads.map((t) => (
-          <li key={t.id}>
-            <button
-              type="button" onClick={() => navigate(`/workspace?run=${t.latest.id}`)}
-              className={cn('flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left transition', t.id === activeThread ? 'bg-slate-900/[0.06]' : 'hover:bg-slate-100')}
-            >
-              <span className={cn('size-1.5 shrink-0 rounded-full', { running: 'animate-pulse bg-brand-500', completed: 'bg-emerald-400', planned: 'bg-slate-300' }[t.latest.status])} aria-hidden />
-              <span className="min-w-0 flex-1">
-                <span className="block truncate text-[13px] text-slate-700">{t.title}</span>
-                <span className="block text-[11px] text-slate-400">{timeAgo(t.latest.createdAt)}</span>
-              </span>
-            </button>
-          </li>
-        ))}
-      </ul>
-    </aside>
-  )
 }
 
 function Composer({ onSend, initialAgentId, initialWorkflowId }) {
@@ -365,14 +325,6 @@ export default function Workspace() {
 
   const run = state.runs.find((r) => r.id === params.get('run')) ?? null
   const thread = useMemo(() => (run ? state.runs.filter((r) => r.threadId === run.threadId).sort((a, b) => a.createdAt - b.createdAt) : []), [state.runs, run])
-  const threads = useMemo(() => {
-    const byId = new Map()
-    ;[...state.runs].sort((a, b) => a.createdAt - b.createdAt).forEach((r) => {
-      const t = byId.get(r.threadId) ?? { id: r.threadId, title: r.title }
-      byId.set(r.threadId, { ...t, latest: r })
-    })
-    return [...byId.values()].sort((a, b) => b.latest.createdAt - a.latest.createdAt)
-  }, [state.runs])
 
   // `pick` is { agentId } or { workflowId } when the user chose one, otherwise {} and the planner decides.
   const send = (prompt, pick, threadId, attachments) => {
@@ -391,8 +343,7 @@ export default function Workspace() {
   }) // runs after each render but acts only once per incoming prompt
 
   return (
-    <div className="flex h-[calc(100dvh-7rem)] gap-6 lg:h-[calc(100dvh-8rem)]">
-      <ThreadList threads={threads} activeThread={run?.threadId} onNew={() => setParams({})} />
+    <div className="flex h-[calc(100dvh-5.5rem)] gap-6 lg:h-[calc(100dvh-6rem)]">
       <section className="flex min-w-0 flex-1 flex-col">
         <div className="flex items-center gap-3 pb-3">
           <Button size="sm" icon={Plus} onClick={() => setParams({})} className="lg:hidden">แชตใหม่</Button>

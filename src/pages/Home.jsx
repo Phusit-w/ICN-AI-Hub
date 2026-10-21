@@ -117,9 +117,9 @@ export default function Home() {
 
       <ReuseRow items={reuse} pick={pick} onPick={setPick} hasFavorites={state.favorites.length > 0} />
 
-      <section data-tour="home-tasks">
+      <section data-tour="home-tasks" aria-labelledby="home-tasks-title">
         <div className="mb-2 flex items-center justify-between">
-          <h2 className={sectionTitle}>งานของฉัน</h2>
+          <h2 id="home-tasks-title" className={sectionTitle}>งานของฉัน</h2>
           {myRuns.length > 0 && <Link to="/workspace" className={quietLink}>ดูทั้งหมด</Link>}
         </div>
         {myRuns.length === 0 ? (

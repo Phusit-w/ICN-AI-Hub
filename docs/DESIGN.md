@@ -69,7 +69,7 @@ Old links: /community → /agents?filter=popular · /skills(?open=id) → /agent
 
 ## 3. Information architecture
 
-- **Global (ทุกหน้า):** Sidebar 5 รายการ (กลุ่ม "งานของฉัน" 4 รายการ + "องค์กร" แยกอยู่ล่างสุด, ย่อเป็นแถบไอคอนได้), ปุ่ม **สั่งงานใหม่**, Global search (Agent + Skill + Workflow; Skill เปิดในแท็บทักษะ), Running-count badge, Hybrid routing meter (Local vs Cloud), ปุ่ม **วิธีใช้** (คำศัพท์ + ทัวร์ 6 ขั้น)
+- **Global (ทุกหน้า):** Sidebar แบบ ChatGPT / Claude / Gemini: ปุ่ม **แชตใหม่** และช่องค้นหา (Agent + Skill + Workflow; Skill เปิดในแท็บทักษะ) ด้านบน, เมนู 5 รายการ (กลุ่ม "งานของฉัน" 4 รายการ + "องค์กร"), **ประวัติการคุย** (Thread ล่าสุดก่อน กด 1 ครั้งเปิดได้), ผู้ใช้อยู่ล่างสุด; ย่อเป็นแถบไอคอนได้ (ซ่อนประวัติ). Top bar โล่ง ไม่มีเส้นขอบ: ปุ่มเมนูบนมือถือ, ปุ่ม **วิธีใช้** (คำศัพท์ + ทัวร์ 6 ขั้น), การแจ้งเตือน. หน้าสั่งงาน AI ไม่มีแผงประวัติแยก
 - **งานของฉัน** — สิ่งที่ผู้ใช้ทำทุกวัน: สั่งงาน, ใช้ซ้ำ, ติดตาม Run, หาและใช้ Agent / Workflow / Skill
 - **องค์กร** — สิ่งที่ผู้ดูแลควบคุม: ค่าใช้จ่าย, Model, สิทธิ์, นโยบาย, Audit log, ผู้มีส่วนร่วม
 - **ของที่แชร์** ไม่มีหน้าแยก: อยู่ในแต่ละ library ผ่านชิป "ยอดนิยมในองค์กร" / "แชร์ให้ฉัน" และปุ่มหลักคือ **ใช้งาน** เสมอ (Workflow ที่แชร์ใช้ได้ทันทีโดยไม่ต้องคัดลอก)
@@ -121,7 +121,7 @@ Object ทุกตัวมีชุด metadata เดียวกัน: Owne
 
 | Group | Components |
 |---|---|
-| `layout/` | `AppShell` (Sidebar 5 รายการ ย่อได้, Topbar, GlobalSearch, mobile drawer) · `Help` (`TERMS` คำศัพท์รวม Plan, WelcomeCard, ปุ่มวิธีใช้/เริ่มทัวร์) |
+| `layout/` | `AppShell` (Sidebar: แชตใหม่, GlobalSearch, เมนู 5 รายการ, ChatHistory, ผู้ใช้; ย่อได้ · Topbar โล่ง · mobile drawer) · `Help` (`TERMS` คำศัพท์รวม Plan, WelcomeCard, ปุ่มวิธีใช้/เริ่มทัวร์) |
 | `tour/` | `Tour` (spotlight + popover, ข้ามขั้นที่มองไม่เห็น) · `steps.js` (6 ขั้น: ช่องสั่งงาน, ใช้ซ้ำ, งานของฉัน, ค้นหา, ผู้ช่วย AI, พร้อมแล้ว) |
 | `ui/Button` | variants: primary · secondary · ghost · subtle · danger; sizes sm/md/lg/icon; `to` → router Link |
 | `ui/Badge` | `Badge`, `StatusPill` (Waiting/Processing/Completed/Sent back/Ready/Running), `ModelBadge` (Local/Cloud/Auto), `DeptBadge`, `ShareBadge`, `Rating` |
@@ -133,7 +133,7 @@ Object ทุกตัวมีชุด metadata เดียวกัน: Owne
 | `skills/` | `SkillCard` |
 | `workflow/` | `Pipeline` (panel ขั้นตอน), `RunRow` (live mini-progress), `ArtifactView` (bullets/table/doc/diagram/checklist), `ComposerPick` (Agent หรือ Workflow ที่เลือกในช่องสั่งงาน ใช้ร่วมกัน Home/Workspace), `SaveForReuse`, `WorkflowStats` (ใช้กี่ครั้ง, คะแนน, เวอร์ชัน — แสดงในหน้ารายละเอียด ไม่อยู่บนการ์ด) |
 
-Logic: `store/AppStore.jsx` (reducer + one clock for all runs) · `lib/runs.js` (planner: chat หรือ Plan, model router, step engine with loop-back) · `lib/reuse.js` (บันทึกไว้ใช้ซ้ำ) · `lib/sharing.js` (ตัวกรองยอดนิยม / แชร์ให้ฉัน) · `lib/routes.js` (ลิงก์ไปแท็บทักษะ) · `lib/agentDraft.js`, `lib/skillDraft.js` (AI กรอกฟอร์มสร้าง) · `lib/mockOutputs.js`
+Logic: `store/AppStore.jsx` (reducer + one clock for all runs) · `lib/runs.js` (`threadsOf` สำหรับประวัติการคุย, planner: chat หรือ Plan, model router, step engine with loop-back) · `lib/reuse.js` (บันทึกไว้ใช้ซ้ำ) · `lib/sharing.js` (ตัวกรองยอดนิยม / แชร์ให้ฉัน) · `lib/routes.js` (ลิงก์ไปแท็บทักษะ) · `lib/agentDraft.js`, `lib/skillDraft.js` (AI กรอกฟอร์มสร้าง) · `lib/mockOutputs.js`
 
 Tests: `test/journeys/` — whole-app journey tests (Vitest + Testing Library) ที่ตรวจ click budget และเป้าหมายของทุกขั้นในทัวร์
 
