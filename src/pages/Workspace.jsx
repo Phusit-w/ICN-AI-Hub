@@ -1,11 +1,10 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import {
-  ArrowRight, ArrowUp, Bot, ChevronDown, ChevronsLeft, CircleCheck, CircleDashed, Copy, Download, History, LoaderCircle, MessageSquare,
-  Play, Plus, Share2, ShieldCheck, Sparkles, Trash2, Undo2, Workflow, X,
+  ArrowRight, ArrowUp, ChevronsLeft, CircleCheck, CircleDashed, Copy, Download, History, LoaderCircle, MessageSquare,
+  Play, Plus, Share2, ShieldCheck, Sparkles, Trash2, Undo2, Workflow,
 } from 'lucide-react'
 import { useStore } from '../store/AppStore'
-import { DEPARTMENTS, deptById } from '../data/catalog'
 import { AttachButton, AttachmentList } from '../components/ui/Attachments'
 import { ACTIVITIES } from '../lib/mockOutputs'
 import { runProgress } from '../lib/runs'
@@ -17,6 +16,7 @@ import EntityIcon from '../components/agents/EntityIcon'
 import Pipeline from '../components/workflow/Pipeline'
 import ArtifactView from '../components/workflow/ArtifactView'
 import SaveForReuse from '../components/workflow/SaveForReuse'
+import ComposerPick, { pickFromParams, usePick } from '../components/workflow/ComposerPick'
 import logo from '../assets/icn-logo.png'
 
 const SUGGESTIONS = [
@@ -93,20 +93,14 @@ function ThreadList({ threads, activeThread, onNew }) {
 }
 
 function Composer({ onSend, initialAgentId, initialWorkflowId, mode }) {
-  const { state } = useStore()
   const [text, setText] = useState('')
-  const [agentId, setAgentId] = useState(initialAgentId ?? '')
-  const [workflowId, setWorkflowId] = useState(initialWorkflowId ?? '')
+  const [pick, setPick] = usePick(initialAgentId, initialWorkflowId)
   const [files, setFiles] = useState([])
   const ref = useRef(null)
-  useEffect(() => { setAgentId(initialAgentId ?? '') }, [initialAgentId])
-  useEffect(() => { setWorkflowId(initialWorkflowId ?? '') }, [initialWorkflowId])
   useEffect(() => { ref.current?.focus() }, [])
-  const agent = state.agents.find((a) => a.id === agentId)
-  const workflow = state.workflows.find((w) => w.id === workflowId)
   const send = () => {
     if (!text.trim()) return
-    onSend(text.trim(), workflow ? { workflowId } : agentId ? { agentId } : {}, files)
+    onSend(text.trim(), pick, files)
     setText('')
     setFiles([])
   }
@@ -116,49 +110,13 @@ function Composer({ onSend, initialAgentId, initialWorkflowId, mode }) {
         <textarea
           ref={ref} value={text} onChange={(e) => setText(e.target.value)} rows={1} aria-label="ข้อความ"
           onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() } }}
-          placeholder={workflow ? `พิมพ์ข้อมูลสำหรับสายงานนี้ เช่น ชื่อลูกค้า หรือรายละเอียดงาน…` : 'พิมพ์งานหรือคำถามที่ต้องการ…'}
+          placeholder={pick.workflowId ? `พิมพ์ข้อมูลสำหรับสายงานนี้ เช่น ชื่อลูกค้า หรือรายละเอียดงาน…` : 'พิมพ์งานหรือคำถามที่ต้องการ…'}
           className="block max-h-40 min-h-11 w-full resize-none bg-transparent px-3 py-2.5 text-[15px] placeholder:text-slate-400 focus:outline-none [field-sizing:content]"
         />
         <AttachmentList files={files} onRemove={(id) => setFiles((fs) => fs.filter((f) => f.id !== id))} />
         <div className="flex items-center gap-1 px-1">
           <AttachButton onAdd={(added) => setFiles((fs) => [...fs, ...added])} />
-          {workflow ? (
-            // A Workflow chosen from the Workflows page replaces agent picking: its steps are fixed.
-            <span className="flex h-8 min-w-0 items-center gap-1.5 rounded-full bg-brand-50 pr-1 pl-2.5 text-xs text-brand-700">
-              <Workflow className="size-3.5 shrink-0" aria-hidden />
-              <span className="max-w-56 truncate">สายงาน: {workflow.name}</span>
-              <button type="button" onClick={() => setWorkflowId('')} aria-label="เลิกใช้สายงานนี้" title="เลิกใช้สายงานนี้" className="rounded-full p-1 hover:bg-brand-100"><X className="size-3" /></button>
-            </span>
-          ) : (<>
-          {/* Quiet pill over a native select: compact when automatic, highlighted once an agent is picked. */}
-          <label className={cn(
-            'relative flex h-8 min-w-0 cursor-pointer items-center gap-1.5 rounded-full px-2.5 text-xs transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand-300',
-            agent ? 'bg-brand-50 text-brand-700' : 'text-slate-500 hover:bg-slate-100',
-          )}>
-            <Bot className="size-3.5 shrink-0" aria-hidden />
-            <span className="max-w-40 truncate">{agent ? agent.name : 'อัตโนมัติ'}</span>
-            <ChevronDown className="size-3 shrink-0" aria-hidden />
-            <select
-              value={agentId} onChange={(e) => setAgentId(e.target.value)} aria-label="เลือกผู้ช่วย"
-              className="absolute inset-0 cursor-pointer opacity-0"
-            >
-              <option value="">อัตโนมัติ — ระบบเลือกให้ (แนะนำ)</option>
-              {DEPARTMENTS.map((d) => {
-                const list = state.agents.filter((a) => deptById(a.dept).id === d.id)
-                return list.length > 0 && (
-                  <optgroup key={d.id} label={d.th}>
-                    {list.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
-                  </optgroup>
-                )
-              })}
-            </select>
-          </label>
-          {agent && (
-            <button type="button" onClick={() => setAgentId('')} aria-label="กลับไปเลือกผู้ช่วยอัตโนมัติ" title="กลับไปเลือกอัตโนมัติ" className="rounded-full p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700">
-              <X className="size-3.5" />
-            </button>
-          )}
-          </>)}
+          <ComposerPick pick={pick} onChange={setPick} chooseAgent />
           <button type="submit" disabled={!text.trim()} aria-label="ส่ง" className="ml-auto flex size-9 items-center justify-center rounded-full bg-brand-600 text-white transition hover:bg-brand-700 disabled:bg-slate-200 disabled:text-slate-400">
             <ArrowUp className="size-5" />
           </button>
@@ -458,7 +416,7 @@ export default function Workspace() {
   useEffect(() => {
     if (!q || handled.current === q) return
     handled.current = q
-    send(q, undefined, undefined, location.state?.attachments) // files attached on the home page
+    send(q, pickFromParams(params), undefined, location.state?.attachments) // pick and files from the home page
   }) // runs after each render but acts only once per incoming prompt
 
   return (
