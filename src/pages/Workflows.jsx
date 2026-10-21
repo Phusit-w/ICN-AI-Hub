@@ -1,10 +1,10 @@
 import { Fragment, useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
-import { ArrowDown, ArrowUp, ChevronRight, Pencil, Play, Plus, Save, Settings2, Sparkles, X } from 'lucide-react'
+import { Navigate, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
+import { ArrowDown, ArrowUp, ChevronRight, Pencil, Play, Plus, Save, Sparkles, X } from 'lucide-react'
 import { useStore } from '../store/AppStore'
 import { userById } from '../data/catalog'
 import { planRequest } from '../lib/runs'
-import { linearWorkflow, stepRef } from '../lib/reuse'
+import { linearSteps, linearWorkflow, stepRef, withLinearSteps } from '../lib/reuse'
 import { rankByMatch, truncate, uid } from '../lib/utils'
 import { Card } from '../components/ui/Card'
 import Button from '../components/ui/Button'
@@ -106,8 +106,12 @@ function Suggestions({ items }) {
   )
 }
 
-/** The AI's first draft as a plain list: remove, reorder or add agents, then save or try it. Loops and branches live in the canvas. */
-function DraftEditor({ initial, onCancel }) {
+/**
+ * The simple Workflow editor: a plain list of agents to remove, reorder or add, then save or try.
+ * Used for the AI's first draft and, by default, for editing a saved straight-chain `workflow` (kept as the same Workflow).
+ * Conditions and loops live in the detailed builder, behind "ขั้นสูง".
+ */
+function DraftEditor({ initial, workflow, onCancel }) {
   const { state, actions } = useStore()
   const navigate = useNavigate()
   const [name, setName] = useState(initial.name)
@@ -116,22 +120,31 @@ function DraftEditor({ initial, onCancel }) {
   const canSave = name.trim() && refs.length > 0
 
   const save = (then) => {
-    const wf = linearWorkflow({ name: name.trim(), description: initial.prompt, dept: userById(state.userId).dept, owner: state.userId, refs })
+    const wf = workflow
+      ? withLinearSteps({ ...workflow, name: name.trim() }, refs)
+      : linearWorkflow({ name: name.trim(), description: initial.prompt, dept: userById(state.userId).dept, owner: state.userId, refs })
     actions.saveWorkflow(wf)
     then(wf)
+  }
+  // The user picked this Workflow, so the Run starts straight away (no Plan to confirm).
+  const tryRun = (wf) => {
+    const id = actions.planRun(wf.description || wf.name, { workflowId: wf.id }, { ...state, workflows: [wf] }, { autoStart: true })
+    navigate(`/workspace?run=${id}`)
   }
 
   return (
     <Card className="rise p-5">
-      <p className="flex items-center gap-1.5 text-xs font-medium text-brand-700"><Sparkles className="size-4" /> AI ร่างสายงานให้แล้ว — ตรวจลำดับขั้นตอนด้านล่าง</p>
+      {workflow
+        ? <p className="text-xs font-medium text-slate-500">แก้สายงาน — เรียงลำดับผู้ช่วยด้านล่าง</p>
+        : <p className="flex items-center gap-1.5 text-xs font-medium text-brand-700"><Sparkles className="size-4" /> AI ร่างสายงานให้แล้ว — ตรวจลำดับขั้นตอนด้านล่าง</p>}
       <input value={name} onChange={(e) => setName(e.target.value)} aria-label="ชื่อสายงาน" className="mt-2 w-full rounded-lg border border-transparent px-2 py-1 text-lg font-semibold text-slate-900 hover:border-slate-200 focus:border-brand-400 focus:outline-none" />
-      <p className="px-2 text-xs text-slate-400">จาก: {initial.prompt}</p>
+      <p className="px-2 text-xs text-slate-400">{workflow ? initial.prompt : `จาก: ${initial.prompt}`}</p>
 
-      <ol className="mt-4 space-y-2">
+      <ol className="mt-4 space-y-2" aria-label="ขั้นตอนของสายงาน">
         {refs.map((r, i) => {
           const item = lookupRef(r, state)
           return (
-            <li key={r.key} className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-3 py-2.5">
+            <li key={r.key} className="flex items-center gap-3 rounded-xl bg-slate-50 px-3 py-2.5">
               <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-slate-500">{i + 1}</span>
               <EntityIcon icon={item.icon} tone={item.tone} size="sm" />
               <div className="min-w-0 flex-1">
@@ -158,12 +171,18 @@ function DraftEditor({ initial, onCancel }) {
 
       <div className="mt-5 flex flex-wrap items-center gap-2 border-t border-slate-100 pt-4">
         <Button variant="ghost" onClick={onCancel}>ยกเลิก</Button>
-        <Button variant="ghost" size="sm" icon={Settings2} onClick={() => save((wf) => navigate(`/workflows?id=${wf.id}`))} disabled={!canSave}>แก้แบบละเอียด</Button>
         <div className="ml-auto flex gap-2">
           <Button icon={Save} disabled={!canSave} onClick={() => save((wf) => { actions.toast(`บันทึกสายงาน “${wf.name}” แล้ว`); onCancel() })}>บันทึก</Button>
-          <Button variant="primary" icon={Play} disabled={!canSave} onClick={() => save((wf) => navigate(runLink(wf)))}>ลองรัน</Button>
+          <Button variant="primary" icon={Play} disabled={!canSave} onClick={() => save(tryRun)}>ลองรัน</Button>
         </div>
       </div>
+      <p className="mt-3 text-right text-xs text-slate-400">
+        ต้องการเงื่อนไขหรือให้ส่งงานกลับ?{' '}
+        <button
+          type="button" disabled={!canSave} onClick={() => save((wf) => navigate(`/workflows?id=${wf.id}&advanced=1`))}
+          className="font-medium text-slate-500 underline underline-offset-2 hover:text-brand-700 disabled:no-underline disabled:opacity-50"
+        >ขั้นสูง</button>
+      </p>
     </Card>
   )
 }
@@ -239,8 +258,36 @@ function Landing() {
   )
 }
 
-/** Landing by default; `?id=` opens that workflow in the canvas editor. */
+/** A saved straight-chain Workflow in the simple editor. */
+function EditWorkflow({ workflow, steps }) {
+  const navigate = useNavigate()
+  const initial = { name: workflow.name, prompt: workflow.description, refs: steps.map((s) => ({ ...s, key: s.nodeId })) }
+  return (
+    <div className="mx-auto max-w-3xl pt-2 lg:pt-6">
+      <DraftEditor initial={initial} workflow={workflow} onCancel={() => navigate('/workflows')} />
+    </div>
+  )
+}
+
+/**
+ * Landing by default. `?id=` opens that Workflow in the simple editor, or in the detailed builder when it has
+ * conditions or loops the simple editor can't show. `&advanced=1` asks for the detailed builder.
+ */
 export default function Workflows() {
   const [params] = useSearchParams()
-  return params.get('id') ? <WorkflowBuilder key={params.get('id')} /> : <Landing />
+  const location = useLocation()
+  const { state } = useStore()
+  const id = params.get('id')
+  const advanced = params.has('advanced')
+  if (!id && !advanced) return <Landing />
+  const workflow = state.workflows.find((w) => w.id === id)
+  const steps = workflow && linearSteps(workflow)
+  if (!advanced) {
+    if (steps) return <EditWorkflow key={id} workflow={workflow} steps={steps} />
+    // Stay in the builder from here on, even if the user edits it back into a straight chain.
+    return <Navigate replace to={`/workflows?id=${id}&advanced=1`} state={{ notLinear: Boolean(workflow) }} />
+  }
+  const notice = location.state?.notLinear ? 'สายงานนี้มีเงื่อนไขหรือการวนกลับ ซึ่งแบบง่ายแสดงไม่ได้ จึงเปิดในแบบขั้นสูง' : null
+  // Not keyed by id: the builder follows `?id=` itself, and "+ New workflow" has no id yet.
+  return <WorkflowBuilder notice={notice} />
 }
