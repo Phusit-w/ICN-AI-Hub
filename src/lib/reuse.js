@@ -64,3 +64,27 @@ export function agentFromRun(run, thread, { name, owner, agents }) {
   }
   return agentFromForm(form, { owner, note: `บันทึกจากแชต โดยใช้ ${base.name} เป็นต้นแบบ`, forkedFrom: base.name })
 }
+
+/**
+ * Home's "ใช้ซ้ำ" row: what the user saved for reuse (newest first), their Favourite agents, then the
+ * Workflows they ran recently or made themselves. Each item is `{ kind: 'agent'|'workflow', item, pick }`.
+ */
+export function reuseItems({ runs, agents, workflows, favorites, userId }, max = 8) {
+  const mine = runs.filter((r) => r.owner === userId).sort((a, b) => b.createdAt - a.createdAt)
+  const find = { agent: (id) => agents.find((a) => a.id === id), workflow: (id) => workflows.find((w) => w.id === id) }
+  const refs = [
+    ...mine.filter((r) => r.savedAs).map((r) => [r.savedAs.kind, r.savedAs.id]),
+    ...favorites.map((id) => ['agent', id]),
+    ...mine.filter((r) => r.workflowId).map((r) => ['workflow', r.workflowId]),
+    ...workflows.filter((w) => w.owner === userId).map((w) => ['workflow', w.id]),
+  ]
+  const seen = new Set()
+  const items = []
+  for (const [kind, id] of refs) {
+    const item = find[kind](id)
+    if (!item || seen.has(`${kind}:${id}`)) continue
+    seen.add(`${kind}:${id}`)
+    items.push({ kind, item, pick: kind === 'agent' ? { agentId: id } : { workflowId: id } })
+  }
+  return items.slice(0, max)
+}
