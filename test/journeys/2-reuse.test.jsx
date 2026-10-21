@@ -92,7 +92,8 @@ describe('Journey 2: reuse a Favourite agent or a Workflow', () => {
     const app = startJourney()
 
     await app.click(within(mainMenu()).getByRole('link', { name: /ผู้ช่วย AI/ }))
-    for (const button of screen.getAllByRole('button', { name: 'นำออกจาก Favorite' })) await app.click(button)
+    // A starred Agent can show twice (recommended and in the list), so unstar until none is left.
+    while (screen.queryAllByRole('button', { name: 'นำออกจาก Favorite' }).length) await app.click(screen.getAllByRole('button', { name: 'นำออกจาก Favorite' })[0])
     await app.click(within(mainMenu()).getByRole('link', { name: /หน้าหลัก/ }))
 
     expect(within(reuseRow()).queryByRole('button', { name: /Sales Proposal Agent/ })).not.toBeInTheDocument()

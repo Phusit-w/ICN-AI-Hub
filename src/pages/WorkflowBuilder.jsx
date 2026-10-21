@@ -9,6 +9,7 @@ import Button from '../components/ui/Button'
 import { ModelBadge, StatusPill } from '../components/ui/Badge'
 import { Field, Input, Segmented, Select, Textarea } from '../components/ui/Form'
 import EntityIcon from '../components/agents/EntityIcon'
+import WorkflowStats from '../components/workflow/WorkflowStats'
 
 const W = 200
 const H = 76
@@ -222,6 +223,7 @@ export default function WorkflowBuilder({ notice }) {
         <Card data-tour="wf-canvas" className="relative overflow-hidden">
           <div className="flex items-center gap-2 border-b border-slate-100 px-3 py-2">
             <Input value={draft.name} onChange={(e) => update((d) => ({ ...d, name: e.target.value }))} className="h-8 max-w-xs border-transparent font-medium shadow-none hover:border-slate-200" aria-label="ชื่อ Workflow" />
+            <WorkflowStats workflow={draft} className="hidden md:flex" />
             {connecting && (
               <span className="rise flex items-center gap-1.5 rounded-md bg-brand-50 px-2 py-1 text-xs font-medium text-brand-700">
                 <MousePointerClick className="size-3.5" /> คลิก Node ปลายทาง (Esc เพื่อยกเลิก)

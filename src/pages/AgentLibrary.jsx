@@ -1,18 +1,17 @@
 import { useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { ArrowRight, Lightbulb, Play, Plus, SlidersHorizontal, Sparkles, Star } from 'lucide-react'
+import { ArrowRight, Plus, SlidersHorizontal, Sparkles } from 'lucide-react'
 import { useStore } from '../store/AppStore'
-import { deptById, modelById, userById } from '../data/catalog'
-import { cn, fmtCompact, matchScore, rankByMatch } from '../lib/utils'
+import { modelById, userById } from '../data/catalog'
+import { cn, matchScore, rankByMatch } from '../lib/utils'
 import { agentSearchText } from '../lib/agentDraft'
 import { applyShareFilter, shareFilterFrom } from '../lib/sharing'
 import ShareFilterChips from '../components/ui/ShareFilterChips'
 import Button from '../components/ui/Button'
-import { DeptBadge, Rating } from '../components/ui/Badge'
 import { Select } from '../components/ui/Form'
 import Tabs from '../components/ui/Tabs'
 import EntityIcon from '../components/agents/EntityIcon'
-import { FavoriteButton } from '../components/agents/AgentCard'
+import { ItemCard } from '../components/agents/AgentCard'
 import SkillsTab from './SkillsTab'
 
 // One-tap shortcuts for people who don't know what to type yet.
@@ -30,27 +29,14 @@ const SORTS = {
   newest: (a, b) => b.updated.localeCompare(a.updated),
 }
 
-const UseButton = ({ agent, size = 'sm', className }) => (
-  <Button variant="primary" size={size} icon={Play} to={`/workspace?agent=${agent.id}`} className={className}>ใช้งาน</Button>
+/** An Agent in the clean card shape. `best` marks the top recommendation for a typed need: its "ใช้งาน" is the page's one primary. */
+const AgentCard = ({ agent, best = false, ...props }) => (
+  <ItemCard
+    icon={agent.kind} name={agent.name} description={agent.description} favoriteId={agent.id}
+    to={`/agents/${agent.id}`} useTo={`/workspace?agent=${agent.id}`} primary={best}
+    className={best ? 'border-brand-400' : undefined} {...props}
+  />
 )
-
-function Recommendation({ agent, reason, best }) {
-  return (
-    <div className={cn('flex flex-col overflow-hidden rounded-xl border bg-white transition hover:shadow-sm', best ? 'border-2 border-brand-400' : 'border-slate-200')}>
-      <div className="flex items-start justify-between bg-brand-50 px-4 pt-4 pb-3">
-        <EntityIcon icon={agent.kind} size="lg" className="!bg-white" />
-        {best ? <span className="inline-flex items-center gap-1 rounded-full bg-brand-600 px-2 py-0.5 text-[11px] font-semibold text-white"><Star className="size-3 fill-white" /> เหมาะที่สุด</span> : <DeptBadge dept={agent.dept} />}
-      </div>
-      <div className="flex flex-1 flex-col px-4 pt-3 pb-4">
-        <Link to={`/agents/${agent.id}`} className="font-semibold text-slate-900 hover:text-brand-700">{agent.name}</Link>
-        {best && <div className="mt-0.5"><DeptBadge dept={agent.dept} /></div>}
-        <p className="mt-1.5 line-clamp-2 flex-1 text-[13px] leading-relaxed text-slate-600">{agent.description}</p>
-        <p className="mt-3 flex items-start gap-1.5 rounded-lg bg-slate-50 px-3 py-2 text-xs text-slate-500"><Lightbulb className="size-4 shrink-0 text-amber-500" aria-hidden />{reason}</p>
-        <UseButton agent={agent} size="md" className="mt-4 w-full justify-center" />
-      </div>
-    </div>
-  )
-}
 
 function CreateFromSearch({ q }) {
   return (
@@ -78,16 +64,11 @@ function AgentsTab() {
   const favorites = state.favorites.map((id) => state.agents.find((a) => a.id === id)).filter(Boolean)
 
   // Recommendations answer "which one should I use?"; the list below answers "show me everything".
-  const { picks, reason } = useMemo(() => {
-    if (need?.dept) {
-      return { picks: state.agents.filter((a) => a.dept === need.dept).sort(SORTS.popular), reason: () => `ใช้บ่อยที่สุดใน${deptById(need.dept).th}` }
-    }
-    if (term) {
-      const popularFirst = [...state.agents].sort(SORTS.popular)
-      return { picks: rankByMatch(popularFirst, agentSearchText, term), reason: (a) => (a.examples[0] ? `เคยใช้ทำงานแบบ “${a.examples[0]}”` : 'ตรงกับงานที่คุณพิมพ์') }
-    }
+  const picks = useMemo(() => {
+    if (need?.dept) return state.agents.filter((a) => a.dept === need.dept).sort(SORTS.popular)
+    if (term) return rankByMatch([...state.agents].sort(SORTS.popular), agentSearchText, term)
     const mine = state.agents.filter((a) => a.dept === me.dept && !favorites.includes(a)).sort(SORTS.popular)
-    return { picks: [...favorites, ...mine], reason: (a) => (favorites.includes(a) ? 'อยู่ในผู้ช่วยประจำของคุณ' : `นิยมใน${deptById(me.dept).th}`) }
+    return [...favorites, ...mine]
   }, [state.agents, need, term, favorites, me.dept])
   const top = picks.slice(0, 3)
 
@@ -134,11 +115,11 @@ function AgentsTab() {
       {/* With a share filter on, the filtered list is the answer, so it moves up in place of the recommendations. */}
       {!filter && (
         <section className="mt-8">
-          <p className="mb-3 text-sm font-medium text-slate-500">{term || need ? 'แนะนำสำหรับงานนี้' : 'แนะนำสำหรับคุณ'}</p>
+          <h2 id="agent-picks" className="mb-3 text-sm font-medium text-slate-500">{term || need ? 'แนะนำสำหรับงานนี้' : 'แนะนำสำหรับคุณ'}</h2>
           {typedNoMatch ? <CreateFromSearch q={q.trim()} /> : (
-            <div className="grid gap-4 md:grid-cols-3">
-              {top.map((a, i) => <Recommendation key={a.id} agent={a} reason={reason(a)} best={i === 0 && Boolean(term || need)} />)}
-            </div>
+            <ul className="grid gap-4 md:grid-cols-3" aria-labelledby="agent-picks">
+              {top.map((a, i) => <AgentCard key={a.id} agent={a} best={i === 0 && Boolean(term || need)} />)}
+            </ul>
           )}
         </section>
       )}
@@ -169,19 +150,8 @@ function AgentsTab() {
         {list.length === 0 ? (
           (!typedNoMatch || filter) && <p className="rounded-xl border border-dashed border-slate-200 p-6 text-center text-sm text-slate-400">ไม่มีผู้ช่วยตรงตัวกรองนี้</p>
         ) : (
-          <ul className="divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-200 bg-white" data-tour="agent-card" aria-label="รายการผู้ช่วย">
-            {list.map((a) => (
-              <li key={a.id} className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50">
-                <EntityIcon icon={a.kind} />
-                <Link to={`/agents/${a.id}`} className="min-w-0 flex-1">
-                  <span className="flex items-center gap-2"><span className="truncate text-sm font-semibold text-slate-900">{a.name}</span><DeptBadge dept={a.dept} /></span>
-                  <span className="block truncate text-[13px] text-slate-500">{a.description}</span>
-                </Link>
-                <span className="hidden items-center gap-3 text-xs text-slate-400 md:flex"><Rating value={a.rating} /><span>ใช้ {fmtCompact(a.uses)} ครั้ง</span></span>
-                <FavoriteButton id={a.id} />
-                <UseButton agent={a} />
-              </li>
-            ))}
+          <ul className="grid gap-3 sm:grid-cols-2 md:grid-cols-3" data-tour="agent-card" aria-label="รายการผู้ช่วย">
+            {list.map((a) => <AgentCard key={a.id} agent={a} />)}
           </ul>
         )}
         <Link to="/agents/new" className="mt-4 inline-flex items-center gap-1 text-[13px] text-slate-500 hover:text-brand-700">ไม่เจอที่ต้องการ? สร้างผู้ช่วยของคุณเอง ไม่ต้องเขียนโค้ด <ArrowRight className="size-3.5" /></Link>
