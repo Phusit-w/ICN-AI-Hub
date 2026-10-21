@@ -5,6 +5,8 @@ import { useStore } from '../store/AppStore'
 import { deptById, modelById, userById } from '../data/catalog'
 import { cn, fmtCompact, matchScore, rankByMatch } from '../lib/utils'
 import { agentSearchText } from '../lib/agentDraft'
+import { applyShareFilter, shareFilterFrom } from '../lib/sharing'
+import ShareFilterChips from '../components/ui/ShareFilterChips'
 import Button from '../components/ui/Button'
 import { DeptBadge, Rating } from '../components/ui/Badge'
 import { Select } from '../components/ui/Form'
@@ -69,6 +71,8 @@ function AgentsTab() {
   const [location, setLocation] = useState('all')
   const [share, setShare] = useState('all')
   const [sort, setSort] = useState('popular')
+  const [params] = useSearchParams()
+  const filter = shareFilterFrom(params)
 
   const term = q.trim() || need?.q || ''
   const favorites = state.favorites.map((id) => state.agents.find((a) => a.id === id)).filter(Boolean)
@@ -87,12 +91,12 @@ function AgentsTab() {
   }, [state.agents, need, term, favorites, me.dept])
   const top = picks.slice(0, 3)
 
-  const list = useMemo(() => state.agents
+  const list = useMemo(() => applyShareFilter(state.agents
     .filter((a) => !q.trim() || matchScore(agentSearchText(a), q) > 0)
     .filter((a) => !need?.dept || a.dept === need.dept)
     .filter((a) => location === 'all' || modelById(a.model).location === location)
     .filter((a) => share === 'all' || a.share === share)
-    .sort(SORTS[sort]), [state.agents, q, need, location, share, sort])
+    .sort(SORTS[sort]), filter, me), [state.agents, q, need, location, share, sort, filter, me])
 
   const typedNoMatch = q.trim() && top.length === 0
 
@@ -127,18 +131,22 @@ function AgentsTab() {
         )}
       </section>
 
-      <section className="mt-8">
-        <p className="mb-3 text-sm font-medium text-slate-500">{term || need ? 'แนะนำสำหรับงานนี้' : 'แนะนำสำหรับคุณ'}</p>
-        {typedNoMatch ? <CreateFromSearch q={q.trim()} /> : (
-          <div className="grid gap-4 md:grid-cols-3">
-            {top.map((a, i) => <Recommendation key={a.id} agent={a} reason={reason(a)} best={i === 0 && Boolean(term || need)} />)}
-          </div>
-        )}
-      </section>
+      {/* With a share filter on, the filtered list is the answer, so it moves up in place of the recommendations. */}
+      {!filter && (
+        <section className="mt-8">
+          <p className="mb-3 text-sm font-medium text-slate-500">{term || need ? 'แนะนำสำหรับงานนี้' : 'แนะนำสำหรับคุณ'}</p>
+          {typedNoMatch ? <CreateFromSearch q={q.trim()} /> : (
+            <div className="grid gap-4 md:grid-cols-3">
+              {top.map((a, i) => <Recommendation key={a.id} agent={a} reason={reason(a)} best={i === 0 && Boolean(term || need)} />)}
+            </div>
+          )}
+        </section>
+      )}
 
-      <section className="mt-10">
-        <div className="mb-3 flex items-center gap-3">
+      <section className={filter ? 'mt-8' : 'mt-10'}>
+        <div className="mb-3 flex flex-wrap items-center gap-3">
           <h2 className="text-sm font-semibold text-slate-900">ผู้ช่วยทั้งหมด <span className="font-normal text-slate-400">({list.length})</span></h2>
+          <ShareFilterChips className="order-last w-full overflow-x-auto sm:order-none sm:w-auto" />
           <button
             type="button" onClick={() => setShowFilters(!showFilters)} aria-pressed={showFilters}
             className={cn('ml-auto inline-flex h-8 items-center gap-1.5 rounded-lg border px-3 text-[13px]', showFilters ? 'border-brand-300 bg-brand-50 text-brand-700' : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300')}
@@ -159,9 +167,9 @@ function AgentsTab() {
           </div>
         )}
         {list.length === 0 ? (
-          !typedNoMatch && <p className="rounded-xl border border-dashed border-slate-200 p-6 text-center text-sm text-slate-400">ไม่มีผู้ช่วยตรงตัวกรองนี้</p>
+          (!typedNoMatch || filter) && <p className="rounded-xl border border-dashed border-slate-200 p-6 text-center text-sm text-slate-400">ไม่มีผู้ช่วยตรงตัวกรองนี้</p>
         ) : (
-          <ul className="divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-200 bg-white" data-tour="agent-card">
+          <ul className="divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-200 bg-white" data-tour="agent-card" aria-label="รายการผู้ช่วย">
             {list.map((a) => (
               <li key={a.id} className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50">
                 <EntityIcon icon={a.kind} />

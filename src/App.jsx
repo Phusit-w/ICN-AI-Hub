@@ -7,7 +7,6 @@ import AgentDetail from './pages/AgentDetail'
 import CreateAgent from './pages/CreateAgent'
 import CreateSkill from './pages/CreateSkill'
 import Workflows from './pages/Workflows'
-import Community from './pages/Community'
 import Governance from './pages/Governance'
 import { skillLink } from './lib/routes'
 
@@ -29,7 +28,8 @@ export default function App() {
         <Route path="skills" element={<OldSkillsLink />} />
         <Route path="skills/new" element={<CreateSkill />} />
         <Route path="workflows" element={<Workflows />} />
-        <Route path="community" element={<Community />} />
+        {/* The Community page is gone; shared items are found with the Agents page's "popular" filter. */}
+        <Route path="community" element={<Navigate to="/agents?filter=popular" replace />} />
         <Route path="governance" element={<Governance />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>

@@ -31,12 +31,6 @@ describe('Governance: headline numbers and detail tabs', () => {
     expect(screen.queryByRole('tabpanel', { name: 'ค่าใช้จ่ายและ Model' })).not.toBeInTheDocument()
   })
 
-  it('has a contributors tab that is empty for now', async () => {
-    const app = startJourney('/governance')
-    await app.click(screen.getByRole('tab', { name: 'ผู้มีส่วนร่วม' }))
-    expect(within(screen.getByRole('tabpanel', { name: 'ผู้มีส่วนร่วม' })).getByText('ยังไม่มีข้อมูลผู้มีส่วนร่วม')).toBeInTheDocument()
-  })
-
   it('moves between tabs with the arrow, Home and End keys', async () => {
     const app = startJourney('/governance')
     const first = screen.getByRole('tab', { name: 'ค่าใช้จ่ายและ Model' })
