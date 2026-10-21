@@ -1,11 +1,16 @@
 // Organization-level reference data: departments, people, models, tools, knowledge sources.
 
+// Mirrors the ICN organization chart effective 17 Aug 2026 (DataExam/), grouped by who shares the same kind of work.
 export const DEPARTMENTS = [
   { id: 'core', name: 'Core', th: 'ใช้ได้ทุกแผนก', dot: 'bg-brand-500' },
-  { id: 'sales', name: 'Sales', th: 'ฝ่ายขาย', dot: 'bg-sky-500' },
-  { id: 'hr', name: 'HR', th: 'ฝ่ายบุคคล', dot: 'bg-rose-400' },
-  { id: 'it', name: 'IT', th: 'ฝ่ายไอที', dot: 'bg-teal-500' },
-  { id: 'accounting', name: 'Accounting', th: 'ฝ่ายบัญชี', dot: 'bg-amber-500' },
+  { id: 'sales', name: 'Sales & Marketing', th: 'ฝ่ายขายและการตลาด', dot: 'bg-sky-500' },
+  { id: 'bid', name: 'Bid Prep', th: 'เตรียมเอกสารประกวดราคา', dot: 'bg-indigo-500' },
+  { id: 'project', name: 'Project Implementation', th: 'บริหารโครงการ', dot: 'bg-orange-500' },
+  { id: 'maintenance', name: 'Maintenance & Operations', th: 'บริการและบำรุงรักษา', dot: 'bg-lime-600' },
+  { id: 'it', name: 'IT', th: 'นวัตกรรมและสารสนเทศ', dot: 'bg-teal-500' },
+  { id: 'accounting', name: 'Finance & Accounting', th: 'การเงินและบัญชี', dot: 'bg-amber-500' },
+  { id: 'hr', name: 'HR / Procurement / Admin', th: 'บุคคล จัดซื้อ และธุรการ', dot: 'bg-rose-400' },
+  { id: 'exec', name: "CEO's Office & Audit", th: 'สำนักผู้บริหารและตรวจสอบภายใน', dot: 'bg-purple-500' },
 ]
 export const deptById = (id) => DEPARTMENTS.find((d) => d.id === id) ?? DEPARTMENTS[0]
 
@@ -17,6 +22,10 @@ export const USERS = {
   'u-nok': { id: 'u-nok', name: 'Nok J.', title: 'Senior Accountant', dept: 'accounting' },
   'u-ai-team': { id: 'u-ai-team', name: 'AI CoE Team', title: 'AI Center of Excellence', dept: 'core' },
   'u-pranee': { id: 'u-pranee', name: 'Pranee T.', title: 'Data Analyst', dept: 'core' },
+  'u-ploy': { id: 'u-ploy', name: 'Ploy K.', title: 'Bid Specialist', dept: 'bid' },
+  'u-wichai': { id: 'u-wichai', name: 'Wichai N.', title: 'Project Manager', dept: 'project' },
+  'u-malee': { id: 'u-malee', name: 'Malee P.', title: 'Maintenance Supervisor', dept: 'maintenance' },
+  'u-ratree': { id: 'u-ratree', name: 'Ratree S.', title: 'Executive Secretary', dept: 'exec' },
 }
 export const CURRENT_USER_ID = 'u-kanya'
 export const userById = (id) => USERS[id] ?? { id, name: 'Unknown', title: '', dept: 'core' }
@@ -54,6 +63,12 @@ export const KNOWLEDGE = [
   { id: 'kb-it', name: 'IT Knowledge Base', type: 'Confluence', size: '1,320 pages', dept: 'it' },
   { id: 'kb-coa', name: 'Chart of Accounts', type: 'Excel', size: '640 KB', dept: 'accounting' },
   { id: 'kb-brand', name: 'ICN Brand Guideline', type: 'PDF', size: '18 MB', dept: 'core' },
+  { id: 'kb-datasheets', name: 'Product Datasheets & Catalogs', type: 'Folder', size: '1,140 files', dept: 'bid' },
+  { id: 'kb-project-templates', name: 'Project Report Templates', type: 'Folder', size: '26 files', dept: 'project' },
+  { id: 'kb-contracts', name: 'Project Contracts & BOQ', type: 'Folder', size: '310 files', dept: 'project' },
+  { id: 'kb-manuals', name: 'Equipment Manuals', type: 'Folder', size: '680 files', dept: 'maintenance' },
+  { id: 'kb-sla', name: 'SLA by Contract', type: 'Excel', size: '420 KB', dept: 'maintenance' },
+  { id: 'kb-policies', name: 'Company Policies & Board Charter', type: 'Folder', size: '64 files', dept: 'exec' },
 ]
 export const knowledgeById = (id) => KNOWLEDGE.find((k) => k.id === id) ?? { id, name: id, type: 'File', size: '' }
 

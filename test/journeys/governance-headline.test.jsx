@@ -11,7 +11,7 @@ describe('Governance: headline numbers and detail tabs', () => {
     expect(within(headline).getByText('จำนวนงาน')).toBeInTheDocument()
     expect(within(headline).getByText('ประมวลผลบน Local AI')).toBeInTheDocument()
     expect(within(headline).getByText('แจ้งเตือนนโยบาย')).toBeInTheDocument()
-    expect(within(headline).getByText('63%')).toBeInTheDocument()
+    expect(within(headline).getByText('82%')).toBeInTheDocument()
     expect(within(headline).queryByText(/active users/i)).not.toBeInTheDocument()
   })
 

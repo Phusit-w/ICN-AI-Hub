@@ -71,7 +71,7 @@ function UsageTab() {
             </div>
           ))}
         </div>
-        <p className="px-5 pb-5 text-xs text-slate-500">Cloud cost โต 51% ใน 6 เดือน — แนะนำย้ายงานทั่วไปไป Local</p>
+        <p className="px-5 pb-5 text-xs text-slate-500">Cloud cost โต 50% ใน 6 เดือน — แนะนำย้ายงานทั่วไปไป Local</p>
       </Card>
     </div>
   )
@@ -88,7 +88,7 @@ function DepartmentTab() {
           </thead>
           <tbody className="divide-y divide-slate-100">
             {DEPT_USAGE.map((d) => {
-              const pct = Math.round((d.cost / 78000) * 100)
+              const pct = Math.min(100, Math.round((d.cost / d.budget) * 100))
               return (
                 <tr key={d.dept}>
                   <td className="px-5 py-3"><span className="flex items-center gap-2 font-medium text-slate-800"><span className={cn('size-2 rounded-full', deptById(d.dept).dot)} />{deptById(d.dept).name}</span></td>
@@ -97,7 +97,7 @@ function DepartmentTab() {
                   <td className="py-3">
                     <div className="flex items-center gap-2">
                       <div className="h-1.5 w-20 overflow-hidden rounded-full bg-slate-100"><div className={cn('h-full', pct > 75 ? 'bg-amber-500' : 'bg-brand-500')} style={{ width: `${pct}%` }} /></div>
-                      <span className="text-xs text-slate-500">{fmtBaht(d.cost)}</span>
+                      <span className="text-xs text-slate-500">{fmtBaht(d.cost)} / {fmtBaht(d.budget)}</span>
                     </div>
                   </td>
                   <td className="px-5 py-3 text-slate-600">{d.topAgent}</td>

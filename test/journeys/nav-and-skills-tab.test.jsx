@@ -111,7 +111,7 @@ describe('Skills live in a tab of the Agents page', () => {
     await app.click(within(skillDialog('Pricing Calculator')).getByRole('button', { name: 'เพิ่มให้ผู้ช่วย' }))
     const attach = screen.getByRole('dialog', { name: /เพิ่ม .Pricing Calculator. ให้ Agent/ })
     await app.click(within(attach).getByRole('button', { name: /Research Agent/ }))
-    await app.click(within(attach).getByRole('button', { name: /Document Agent/ }))
+    await app.click(within(attach).getByRole('button', { name: /^Document Agent/ }))
     await app.click(within(attach).getByRole('button', { name: /เพิ่มให้ 2 Agents/ }))
     expect(screen.getByText('เพิ่ม Pricing Calculator ให้ 2 Agents แล้ว')).toBeInTheDocument()
     expect(app.url()).toBe('/agents?tab=skills')

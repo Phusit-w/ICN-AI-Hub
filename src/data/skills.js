@@ -107,4 +107,19 @@ export const SKILLS = [
     purpose: 'จับคู่ PO, Goods Receipt และ Invoice หาส่วนต่าง', instruction: 'Tolerance ±1% or ฿500. Report mismatches by vendor.',
     input: 'Export จาก SAP', output: 'ตารางรายการไม่ตรง + สาเหตุที่เป็นไปได้', tools: ['sap'], owner: 'u-nok', rating: 4.9, uses: 1900, version: '1.2',
   }),
+  skill({
+    id: 'skill-soc-check', name: 'SOC Reference Check', category: 'Department', icon: 'check', dept: 'bid',
+    purpose: 'ตรวจว่าเลขหน้าอ้างอิงใน SOC ตรงกับ Datasheet และ Highlight ครอบคลุมเนื้อหาครบ', instruction: 'For every SOC row open the cited page, confirm the item label and highlight cover the requirement. Never judge Comply/Better.',
+    input: 'Excel SOC + PDF Datasheet/Catalog', output: 'Excel ผลตรวจรายข้อ: หน้าถูก / เลขข้อครบ / Highlight ครบ', owner: 'u-ploy', rating: 4.9, uses: 640, version: '1.2',
+  }),
+  skill({
+    id: 'skill-progress-report', name: 'Progress Report Format', category: 'Department', icon: 'file', dept: 'project',
+    purpose: 'จัดรายงานความคืบหน้าตาม Template ส่งลูกค้า: งานที่ทำ, % ความคืบหน้า, ปัญหา, แผนสัปดาห์หน้า', instruction: 'Compute % complete against the contract milestones. Flag any milestone at risk.',
+    input: 'ข้อความสั้นๆ ว่าสัปดาห์นี้ทำอะไร', output: 'รายงานความคืบหน้า (Word) ตาม Template โครงการ', tools: ['doc-gen'], owner: 'u-wichai', rating: 4.7, uses: 1250, version: '1.1',
+  }),
+  skill({
+    id: 'skill-incident-report', name: 'Incident & SLA Report', category: 'Department', icon: 'ticket', dept: 'maintenance',
+    purpose: 'เขียนรายงาน Incident และคำนวณเวลาตาม SLA ของสัญญา', instruction: 'Look up the SLA for the contract. Report response and restore time, and whether SLA was met.',
+    input: 'เวลาเกิดเหตุ, สาขา, สาเหตุ, วิธีแก้', output: 'รายงาน Incident + ผล SLA', owner: 'u-malee', rating: 4.8, uses: 980, version: '1.0',
+  }),
 ]

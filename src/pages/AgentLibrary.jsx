@@ -16,6 +16,9 @@ import SkillsTab from './SkillsTab'
 // One-tap shortcuts for people who don't know what to type yet.
 const NEEDS = [
   { label: 'ทำเอกสารให้ลูกค้า', q: 'proposal ลูกค้า' },
+  { label: 'ตรวจ TOR / SOC', dept: 'bid' },
+  { label: 'รายงานโครงการ / ส่งมอบงาน', dept: 'project' },
+  { label: 'ซ่อมบำรุง / Incident', dept: 'maintenance' },
   { label: 'ค้นข้อมูล / สรุปรายงาน', q: 'ค้น สรุป รายงาน' },
   { label: 'ถามเรื่อง HR / สวัสดิการ', dept: 'hr' },
   { label: 'แจ้งปัญหา IT', dept: 'it' },

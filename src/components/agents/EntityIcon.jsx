@@ -1,7 +1,7 @@
 import {
   BookOpen, Briefcase, Calculator, ChartColumn, ClipboardCheck, Code, FileText, FlagTriangleRight, GitBranch, Globe,
   Image as ImageIcon, Languages, LifeBuoy, Puzzle, Search, ShieldAlert, ShieldCheck, SquareCheck, Target, Ticket, UserRound, Zap, Bot, Sparkles,
-  Workflow,
+  Workflow, HardHat, Wrench, FileSearch, Landmark,
 } from 'lucide-react'
 import { cn } from '../../lib/utils'
 
@@ -9,6 +9,7 @@ const ICONS = {
   // agent / step kinds
   research: Search, sales: Briefcase, document: FileText, image: ImageIcon, review: ClipboardCheck, data: ChartColumn,
   coding: Code, translate: Languages, hr: UserRound, it: LifeBuoy, security: ShieldAlert, accounting: Calculator,
+  bid: FileSearch, project: HardHat, maintenance: Wrench, exec: Landmark,
   skill: Puzzle, condition: GitBranch, trigger: Zap, output: FlagTriangleRight, agent: Bot, chat: Sparkles, workflow: Workflow,
   // skill icons
   globe: Globe, book: BookOpen, file: FileText, check: SquareCheck, chart: ChartColumn, shield: ShieldCheck, target: Target,

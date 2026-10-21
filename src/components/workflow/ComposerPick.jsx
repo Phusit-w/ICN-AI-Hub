@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Bot, ChevronDown, Workflow, X } from 'lucide-react'
 import { useStore } from '../../store/AppStore'
-import { DEPARTMENTS, deptById } from '../../data/catalog'
+import { DEPARTMENTS, deptById, userById } from '../../data/catalog'
 import { cn } from '../../lib/utils'
 
 // A pick is what the user chose for a request: { agentId } or { workflowId }, never both,
@@ -35,6 +35,7 @@ export default function ComposerPick({ pick, onChange, chooseAgent = false }) {
   const workflow = pick.workflowId && state.workflows.find((w) => w.id === pick.workflowId)
   const agent = pick.agentId && state.agents.find((a) => a.id === pick.agentId)
   const clear = () => onChange({})
+  const myDept = userById(state.userId).dept
 
   if (workflow) {
     // A picked Workflow replaces agent picking: its steps are fixed.
@@ -73,10 +74,11 @@ export default function ComposerPick({ pick, onChange, chooseAgent = false }) {
           className="absolute inset-0 cursor-pointer opacity-0"
         >
           <option value="">อัตโนมัติ — ระบบเลือกให้ (แนะนำ)</option>
-          {DEPARTMENTS.map((d) => {
+          {/* The user's own department comes first: those are the agents they most likely want. */}
+          {[...DEPARTMENTS].sort((a, b) => (b.id === myDept) - (a.id === myDept)).map((d) => {
             const list = state.agents.filter((a) => deptById(a.dept).id === d.id)
             return list.length > 0 && (
-              <optgroup key={d.id} label={d.th}>
+              <optgroup key={d.id} label={d.id === myDept ? `แผนกของคุณ · ${d.th}` : d.th}>
                 {list.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
               </optgroup>
             )

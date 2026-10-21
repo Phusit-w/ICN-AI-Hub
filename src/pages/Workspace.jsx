@@ -18,6 +18,7 @@ import ArtifactView from '../components/workflow/ArtifactView'
 import SaveForReuse from '../components/workflow/SaveForReuse'
 import ComposerPick, { pickFromParams, usePick } from '../components/workflow/ComposerPick'
 import ReuseRow from '../components/workflow/ReuseRow'
+import DepartmentAgents from '../components/agents/DepartmentAgents'
 import { WelcomeCard } from '../components/layout/Help'
 import { userById } from '../data/catalog'
 import { reuseItems } from '../lib/reuse'
@@ -333,6 +334,7 @@ function NewChat({ pick, onPickChange, onSend }) {
             </ul>
           )}
         </section>
+        <DepartmentAgents pick={pick} onPick={onPickChange} />
         <ReuseRow items={reuseItems(state)} pick={pick} onPick={onPickChange} hasFavorites={state.favorites.length > 0} />
       </div>
     </div>
