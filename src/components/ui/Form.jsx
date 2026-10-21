@@ -1,5 +1,6 @@
-import { Search, Check } from 'lucide-react'
+import { Search, Check, Lock, Users, Building2 } from 'lucide-react'
 import { cn } from '../../lib/utils'
+import { SHARE_LEVELS } from '../../data/catalog'
 
 const control = 'w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-800 placeholder:text-slate-400 shadow-xs transition focus:border-brand-400 focus:outline-none focus:ring-3 focus:ring-brand-100'
 
@@ -77,5 +78,20 @@ export function ChoiceCard({ selected, onClick, title, description, icon: Icon, 
         {selected && <Check className="size-3" strokeWidth={3} aria-hidden />}
       </span>
     </button>
+  )
+}
+
+const SHARE_ICONS = { private: Lock, department: Users, company: Building2 }
+
+/** Who can use what is being created: private, department or company. */
+export function ShareChoice({ label = 'ใครใช้ได้บ้าง', value, onChange }) {
+  return (
+    <Field label={label}>
+      <div className="grid gap-2 sm:grid-cols-3">
+        {SHARE_LEVELS.map((sl) => (
+          <ChoiceCard key={sl.id} selected={value === sl.id} onClick={() => onChange(sl.id)} icon={SHARE_ICONS[sl.id]} title={sl.name} description={sl.th} />
+        ))}
+      </div>
+    </Field>
   )
 }

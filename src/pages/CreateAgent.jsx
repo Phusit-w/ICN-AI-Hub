@@ -1,15 +1,16 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { ArrowLeft, ArrowRight, Check, Copy, FileUp, Lock, Users, Building2, Rocket, Settings2, Sparkles, X } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Check, Copy, FileUp, Lock, Rocket, X } from 'lucide-react'
 import { useStore } from '../store/AppStore'
-import { DATA_CLASSES, DEPARTMENTS, KNOWLEDGE, MODELS, OUTPUT_FORMATS, SHARE_LEVELS, TOOLS } from '../data/catalog'
+import { DATA_CLASSES, DEPARTMENTS, KNOWLEDGE, MODELS, OUTPUT_FORMATS, TOOLS } from '../data/catalog'
 import { cn } from '../lib/utils'
 import { agentFromForm, BLANK_FORM, draftForm, formFromAgent, INSTRUCTION_STARTERS } from '../lib/agentDraft'
 import { Card, PageHeader } from '../components/ui/Card'
 import Button from '../components/ui/Button'
 import Badge, { ModelBadge, ShareBadge, DeptBadge } from '../components/ui/Badge'
-import { ChoiceCard, Field, Input, SearchInput, Select, Textarea, Toggle } from '../components/ui/Form'
+import { ChoiceCard, Field, Input, SearchInput, Select, ShareChoice, Textarea, Toggle } from '../components/ui/Form'
 import EntityIcon from '../components/agents/EntityIcon'
+import QuickCreate from '../components/ui/QuickCreate'
 
 const STEPS = ['ข้อมูลพื้นฐาน', 'คำสั่งการทำงาน', 'Model & ข้อมูล', 'Knowledge & Skills', 'Tools & Output', 'การแชร์']
 const KINDS = ['research', 'document', 'sales', 'hr', 'it', 'accounting', 'data', 'image', 'review', 'coding']
@@ -18,31 +19,21 @@ const KINDS = ['research', 'document', 'sales', 'hr', 'it', 'accounting', 'data'
  * Default way to create an agent: describe it in one box, the AI fills everything in,
  * the user checks name, description, skills and sharing, then creates. Everything else lives in the wizard.
  */
-function QuickCreate({ initial, onCreate, onAdvanced }) {
+function QuickCreateAgent({ initial, onCreate, onAdvanced }) {
   const { state } = useStore()
-  const [text, setText] = useState(initial)
   const [form, setForm] = useState(() => (initial.trim() ? draftForm(initial, state.agents) : null))
   const set = (patch) => setForm((f) => ({ ...f, ...patch }))
-  const fill = () => text.trim() && setForm(draftForm(text, state.agents))
 
   return (
-    <div className="mx-auto max-w-2xl pt-2 lg:pt-6">
-      <h1 className="text-2xl font-semibold tracking-tight text-slate-900">สร้างผู้ช่วย AI ของคุณ</h1>
-      <p className="mt-1 text-sm text-slate-500">บอกว่าอยากได้ผู้ช่วยแบบไหน AI จะกรอกรายละเอียดให้ คุณแค่ตรวจแล้วกดสร้าง</p>
-      <form onSubmit={(e) => { e.preventDefault(); fill() }} className="mt-5 rounded-2xl border border-slate-200 bg-white p-2 shadow-sm focus-within:border-brand-400 focus-within:ring-4 focus-within:ring-brand-100">
-        <textarea
-          value={text} onChange={(e) => setText(e.target.value)} rows={2} autoFocus={!form} aria-label="อยากได้ผู้ช่วยแบบไหน"
-          onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); fill() } }}
-          placeholder="เช่น ช่วยร่างอีเมลตอบลูกค้าที่ร้องเรียนเรื่องส่งของช้า ให้สุภาพและเสนอทางแก้"
-          className="block w-full resize-none bg-transparent px-3 py-2 text-[15px] placeholder:text-slate-400 focus:outline-none"
-        />
-        <div className="flex justify-end px-1">
-          <Button type="submit" variant={form ? 'secondary' : 'primary'} size="sm" icon={Sparkles} disabled={!text.trim()}>{form ? 'ให้ AI กรอกใหม่' : 'ให้ AI กรอกให้'}</Button>
-        </div>
-      </form>
-
+    <QuickCreate
+      title="สร้างผู้ช่วย AI ของคุณ" subtitle="บอกว่าอยากได้ผู้ช่วยแบบไหน AI จะกรอกรายละเอียดให้ คุณแค่ตรวจแล้วกดสร้าง"
+      describeLabel="อยากได้ผู้ช่วยแบบไหน" placeholder="เช่น ช่วยร่างอีเมลตอบลูกค้าที่ร้องเรียนเรื่องส่งของช้า ให้สุภาพและเสนอทางแก้"
+      initial={initial} drafted={!!form} onFill={(text) => setForm(draftForm(text, state.agents))}
+      createLabel="สร้างผู้ช่วย" canCreate={!!form?.name.trim() && !!form?.description.trim()}
+      onCreate={() => onCreate(form)} onAdvanced={() => onAdvanced(form)}
+    >
       {form && (
-        <Card className="rise mt-5 space-y-5 p-5">
+        <>
           <div className="flex items-start gap-3">
             <EntityIcon icon={form.kind} size="lg" />
             <div className="min-w-0 flex-1 space-y-3">
@@ -64,20 +55,10 @@ function QuickCreate({ initial, onCreate, onAdvanced }) {
               {form.skills.length === 0 && <span className="text-xs text-slate-400">ไม่มี — เพิ่มได้ในตั้งค่าขั้นสูง</span>}
             </div>
           </Field>
-          <Field label="ใครใช้ได้บ้าง">
-            <div className="grid gap-2 sm:grid-cols-3">
-              {SHARE_LEVELS.map((sl) => (
-                <ChoiceCard key={sl.id} selected={form.share === sl.id} onClick={() => set({ share: sl.id })} icon={{ private: Lock, department: Users, company: Building2 }[sl.id]} title={sl.name} description={sl.th} />
-              ))}
-            </div>
-          </Field>
-          <div className="flex items-center justify-between border-t border-slate-100 pt-4">
-            <Button variant="ghost" size="sm" icon={Settings2} onClick={() => onAdvanced(form)}>ตั้งค่าขั้นสูง</Button>
-            <Button variant="primary" icon={Rocket} onClick={() => onCreate(form)} disabled={!form.name.trim() || !form.description.trim()}>สร้างผู้ช่วย</Button>
-          </div>
-        </Card>
+          <ShareChoice value={form.share} onChange={(share) => set({ share })} />
+        </>
       )}
-    </div>
+    </QuickCreate>
   )
 }
 
@@ -108,7 +89,7 @@ export default function CreateAgent() {
   }
 
   if (quick) {
-    return <QuickCreate initial={params.get('q') ?? ''} onCreate={create} onAdvanced={(f) => { setForm(f); setQuick(false) }} />
+    return <QuickCreateAgent initial={params.get('q') ?? ''} onCreate={create} onAdvanced={(f) => { setForm(f); setQuick(false) }} />
   }
 
   return (
@@ -274,13 +255,7 @@ export default function CreateAgent() {
 
             {step === 5 && (
               <>
-                <Field label="แชร์ให้ใครใช้ได้บ้าง">
-                  <div className="grid gap-2 sm:grid-cols-3">
-                    {SHARE_LEVELS.map((s) => (
-                      <ChoiceCard key={s.id} selected={form.share === s.id} onClick={() => set({ share: s.id })} icon={{ private: Lock, department: Users, company: Building2 }[s.id]} title={s.name} description={s.th} />
-                    ))}
-                  </div>
-                </Field>
+                <ShareChoice label="แชร์ให้ใครใช้ได้บ้าง" value={form.share} onChange={(share) => set({ share })} />
                 <Field label="ใครแก้ไข Agent นี้ได้">
                   <Select value={form.editors} onChange={(e) => set({ editors: e.target.value })}>
                     <option value="me">เฉพาะฉัน</option><option value="dept-admin">ฉัน + Department Admin</option><option value="team">ทุกคนในแผนก</option>
