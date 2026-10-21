@@ -89,6 +89,9 @@ const AGENT_RULES = [
 /** A Run, or the Plan for one, that is a single chat answer from ICN Assistant rather than work for Agents. */
 export const isChatRun = (run) => run.steps.length === 1 && run.steps[0].kind === 'chat'
 
+/** The Runs of one Thread, oldest first. */
+export const runsOfThread = (runs, threadId) => runs.filter((r) => r.threadId === threadId).sort((a, b) => a.createdAt - b.createdAt)
+
 /** Threads, newest first: each is { id, title (its first Run's), latest Run }. */
 export function threadsOf(runs) {
   const byId = new Map()

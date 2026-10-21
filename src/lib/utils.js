@@ -8,6 +8,8 @@ export const fmtCompact = (n) => (n >= 1000 ? `${(n / 1000).toFixed(n >= 10000 ?
 
 export const fmtBaht = (n) => `฿${n.toLocaleString('en-US')}`
 
+export const isToday = (ts) => new Date(ts).toDateString() === new Date().toDateString()
+
 export function timeAgo(ts) {
   const min = Math.round((Date.now() - ts) / 60000)
   if (min < 1) return 'เมื่อสักครู่'

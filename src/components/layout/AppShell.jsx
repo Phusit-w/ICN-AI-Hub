@@ -5,7 +5,7 @@ import {
 } from 'lucide-react'
 import { useStore } from '../../store/AppStore'
 import { userById } from '../../data/catalog'
-import { cn } from '../../lib/utils'
+import { cn, isToday } from '../../lib/utils'
 import { skillLink } from '../../lib/routes'
 import { threadsOf } from '../../lib/runs'
 import usePersistentState from '../../lib/usePersistentState'
@@ -13,6 +13,7 @@ import { Avatar, Toaster } from '../ui/Overlay'
 import EntityIcon from '../agents/EntityIcon'
 import { SearchInput } from '../ui/Form'
 import { HelpButton } from './Help'
+import { useTour } from '../tour/Tour'
 import logo from '../../assets/icn-logo.png'
 
 const NAV = [
@@ -32,32 +33,42 @@ const itemClass = (isActive) => cn(
   isActive ? 'bg-slate-900/[0.06] text-slate-900' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900',
 )
 
-/** Chat history, newest first, as in ChatGPT, Claude or Gemini. One click opens the Thread. */
+/** Chat history (Threads), newest first and grouped by day, as in ChatGPT, Claude or Gemini. One click opens the Thread. */
 function ChatHistory({ onNavigate }) {
   const { state } = useStore()
   const [params] = useSearchParams()
   const { pathname } = useLocation()
   const threads = useMemo(() => threadsOf(state.runs), [state.runs])
-  const open = pathname === '/workspace' ? state.runs.find((r) => r.id === params.get('run'))?.threadId : null
+  const activeThreadId = pathname === '/workspace' ? state.runs.find((r) => r.id === params.get('run'))?.threadId : null
+  const groups = [
+    { label: 'วันนี้', items: threads.filter((t) => isToday(t.latest.createdAt)) },
+    { label: 'ก่อนหน้านี้', items: threads.filter((t) => !isToday(t.latest.createdAt)) },
+  ].filter((g) => g.items.length)
   return (
-    <nav aria-label="ประวัติการคุย" className="mt-5 flex min-h-0 flex-1 flex-col">
-      <p className="mb-1 px-2 text-[11px] font-medium text-slate-400">ประวัติการคุย</p>
+    <nav aria-label="ประวัติแชต" className="mt-5 flex min-h-0 flex-1 flex-col">
       {threads.length === 0
-        ? <p className="px-2 text-xs text-slate-400">ยังไม่มี เริ่มแชตใหม่ได้เลย</p>
+        ? <p className="px-2 text-xs text-slate-400">ยังไม่มีแชต เริ่มแชตใหม่ได้เลย</p>
         : (
-          <ul className="-mr-1 min-h-0 flex-1 space-y-0.5 overflow-y-auto pr-1">
-            {threads.map((t) => (
-              <li key={t.id}>
-                <Link
-                  to={`/workspace?run=${t.latest.id}`} onClick={onNavigate} aria-current={t.id === open ? 'page' : undefined} title={t.title}
-                  className={cn('flex items-center gap-2 rounded-lg px-2 py-1.5 text-[13px] transition', t.id === open ? 'bg-slate-900/[0.06] text-slate-900' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900')}
-                >
-                  <span className="flex-1 truncate">{t.title}</span>
-                  {t.latest.status === 'running' && <span className="size-1.5 shrink-0 animate-pulse rounded-full bg-brand-500" aria-hidden />}
-                </Link>
-              </li>
+          <div className="-mr-1 min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">
+            {groups.map((g) => (
+              <div key={g.label}>
+                <p className="px-2 pb-0.5 text-[11px] font-medium text-slate-400">{g.label}</p>
+                <ul className="space-y-0.5">
+                  {g.items.map((t) => (
+                    <li key={t.id}>
+                      <Link
+                        to={`/workspace?run=${t.latest.id}`} onClick={onNavigate} aria-current={t.id === activeThreadId ? 'page' : undefined} title={t.title}
+                        className={cn(itemClass(t.id === activeThreadId), 'px-2 py-1.5 text-[13px] font-normal')}
+                      >
+                        <span className="flex-1 truncate">{t.title}</span>
+                        {t.latest.status === 'running' && <span className="size-1.5 shrink-0 animate-pulse rounded-full bg-brand-500" aria-label="กำลังทำ" />}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             ))}
-          </ul>
+          </div>
         )}
     </nav>
   )
@@ -68,7 +79,7 @@ function ChatHistory({ onNavigate }) {
  * the chat history filling the middle, and the user at the bottom.
  * `collapsed` shrinks it to an icon rail without the history; labels move into tooltips. Only the desktop sidebar collapses.
  */
-function Sidebar({ onNavigate, collapsed = false, onToggle }) {
+function Sidebar({ onNavigate, collapsed = false, onToggle, onSearch, focusSearch = false }) {
   const { state } = useStore()
   const me = userById(state.userId)
   const running = state.runs.filter((r) => r.status === 'running').length
@@ -89,14 +100,14 @@ function Sidebar({ onNavigate, collapsed = false, onToggle }) {
 
       <div className="mt-3 space-y-1">
         <Link
-          to="/workspace?new=1" onClick={onNavigate} data-tour="new-task" title={collapsed ? 'แชตใหม่' : undefined} aria-label={collapsed ? 'แชตใหม่' : undefined}
+          to="/workspace" onClick={onNavigate} data-tour="new-task" title={collapsed ? 'แชตใหม่' : undefined} aria-label={collapsed ? 'แชตใหม่' : undefined}
           className={cn(itemClass(false), 'border border-slate-200 bg-white shadow-sm', collapsed ? 'justify-center py-2' : 'px-2 py-2')}
         >
           <SquarePen className="size-[18px]" aria-hidden />{!collapsed && 'แชตใหม่'}
         </Link>
         {collapsed
-          ? <button type="button" onClick={onToggle} aria-label="ค้นหา" title="ค้นหา" className={cn(itemClass(false), 'w-full justify-center py-2')}><Search className="size-[18px]" /></button>
-          : <GlobalSearch onNavigate={onNavigate} />}
+          ? <button type="button" onClick={onSearch} aria-label="ค้นหา" title="ค้นหา" className={cn(itemClass(false), 'w-full justify-center py-2')}><Search className="size-[18px]" /></button>
+          : <GlobalSearch onNavigate={onNavigate} autoFocus={focusSearch} />}
       </div>
 
       <nav className={cn('mt-4', collapsed ? 'space-y-3' : 'space-y-4')} aria-label="Main">
@@ -144,7 +155,7 @@ function Sidebar({ onNavigate, collapsed = false, onToggle }) {
   )
 }
 
-function GlobalSearch({ onNavigate }) {
+function GlobalSearch({ onNavigate, autoFocus = false }) {
   const { state } = useStore()
   const navigate = useNavigate()
   const [q, setQ] = useState('')
@@ -171,7 +182,7 @@ function GlobalSearch({ onNavigate }) {
         placeholder="ค้นหาผู้ช่วย ทักษะ สายงาน…" value={q}
         onChange={(e) => { setQ(e.target.value); setOpen(true) }} onFocus={() => setOpen(true)}
         onKeyDown={(e) => { if (e.key === 'Enter' && results[0]) go(results[0].to) }}
-        aria-label="ค้นหาทั้งระบบ"
+        aria-label="ค้นหาทั้งระบบ" autoFocus={autoFocus}
       />
       {open && term && (
         <div className="rise absolute top-11 left-0 z-40 w-80 max-w-[calc(100vw-2rem)] overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl">
@@ -193,14 +204,21 @@ export default function AppShell() {
   const [menuOpen, setMenuOpen] = useState(false)
   const { pathname } = useLocation()
   const [collapsed, setCollapsed] = usePersistentState('icn.sidebar.collapsed', false)
+  const [focusSearch, setFocusSearch] = useState(false)
+  // A tour step pointing into the sidebar needs it on screen: expanded on desktop, the drawer on phones.
+  const { sidebarStep } = useTour()
+  const railOnly = collapsed && !sidebarStep
+  const drawerOpen = menuOpen || sidebarStep
+  const toggle = () => { setFocusSearch(false); setCollapsed(!collapsed) }
+  const openSearch = () => { setFocusSearch(true); setCollapsed(false) }
   useEffect(() => { window.scrollTo(0, 0) }, [pathname])
 
   return (
-    <div className={cn('min-h-screen transition-[padding] duration-200', collapsed ? 'lg:pl-16' : 'lg:pl-64')}>
-      <aside className={cn('fixed inset-y-0 left-0 z-30 hidden border-r border-slate-200 bg-slate-50 transition-[width] duration-200 lg:block', collapsed ? 'w-16' : 'w-64')}>
-        <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
+    <div className={cn('min-h-screen transition-[padding] duration-200', railOnly ? 'lg:pl-16' : 'lg:pl-64')}>
+      <aside className={cn('fixed inset-y-0 left-0 z-30 hidden border-r border-slate-200 bg-slate-50 transition-[width] duration-200 lg:block', railOnly ? 'w-16' : 'w-64')}>
+        <Sidebar collapsed={railOnly} onToggle={toggle} onSearch={openSearch} focusSearch={focusSearch} />
       </aside>
-      {menuOpen && (
+      {drawerOpen && (
         <div className="fixed inset-0 z-40 lg:hidden" role="dialog" aria-modal="true">
           <div className="absolute inset-0 bg-slate-900/30" onClick={() => setMenuOpen(false)} />
           <aside className="rise absolute inset-y-0 left-0 w-72 bg-slate-50 shadow-xl">

@@ -106,13 +106,32 @@ describe('Workspace: chat or Plan, decided by the system', () => {
 
   it('chat history sits in the sidebar on every page, and one click opens a past Thread', async () => {
     const app = startJourney('/agents')
-    const history = screen.getByRole('navigation', { name: 'ประวัติการคุย' })
+    const history = screen.getByRole('navigation', { name: 'ประวัติแชต' })
 
     await app.click(within(history).getByRole('link', { name: /หาข้อมูลตลาด EV Charger/ }))
 
     expect(app.url()).toMatch(/^\/workspace\?run=/)
-    expect(within(screen.getByRole('navigation', { name: 'ประวัติการคุย' })).getByRole('link', { current: 'page' })).toHaveTextContent(/หาข้อมูลตลาด EV Charger/)
+    expect(within(screen.getByRole('navigation', { name: 'ประวัติแชต' })).getByRole('link', { current: 'page' })).toHaveTextContent(/หาข้อมูลตลาด EV Charger/)
     expectWithinBudget(app, 1)
+  })
+
+  it('collapsing the sidebar hides the chat history, and expanding brings it back', async () => {
+    const app = startJourney('/workspace')
+
+    await app.click(screen.getByRole('button', { name: 'ย่อแถบเมนู' }))
+    expect(screen.queryByRole('navigation', { name: 'ประวัติแชต' })).toBeNull()
+
+    await app.click(screen.getByRole('button', { name: 'ขยายแถบเมนู' }))
+    expect(screen.getByRole('navigation', { name: 'ประวัติแชต' })).toBeInTheDocument()
+  })
+
+  it('the search button on the collapsed sidebar opens the sidebar with the cursor in search', async () => {
+    const app = startJourney('/workspace')
+
+    await app.click(screen.getByRole('button', { name: 'ย่อแถบเมนู' }))
+    await app.click(screen.getByRole('button', { name: 'ค้นหา' }))
+
+    expect(screen.getByRole('searchbox', { name: 'ค้นหาทั้งระบบ' })).toHaveFocus()
   })
 
   it('sensitive data still shows the internal-AI notice', async () => {

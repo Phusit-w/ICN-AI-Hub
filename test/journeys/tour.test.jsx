@@ -16,6 +16,14 @@ describe('Tour: short, and never points at something that is gone', () => {
     expect(document.querySelector(`[data-tour="${step.target}"]`), `[data-tour="${step.target}"] on ${step.route}`).not.toBeNull()
   })
 
+  it('steps marked `sidebar` are exactly the ones whose target sits in the sidebar, so the tour can show it first', () => {
+    for (const step of TOUR_STEPS) {
+      startJourney(step.route)
+      const inSidebar = Boolean(document.querySelector(`aside [data-tour="${step.target}"]`))
+      expect(Boolean(step.sidebar), step.target).toBe(inSidebar)
+    }
+  })
+
   it('no step mentions the mode toggle, the community page or the old Skills page', () => {
     for (const s of TOUR_STEPS) {
       expect(s.route).not.toMatch(/community|^\/skills/)

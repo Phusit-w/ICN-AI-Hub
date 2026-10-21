@@ -5,7 +5,7 @@ import { TOUR_STEPS } from './steps'
 import Button from '../ui/Button'
 import { cn } from '../../lib/utils'
 
-const TourContext = createContext({ start: () => {} })
+const TourContext = createContext({ start: () => {}, sidebarStep: false })
 export const useTour = () => useContext(TourContext)
 
 const PAD = 6 // spotlight padding around the target
@@ -112,7 +112,7 @@ export function TourProvider({ children }) {
   const pop = rect && placePopover(rect)
 
   return (
-    <TourContext.Provider value={{ start }}>
+    <TourContext.Provider value={{ start, sidebarStep: Boolean(step?.sidebar) }}>
       {children}
       {step && (
         <div className="fixed inset-0 z-[80]" aria-live="polite">

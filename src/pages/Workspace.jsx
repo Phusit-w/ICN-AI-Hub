@@ -7,7 +7,7 @@ import {
 import { useStore } from '../store/AppStore'
 import { AttachButton, AttachmentList } from '../components/ui/Attachments'
 import { ACTIVITIES } from '../lib/mockOutputs'
-import { isChatRun, runProgress } from '../lib/runs'
+import { isChatRun, runProgress, runsOfThread } from '../lib/runs'
 import { clockTime, cn } from '../lib/utils'
 import { ProgressBar } from '../components/ui/Card'
 import Button from '../components/ui/Button'
@@ -324,7 +324,7 @@ export default function Workspace() {
   const q = params.get('q')
 
   const run = state.runs.find((r) => r.id === params.get('run')) ?? null
-  const thread = useMemo(() => (run ? state.runs.filter((r) => r.threadId === run.threadId).sort((a, b) => a.createdAt - b.createdAt) : []), [state.runs, run])
+  const thread = useMemo(() => (run ? runsOfThread(state.runs, run.threadId) : []), [state.runs, run])
 
   // `pick` is { agentId } or { workflowId } when the user chose one, otherwise {} and the planner decides.
   const send = (prompt, pick, threadId, attachments) => {

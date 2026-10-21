@@ -6,6 +6,9 @@ import { AppStoreProvider } from './store/AppStore'
 import { TourProvider } from './components/tour/Tour'
 import './index.css'
 
+// The Workspace's own history panel is gone (chat history lives in the sidebar); drop its old setting.
+try { localStorage.removeItem('icn.workspace.historyCollapsed') } catch { /* storage blocked */ }
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <HashRouter>
