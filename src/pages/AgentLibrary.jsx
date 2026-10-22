@@ -13,7 +13,8 @@ import { ItemCard } from '../components/agents/AgentCard'
 import { stepsLabel } from '../lib/steps'
 import SkillDialog from '../components/skills/SkillDialog'
 import TypewriterHint from '../components/ui/TypewriterHint'
-import { useVariant } from './workspace-prototype/PrototypeSwitcher'
+import EyeTracker from '../components/ui/EyeTracker'
+import { useCube, useVariant } from './workspace-prototype/PrototypeSwitcher'
 
 // Shortcuts for people who don't know what to type yet. The `pinned` ones sit in the chip row; the rest are under "ตามงาน".
 const NEEDS = [
@@ -113,6 +114,7 @@ export default function AgentLibrary() {
   const me = userById(state.userId)
   const [q, setQ] = useState('')
   const [variant] = useVariant()
+  const [cube] = useCube()
   const [focused, setFocused] = useState(false)
   const [need, setNeed] = useState(null)
   const [showFilters, setShowFilters] = useState(false)
@@ -151,11 +153,12 @@ export default function AgentLibrary() {
   const showPicks = !filter && (term || need)
 
   return (
-    <div className="mx-auto max-w-5xl">
+    <div className="mx-auto max-w-5xl" data-eyt-frame>
       <div className="flex justify-end">
         <Button variant={showPicks ? 'secondary' : 'primary'} icon={Plus} to="/agents/new" data-tour="agents-create">สร้างผู้ช่วย</Button>
       </div>
       <section className="text-center">
+        {variant === 'B' && cube && <div className="eyt-fit mt-2 flex justify-center"><EyeTracker size={88} /></div>}
         <h1 className="mt-3 text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">หา AI Agent ที่เหมาะกับงาน</h1>
         <p className="mt-1 text-sm text-slate-500">บอกงานมา เราจะแนะนำ AI Agent ที่เหมาะที่สุดให้ หรือเลือกเองจากรายการด้านล่าง</p>
         <div className="relative mx-auto mt-5 max-w-xl">
