@@ -137,13 +137,13 @@ function Sidebar({ onNavigate, collapsed = false, onToggle, onSearch, focusSearc
   const onNewChat = pathname === '/workspace' && !new URLSearchParams(search).has('run')
   return (
     <div className={cn('flex h-full flex-col py-3', collapsed ? 'px-2' : 'px-3')}>
-      {/* PROTOTYPE variant B (`searchTop`): the logo alone, then the search field, then the collapse button. */}
+      {/* PROTOTYPE variant B (`searchTop`): the logo alone, then the search icon beside the collapse button. */}
       <div className={cn('flex items-center', collapsed ? 'flex-col gap-2' : searchTop ? 'gap-2 pl-2' : 'justify-between pl-2', searchTop && !onToggle && 'pr-9')}>
         <Link to="/workspace" onClick={onNavigate} title="ICN AI Hub" className="flex shrink-0 items-center gap-2.5">
           <img src={logo} alt="ICN" className="size-8 rounded-lg ring-1 ring-slate-200" />
           {!collapsed && !searchTop && <span className="text-sm font-semibold text-slate-900">ICN AI Hub</span>}
         </Link>
-        {searchTop && !collapsed && <SearchPopup onNavigate={onNavigate} />}
+        {searchTop && !collapsed && <span className="ml-auto w-9"><SearchPopup compact onNavigate={onNavigate} /></span>}
         {onToggle && (
           <button
             type="button" onClick={onToggle} aria-label={collapsed ? 'ขยายแถบเมนู' : 'ย่อแถบเมนู'} title={collapsed ? 'ขยายแถบเมนู' : 'ย่อแถบเมนู'}
