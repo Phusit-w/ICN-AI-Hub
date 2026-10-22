@@ -24,13 +24,16 @@ const clearClass = 'rounded-full p-1 hover:bg-brand-100'
 
 // The dropdown's motion follows Bencho's "Create menu": one shape that spreads from the pill into the panel, with no overshoot.
 // The press sinks (scale .94) and the spread starts 60ms in, so there is never a still frame. Width, height and corner run the
-// same curve for the same time; the rows then rise in one after another (30ms + 22ms each), and the pill's own label steps aside.
+// same curve for the same time; the rows then rise in one after another (30ms + 22ms each). The shape lifts clear of the composer as it spreads.
 // Closing runs the same move backwards, and a press anywhere outside puts the panel away. Plain CSS transitions, no spring library.
 const EASE = 'ease-[cubic-bezier(0.22,1,0.36,1)]'
-const SHAPE = 'transition-[width,height,border-radius,opacity,border-color] duration-[220ms] motion-reduce:duration-150'
+const SHAPE = 'transition-[width,height,top,bottom,border-radius,opacity,border-color] duration-[220ms] motion-reduce:duration-150'
+const GAP = 8 // between the composer and the open panel
+const EDGE = 12 // the panel keeps this far from the window's edge
 
 /**
- * The "อัตโนมัติ" dropdown, a listbox opening upwards from its button. `groups` is [{ id, name, list: [agent] }].
+ * The "อัตโนมัติ" dropdown, a listbox that opens below the composer, or above it when the composer sits at the bottom of the window, and never
+ * over the composer's own text or buttons. `groups` is [{ id, name, list: [agent] }].
  * Keys: ↑/↓ open it; inside, ↑/↓ move (stopping at the ends), Home/End jump, Enter or Space picks, Escape closes
  * and returns focus, Tab closes.
  */
@@ -68,7 +71,24 @@ function AgentPicker({ value, label, groups, onChange }) {
     el?.scrollIntoView({ block: 'nearest' })
   }, [open, active])
 
+  // Where the panel will sit, measured as it is pressed: clear of the whole composer (the pill is only a corner of it),
+  // on whichever side has the room. `offset` is how far the panel's near edge moves from the pill's own edge.
+  const [place, setPlace] = useState({ dir: 'up', offset: 0, h: 352 })
+  const measure = () => {
+    const pill = trigger.current?.getBoundingClientRect()
+    if (!pill) return
+    const form = trigger.current.closest('form')
+    const bar = (form?.parentElement ?? trigger.current).getBoundingClientRect() // the composer and the policy line under it
+    const full = Math.min(352, window.innerHeight * 0.6)
+    const above = bar.top - GAP - EDGE
+    const below = window.innerHeight - bar.bottom - GAP - EDGE
+    const dir = below >= Math.min(full, 260) || below >= above ? 'down' : 'up' // below first: on the new-chat screen above is the greeting
+    const h = Math.max(120, Math.min(full, dir === 'up' ? above : below))
+    setPlace({ dir, h, offset: dir === 'up' ? pill.bottom - bar.top + GAP : bar.bottom - pill.top + GAP })
+  }
+
   const show = (at) => {
+    measure()
     setActive(at)
     setSink(true)
     window.clearTimeout(beat.current)
@@ -115,22 +135,26 @@ function AgentPicker({ value, label, groups, onChange }) {
         className={cn(
           'relative z-10 flex h-8 min-w-0 items-center gap-1 rounded-full px-2.5 text-xs transition-[color,background-color,opacity,scale] focus-visible:ring-2 focus-visible:ring-brand-300 focus-visible:outline-none',
           EASE, value ? 'text-brand-700' : 'text-slate-500 hover:bg-slate-100',
-          // held at full strength through the press, then out of the way once the shape has spread; back in as it lands
-          sink ? 'scale-[0.94] duration-150 motion-reduce:scale-100' : open ? 'pointer-events-none opacity-0 duration-150' : 'duration-200 delay-100',
+          // the press sinks it; the panel opens clear of it, so the button stays where it is
+          sink ? 'scale-[0.94] duration-150 motion-reduce:scale-100' : 'duration-200',
         )}
       >
         <span className="max-w-40 truncate">{label}</span>
         <ChevronDown className="size-3 shrink-0" aria-hidden />
       </button>
-      {/* The shape: exactly the button's size when shut, and anchored to its bottom-right corner so it spreads up and to the left. */}
+      {/* The shape: exactly the button's size when shut; open, it spreads towards the room (up or down) and lifts clear of the composer. */}
       <div
         inert={!open}
+        style={open ? { height: place.h, [place.dir === 'up' ? 'bottom' : 'top']: place.offset } : undefined}
         className={cn(
-          'absolute right-0 bottom-0 z-20 overflow-hidden border bg-white shadow-lg', SHAPE, EASE,
-          open ? 'h-[min(22rem,60dvh)] w-72 rounded-[20px] border-slate-200 opacity-100' : 'pointer-events-none h-full w-full rounded-2xl border-transparent opacity-0',
+          'absolute right-0 z-20 overflow-hidden border bg-white shadow-lg', place.dir === 'up' ? 'bottom-0' : 'top-0', SHAPE, EASE,
+          open ? 'w-72 rounded-[20px] border-slate-200 opacity-100' : 'pointer-events-none h-full w-full rounded-2xl border-transparent opacity-0',
         )}
       >
-        <div id={listId} role="listbox" aria-label="เลือกผู้ช่วย" onKeyDown={onListKey} className="absolute right-0 bottom-0 h-[min(22rem,60dvh)] w-72 overflow-y-auto p-2">
+        <div
+          id={listId} role="listbox" aria-label="เลือกผู้ช่วย" onKeyDown={onListKey} style={{ height: place.h }}
+          className={cn('absolute right-0 w-72 overflow-y-auto p-2', place.dir === 'up' ? 'bottom-0' : 'top-0')}
+        >
           {option(0, '', 'อัตโนมัติ — ระบบเลือกให้ (แนะนำ)')}
           {rows.map((g) => (
             <div key={g.id} role="group" aria-label={g.name}>

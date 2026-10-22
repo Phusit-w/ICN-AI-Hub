@@ -406,7 +406,7 @@ function NewChat({ pick, onPickChange, onSend }) {
   const greetingName = given.charAt(0).toUpperCase() + given.slice(1)
   return (
     <div className="flex min-h-0 flex-1 flex-col items-center justify-center px-1 pb-16">
-      <h1 className="mb-8 text-center text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">สวัสดี คุณ{greetingName} วันนี้ให้ช่วยอะไรดี?</h1>
+      <h1 className="mb-8 text-center text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">สวัสดี คุณ {greetingName} วันนี้ให้ช่วยอะไรดี?</h1>
       <Composer large data-tour="home-command" pick={pick} onPickChange={onPickChange} onSend={onSend} />
     </div>
   )
