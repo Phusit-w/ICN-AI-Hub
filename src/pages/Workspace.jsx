@@ -22,7 +22,8 @@ import Feedback from '../components/run/Feedback'
 import ComposerPick, { pickFromParams, usePick } from '../components/run/ComposerPick'
 import { userById } from '../data/catalog'
 import PlanCard from './workspace-prototype/PlanCard'
-import { useVariant } from './workspace-prototype/PrototypeSwitcher'
+import { useCube, useVariant } from './workspace-prototype/PrototypeSwitcher'
+import AgentCube from '../components/agents/AgentCube'
 import { artifactMeta } from './workspace-prototype/artifactMeta'
 import logo from '../assets/icn-logo.png'
 
@@ -193,7 +194,6 @@ function AssistantMessage({ run, latest, onShowSteps }) {
 
   return (
     <div className="flex gap-3">
-      <img src={logo} alt="" className="size-8 shrink-0 rounded-full ring-1 ring-slate-200" />
       <div className="min-w-0 flex-1 space-y-3 pt-1">
         {run.sensitive && <SensitiveNote />}
 
@@ -223,11 +223,18 @@ function AssistantMessage({ run, latest, onShowSteps }) {
 
 /** Variant B: the Thread only talks; the Plan, progress and result live in the work area (Desk) beside it. */
 function DeskNote({ run, selected, onOpen }) {
+  const { state } = useStore()
+  const [cubeOn] = useCube()
   const chat = isChatRun(run)
+  // the Agent speaking: the one the Run was started with, else the step now under way (a plain chat has none)
+  const step = run.steps[Math.min(run.current, run.steps.length - 1)]
+  const agent = state.agents.find((a) => a.id === (run.agentId ?? step?.agentId)) ?? { id: 'icn-assistant', kind: step?.kind }
   const final = run.status === 'completed' ? finalStep(run) : null
   return (
     <div className="flex gap-3">
-      <img src={logo} alt="" className="size-8 shrink-0 rounded-full ring-1 ring-slate-200" />
+      {cubeOn
+        ? <span className="shrink-0"><AgentCube agent={agent} size={32} calm thinking={run.status === 'running'} /></span>
+        : <img src={logo} alt="" className="size-8 shrink-0 rounded-full ring-1 ring-slate-200" />}
       <div className="min-w-0 flex-1 space-y-2.5 pt-1">
         {run.sensitive && <SensitiveNote />}
         {chat ? (
