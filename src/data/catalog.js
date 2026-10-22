@@ -15,7 +15,7 @@ export const DEPARTMENTS = [
 export const deptById = (id) => DEPARTMENTS.find((d) => d.id === id) ?? DEPARTMENTS[0]
 
 export const USERS = {
-  'u-kanya': { id: 'u-kanya', name: 'Kanya S.', title: 'Sales Manager', dept: 'sales' },
+  'u-kanya': { id: 'u-kanya', name: 'somchai.a', title: 'Sales Manager', dept: 'sales' },
   'u-thanawat': { id: 'u-thanawat', name: 'Thanawat P.', title: 'Presales Lead', dept: 'sales' },
   'u-arisa': { id: 'u-arisa', name: 'Arisa M.', title: 'HR Business Partner', dept: 'hr' },
   'u-nok': { id: 'u-nok', name: 'Nok J.', title: 'Senior Accountant', dept: 'accounting' },
@@ -24,7 +24,7 @@ export const USERS = {
   'u-wichai': { id: 'u-wichai', name: 'Wichai N.', title: 'Project Manager', dept: 'project' },
   'u-malee': { id: 'u-malee', name: 'Malee P.', title: 'Maintenance Supervisor', dept: 'maintenance' },
   'u-sudarat': { id: 'u-sudarat', name: 'Sudarat K.', title: 'Executive Secretary', dept: 'exec' },
-  'u-kittipong': { id: 'u-kittipong', name: 'Kittipong W.', title: 'IT Administrator', dept: 'it' },
+  'u-kittipong': { id: 'u-kittipong', name: 'somlaew.b', title: 'IT Administrator', dept: 'it' },
 }
 export const CURRENT_USER_ID = 'u-kanya'
 /** Whose eyes each view looks through: the User view is the current user, the Admin view is the IT Admin. */

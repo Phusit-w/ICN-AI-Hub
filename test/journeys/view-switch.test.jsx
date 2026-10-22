@@ -17,7 +17,7 @@ async function switchTo(app, view) {
 describe('Switching between the User and Admin views', () => {
   it('opens in the User view: the current user at the bottom of the sidebar and no governance menu', () => {
     startJourney()
-    expect(profile()).toHaveTextContent('Kanya S.')
+    expect(profile()).toHaveTextContent('somchai.a')
     expect(profile()).toHaveTextContent('Sales Manager')
     expect(menuItems()).not.toContain(GOVERNANCE)
   })
@@ -25,13 +25,13 @@ describe('Switching between the User and Admin views', () => {
   it('the profile menu switches to the Admin view: the Admin persona and the governance menu appear', async () => {
     const app = startJourney()
     await switchTo(app, 'admin')
-    expect(profile()).toHaveTextContent('Kittipong W.')
+    expect(profile()).toHaveTextContent('somlaew.b')
     expect(profile()).toHaveTextContent('IT Administrator')
     expect(menuItems()).toContain(GOVERNANCE)
     expect(app.url()).toBe('/workspace')
 
     await switchTo(app, 'user')
-    expect(profile()).toHaveTextContent('Kanya S.')
+    expect(profile()).toHaveTextContent('somchai.a')
     expect(menuItems()).not.toContain(GOVERNANCE)
   })
 
@@ -47,7 +47,7 @@ describe('Switching between the User and Admin views', () => {
     await switchTo(app, 'admin')
     cleanup()
     startJourney()
-    expect(profile()).toHaveTextContent('Kittipong W.')
+    expect(profile()).toHaveTextContent('somlaew.b')
     expect(menuItems()).toContain(GOVERNANCE)
   })
 

@@ -59,8 +59,8 @@ export const POLICIES = [
 
 export const AUDIT_LOG = [
   { time: '14:32', user: 'Nok J.', action: 'ส่งงานที่มีข้อมูล Confidential', result: 'Routed → ICN Local AI', tone: 'info' },
-  { time: '14:05', user: 'Thanawat P.', action: 'ขอแชร์ Sales Proposal Agent v1.3 ระดับบริษัท', result: 'อนุมัติโดย Kittipong W.', tone: 'success' },
+  { time: '14:05', user: 'Thanawat P.', action: 'ขอแชร์ Sales Proposal Agent v1.3 ระดับบริษัท', result: 'อนุมัติโดย somlaew.b', tone: 'success' },
   { time: '13:48', user: 'Wichai N.', action: 'พยายามส่งไฟล์เงินเดือนไป Cloud Model', result: 'Blocked by policy p3', tone: 'danger' },
-  { time: '11:20', user: 'Kittipong W.', action: 'เพิ่ม Company Email Draft ให้ IT Support Agent', result: 'บันทึกเวอร์ชัน 1.3', tone: 'neutral' },
-  { time: '09:02', user: 'Kittipong W.', action: 'ได้รับแจ้ง: งบฝ่าย Sales ใช้ไปแล้ว 90% ของเดือน', result: 'แจ้งเตือนแอดมิน', tone: 'warning' },
+  { time: '11:20', user: 'somlaew.b', action: 'เพิ่ม Company Email Draft ให้ IT Support Agent', result: 'บันทึกเวอร์ชัน 1.3', tone: 'neutral' },
+  { time: '09:02', user: 'somlaew.b', action: 'ได้รับแจ้ง: งบฝ่าย Sales ใช้ไปแล้ว 90% ของเดือน', result: 'แจ้งเตือนแอดมิน', tone: 'warning' },
 ]

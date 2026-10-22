@@ -27,7 +27,7 @@ describe('Governance: the most useful Agents this month', () => {
     expect(top[0]).toHaveTextContent('มีประโยชน์ 95% จาก 43 ครั้ง')
     expect(top[1]).toHaveTextContent('Sales & Marketing')
     // Who made them is not shown: no person ranking.
-    expect(within(panel).queryByText(/Kittipong W\.|Ploy|Thanawat|Wichai|Arisa/)).toBeNull()
+    expect(within(panel).queryByText(/somlaew.b|Ploy|Thanawat|Wichai|Arisa/)).toBeNull()
   })
 
   it('an Agent in the list opens its page', async () => {
