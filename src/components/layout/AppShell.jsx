@@ -14,6 +14,8 @@ import MenuButton from '../ui/Menu'
 import EntityIcon from '../agents/EntityIcon'
 import { SearchInput } from '../ui/Form'
 import { HelpButton } from './Help'
+import SearchPopup from './SearchPopup'
+import { useVariant } from '../../pages/workspace-prototype/PrototypeSwitcher'
 import { useTour } from '../tour/Tour'
 import logo from '../../assets/icn-logo.png'
 
@@ -128,18 +130,20 @@ function ChatHistory({ onNavigate }) {
  * the chat history filling the middle, and the user at the bottom.
  * `collapsed` shrinks it to an icon rail without the history; labels move into tooltips. Only the desktop sidebar collapses.
  */
-function Sidebar({ onNavigate, collapsed = false, onToggle, onSearch, focusSearch = false }) {
+function Sidebar({ onNavigate, collapsed = false, onToggle, onSearch, focusSearch = false, searchTop = false }) {
   const { state } = useStore()
   const nav = NAV.filter((group) => !group.adminOnly || isAdminView(state))
   const { pathname, search } = useLocation()
   const onNewChat = pathname === '/workspace' && !new URLSearchParams(search).has('run')
   return (
     <div className={cn('flex h-full flex-col py-3', collapsed ? 'px-2' : 'px-3')}>
-      <div className={cn('flex items-center', collapsed ? 'flex-col gap-2' : 'justify-between pl-2')}>
-        <Link to="/workspace" onClick={onNavigate} title="ICN AI Hub" className="flex items-center gap-2.5">
+      {/* PROTOTYPE variant B (`searchTop`): the logo alone, then the search field, then the collapse button. */}
+      <div className={cn('flex items-center', collapsed ? 'flex-col gap-2' : searchTop ? 'gap-2 pl-2' : 'justify-between pl-2', searchTop && !onToggle && 'pr-9')}>
+        <Link to="/workspace" onClick={onNavigate} title="ICN AI Hub" className="flex shrink-0 items-center gap-2.5">
           <img src={logo} alt="ICN" className="size-8 rounded-lg ring-1 ring-slate-200" />
-          {!collapsed && <span className="text-sm font-semibold text-slate-900">ICN AI Hub</span>}
+          {!collapsed && !searchTop && <span className="text-sm font-semibold text-slate-900">ICN AI Hub</span>}
         </Link>
+        {searchTop && !collapsed && <SearchPopup onNavigate={onNavigate} />}
         {onToggle && (
           <button
             type="button" onClick={onToggle} aria-label={collapsed ? 'ขยายแถบเมนู' : 'ย่อแถบเมนู'} title={collapsed ? 'ขยายแถบเมนู' : 'ย่อแถบเมนู'}
@@ -156,9 +160,11 @@ function Sidebar({ onNavigate, collapsed = false, onToggle, onSearch, focusSearc
         >
           <SquarePen className="size-[18px]" aria-hidden />{!collapsed && 'แชตใหม่'}
         </Link>
-        {collapsed
-          ? <button type="button" onClick={onSearch} aria-label="ค้นหา" title="ค้นหา" className={cn(itemClass(false), 'w-full justify-center py-2')}><Search className="size-[18px]" /></button>
-          : <GlobalSearch onNavigate={onNavigate} autoFocus={focusSearch} />}
+        {searchTop
+          ? collapsed && <SearchPopup compact onNavigate={onNavigate} />
+          : collapsed
+            ? <button type="button" onClick={onSearch} aria-label="ค้นหา" title="ค้นหา" className={cn(itemClass(false), 'w-full justify-center py-2')}><Search className="size-[18px]" /></button>
+            : <GlobalSearch onNavigate={onNavigate} autoFocus={focusSearch} />}
       </div>
 
       <nav className={cn('mt-4', collapsed ? 'space-y-3' : 'space-y-4')} aria-label="Main">
@@ -240,6 +246,8 @@ export default function AppShell() {
   const { pathname } = useLocation()
   const [collapsed, setCollapsed] = usePersistentState('icn.sidebar.collapsed', false)
   const [focusSearch, setFocusSearch] = useState(false)
+  const [variant] = useVariant() // PROTOTYPE: B moves the search into the sidebar head
+  const searchTop = variant === 'B'
   // A tour step pointing into the sidebar needs it on screen: expanded on desktop, the drawer on phones.
   const { sidebarStep } = useTour()
   const railOnly = collapsed && !sidebarStep
@@ -251,14 +259,14 @@ export default function AppShell() {
   return (
     <div className={cn('min-h-screen transition-[padding] duration-200', railOnly ? 'lg:pl-16' : 'lg:pl-64')}>
       <aside className={cn('fixed inset-y-0 left-0 z-30 hidden border-r border-slate-200 bg-slate-50 transition-[width] duration-200 lg:block', railOnly ? 'w-16' : 'w-64')}>
-        <Sidebar collapsed={railOnly} onToggle={toggle} onSearch={openSearch} focusSearch={focusSearch} />
+        <Sidebar collapsed={railOnly} onToggle={toggle} onSearch={openSearch} focusSearch={focusSearch} searchTop={searchTop} />
       </aside>
       {drawerOpen && (
         <div className="fixed inset-0 z-40 lg:hidden" role="dialog" aria-modal="true">
           <div className="absolute inset-0 bg-slate-900/30" onClick={() => setMenuOpen(false)} />
           <aside className="rise absolute inset-y-0 left-0 w-72 bg-slate-50 shadow-xl">
             <button type="button" onClick={() => setMenuOpen(false)} className="absolute top-3.5 right-3 z-10 rounded p-1.5 text-slate-500" aria-label="ปิดเมนู"><X className="size-5" /></button>
-            <Sidebar onNavigate={() => setMenuOpen(false)} />
+            <Sidebar onNavigate={() => setMenuOpen(false)} searchTop={searchTop} />
           </aside>
         </div>
       )}
@@ -270,7 +278,7 @@ export default function AppShell() {
         </button>
         <Link to="/workspace" className="flex items-center gap-2 lg:hidden">
           <img src={logo} alt="ICN" className="size-7 rounded-md ring-1 ring-slate-200" />
-          <span className="text-sm font-semibold text-slate-900">ICN AI Hub</span>
+          {!searchTop && <span className="text-sm font-semibold text-slate-900">ICN AI Hub</span>}
         </Link>
         <div className="ml-auto flex items-center gap-1">
           <HelpButton />
