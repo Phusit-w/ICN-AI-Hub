@@ -173,8 +173,8 @@ function ArtifactCard({ run, final, latest, onShowSteps }) {
   )
 }
 
-function SensitiveNote() {
-  return <p className="flex items-center gap-1.5 text-xs text-emerald-700"><ShieldCheck className="size-3.5" /> พบข้อมูล — ประมวลผลบน AI ภายในบริษัท ข้อมูลไม่ออกนอกองค์กร</p>
+function SensitiveNote({ run }) {
+  return <p className="flex items-center gap-1.5 text-xs text-emerald-700"><ShieldCheck className="size-3.5" /> พบข้อมูล{run.status === 'running' && ' · กำลังประมวลผล'}</p>
 }
 
 function Typing() {
@@ -195,7 +195,7 @@ function AssistantMessage({ run, latest, onShowSteps }) {
   return (
     <div className="flex gap-3">
       <div className="min-w-0 flex-1 space-y-3 pt-1">
-        {run.sensitive && <SensitiveNote />}
+        {run.sensitive && <SensitiveNote run={run} />}
 
         {chat && run.status === 'running' && <Typing />}
         {chat && run.status === 'completed' && (
@@ -236,7 +236,7 @@ function DeskNote({ run, selected, onOpen }) {
         ? <span className="shrink-0"><AgentCube agent={agent} size={32} calm thinking={run.status === 'running'} /></span>
         : <img src={logo} alt="" className="size-8 shrink-0 rounded-full ring-1 ring-slate-200" />}
       <div className="min-w-0 flex-1 space-y-2.5 pt-1">
-        {run.sensitive && <SensitiveNote />}
+        {run.sensitive && <SensitiveNote run={run} />}
         {chat ? (
           run.status === 'completed' ? <ArtifactView artifact={run.steps[0].output} /> : <Typing />
         ) : (

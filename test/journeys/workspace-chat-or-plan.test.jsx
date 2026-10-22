@@ -152,13 +152,13 @@ describe('Workspace: chat or Plan, decided by the system', () => {
     expect(screen.getByRole('searchbox', { name: 'ค้นหาทั้งระบบ' })).toHaveFocus()
   })
 
-  it('sensitive data still shows the internal-AI notice', async () => {
+  it('sensitive data still shows a short notice', async () => {
     const app = startJourney('/workspace')
 
     await app.type(app.box('ข้อความ'), 'สรุปเงินเดือนพนักงานฝ่ายขายเป็นรายงาน')
     await send(app)
 
-    expect(screen.getByText(/ประมวลผลบน AI ภายในบริษัท ข้อมูลไม่ออกนอกองค์กร/)).toBeVisible()
+    expect(screen.getByText(/พบข้อมูล/)).toBeVisible()
   })
 
   it('there is no chat/Workflow mode toggle', () => {
