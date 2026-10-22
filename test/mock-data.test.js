@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest'
 import { AGENTS } from '../src/data/agents'
 import { SKILLS } from '../src/data/skills'
 import { KNOWLEDGE, MODELS, TOOLS, USERS } from '../src/data/catalog'
+import { EXAMPLE_CHATS } from '../src/data/exampleChats'
+import { sheetsOf } from '../src/lib/sheets'
 import { AUDIT_LOG, DEPT_USAGE, KPIS, LAUNCH_DATE, MODEL_USAGE, MONTHLY_COST } from '../src/data/governance'
 
 // Ticket 05, seam 2: the mock data tells one story, ICN about 3 months after launch with ~25 Users of ~60 staff.
@@ -116,6 +118,27 @@ describe('Mock data: Agents with Steps instead of Workflows', () => {
       for (const id of a.steps) {
         expect(byId(id), `${a.id} → ${id}`).toBeDefined()
         expect(byId(id).steps, `${a.id} → ${id}`).toEqual([])
+      }
+    }
+  })
+})
+
+// Real example chats, seam 2: each scripted Thread points at an existing Agent and carries a well-formed table.
+describe('Mock data: example chats from real work', () => {
+  it('every example chat is by an existing Agent without Steps', () => {
+    for (const chat of EXAMPLE_CHATS) {
+      const agent = AGENTS.find((a) => a.id === chat.agentId)
+      expect(agent, chat.title).toBeDefined()
+      expect(agent.steps ?? [], chat.title).toHaveLength(0)
+    }
+  })
+
+  it('every table Artifact has columns and rows, each row as wide as its columns', () => {
+    for (const { output, title } of EXAMPLE_CHATS) {
+      for (const sheet of sheetsOf(output)) {
+        expect(sheet.columns.length, `${title}: ${sheet.name}`).toBeGreaterThan(0)
+        expect(sheet.rows.length, `${title}: ${sheet.name}`).toBeGreaterThan(0)
+        for (const row of sheet.rows) expect(row, `${title}: ${sheet.name}`).toHaveLength(sheet.columns.length)
       }
     }
   })

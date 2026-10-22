@@ -1,5 +1,7 @@
 import { CircleAlert, CircleCheck } from 'lucide-react'
 import logo from '../../assets/icn-logo.png'
+import Tabs from '../ui/Tabs'
+import { hasMarks, MARK_COLUMN, sheetsOf } from '../../lib/sheets'
 
 /** The company name on the letterhead, as on ICN's organization chart. */
 const COMPANY_NAME = 'Information and Communication Networks Public Company Limited'
@@ -30,6 +32,43 @@ function Diagram({ nodes }) {
   )
 }
 
+function SheetTable({ sheet }) {
+  return (
+    <div className="overflow-x-auto rounded-lg border border-slate-200">
+      <table className="w-full text-sm">
+        <thead className="bg-slate-50 text-left text-xs text-slate-500">
+          <tr>
+            {sheet.columns.map((c) => <th key={c} className="px-3 py-2 font-medium">{c}</th>)}
+            {hasMarks(sheet) && <th className="px-3 py-2 font-medium">{MARK_COLUMN}</th>}
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-slate-100">
+          {sheet.rows.map((r, i) => (
+            <tr key={i} className={sheet.marks?.[i] ? 'bg-amber-50' : undefined}>
+              {r.map((c, j) => <td key={j} className="px-3 py-2 text-slate-700">{c}</td>)}
+              {hasMarks(sheet) && <td className="px-3 py-2 text-xs font-medium text-amber-700">{sheet.marks[i]}</td>}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+/** A table Artifact: one sheet as a plain table, several as tabs; a note, if any, sits under the table. */
+function TableArtifact({ artifact }) {
+  const sheets = sheetsOf(artifact)
+  return (
+    <div className="space-y-3">
+      {artifact.summary && <p className="text-sm font-medium text-slate-800">{artifact.summary}</p>}
+      {sheets.length === 1
+        ? <SheetTable sheet={sheets[0]} />
+        : <Tabs label="แท็บของตาราง" tabs={sheets.map((s) => ({ id: s.name, label: s.name, content: <SheetTable sheet={s} /> }))} />}
+      {artifact.note && <p className="text-xs leading-relaxed text-slate-500">หมายเหตุ: {artifact.note}</p>}
+    </div>
+  )
+}
+
 /** Renders a mock agent output according to its type. */
 export default function ArtifactView({ artifact }) {
   switch (artifact.type) {
@@ -47,18 +86,8 @@ export default function ArtifactView({ artifact }) {
         </ul>
       )
     case 'table':
-      return (
-        <div className="overflow-x-auto rounded-lg border border-slate-200">
-          <table className="w-full text-sm">
-            <thead className="bg-slate-50 text-left text-xs text-slate-500">
-              <tr>{artifact.columns.map((c) => <th key={c} className="px-3 py-2 font-medium">{c}</th>)}</tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {artifact.rows.map((r) => <tr key={r[0]}>{r.map((c, i) => <td key={i} className="px-3 py-2 text-slate-700">{c}</td>)}</tr>)}
-            </tbody>
-          </table>
-        </div>
-      )
+      return <TableArtifact artifact={artifact} />
+
     case 'doc':
       // Only documents carry the letterhead, as a real one would; tables, images and chat answers don't.
       return (

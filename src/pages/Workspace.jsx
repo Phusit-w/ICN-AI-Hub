@@ -25,6 +25,7 @@ import PlanCard from './workspace-prototype/PlanCard'
 import { useCube, useVariant } from './workspace-prototype/PrototypeSwitcher'
 import AgentCube from '../components/agents/AgentCube'
 import { artifactMeta } from './workspace-prototype/artifactMeta'
+import { downloadExcel } from '../lib/sheets'
 import logo from '../assets/icn-logo.png'
 
 // Variant B types these out over the empty new-chat composer, so a newcomer sees what to ask. A module constant: the hint restarts if it changes.
@@ -107,15 +108,28 @@ function StepChips({ steps, onRemove }) {
   )
 }
 
+/** A table Artifact downloads as a real .xlsx; any other kind is still a simulated download. */
+function useDownload(output) {
+  const { actions } = useStore()
+  const table = output?.type === 'table'
+  return {
+    label: table ? 'ดาวน์โหลด Excel' : 'ดาวน์โหลด',
+    run: table
+      ? () => downloadExcel(output).catch(() => actions.toast('ดาวน์โหลดไม่สำเร็จ ลองอีกครั้ง', { tone: 'warning' }))
+      : () => actions.toast('ดาวน์โหลดไฟล์เรียบร้อย (จำลอง)'),
+  }
+}
+
 /**
  * Under a finished Artifact, for chat and multi-Agent Runs alike: "ดาวน์โหลด" first, "บันทึกไว้ใช้ซ้ำ" beside it,
  * the rest in "⋯", then 👍/👎 Feedback. Only the latest Run's download is brand-coloured, so the page keeps one primary button.
  */
 function ArtifactActions({ run, latest, onShowSteps }) {
   const { actions } = useStore()
+  const download = useDownload(finalStep(run)?.output)
   return (
     <div role="group" aria-label="การทำงานกับผลงาน" className="flex flex-wrap items-center gap-1.5">
-      <Button size="sm" variant={latest ? 'primary' : 'secondary'} icon={Download} onClick={() => actions.toast('ดาวน์โหลดไฟล์เรียบร้อย (จำลอง)')}>ดาวน์โหลด</Button>
+      <Button size="sm" variant={latest ? 'primary' : 'secondary'} icon={Download} onClick={download.run}>{download.label}</Button>
       <SaveForReuse run={run} />
       <Menu items={[
         { label: 'คัดลอก', icon: Copy, onSelect: () => actions.toast('คัดลอกแล้ว') },
@@ -147,6 +161,7 @@ function ArtifactHeader({ output }) {
  */
 function ArtifactCard({ run, final, latest, onShowSteps, onOpen, opened }) {
   const { actions } = useStore()
+  const download = useDownload(final.output)
   return (
     <div className="rounded-2xl border border-slate-200 bg-white shadow-xs">
       <div className="flex items-center gap-3 p-4">
@@ -156,7 +171,7 @@ function ArtifactCard({ run, final, latest, onShowSteps, onOpen, opened }) {
             ? <span className="px-2 text-sm text-slate-500">เปิดอยู่ด้านขวา</span>
             : <Button variant={latest ? 'primary' : 'secondary'} icon={Eye} onClick={onOpen}>เปิดผลงาน</Button>}
           <Menu items={[
-            { label: 'ดาวน์โหลด', icon: Download, onSelect: () => actions.toast('ดาวน์โหลดไฟล์เรียบร้อย (จำลอง)') },
+            { label: download.label, icon: Download, onSelect: download.run },
             { label: 'แชร์', icon: Share2, onSelect: () => actions.toast('คัดลอกลิงก์สำหรับแชร์แล้ว') },
             { label: 'ดูขั้นตอน', icon: ListChecks, onSelect: onShowSteps },
           ]} />
@@ -220,7 +235,7 @@ function AssistantMessage({ run, latest, onShowSteps, docRunId, onOpenDoc }) {
         {!chat && run.status === 'completed' && (
           <>
             <p className="text-[15px] text-slate-700">
-              เสร็จแล้ว — Agent {run.steps.length} ตัวช่วยกันทำ{loops > 0 && ` (ระหว่างทางตรวจพบข้อมูลไม่ครบ จึงส่งกลับไปแก้ ${loops} ครั้ง)`}
+              เสร็จแล้ว{run.steps.length > 1 && ` — Agent ${run.steps.length} ตัวช่วยกันทำ`}{loops > 0 && ` (ระหว่างทางตรวจพบข้อมูลไม่ครบ จึงส่งกลับไปแก้ ${loops} ครั้ง)`}
             </p>
             {final && <ArtifactCard run={run} final={final} latest={latest} onShowSteps={onShowSteps} onOpen={onOpenDoc} opened={docRunId === run.id} />}
           </>
