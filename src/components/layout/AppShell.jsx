@@ -18,6 +18,7 @@ import SearchPopup from './SearchPopup'
 import { useVariant } from '../../pages/workspace-prototype/PrototypeSwitcher'
 import { useTour } from '../tour/Tour'
 import logo from '../../assets/icn-logo.png'
+import logoClear from '../../assets/icn-logo-clear.png' // PROTOTYPE variant B: the same logo with its pale-blue square made transparent
 
 const NAV = [
   { section: 'งานของฉัน', items: [
@@ -140,7 +141,7 @@ function Sidebar({ onNavigate, collapsed = false, onToggle, onSearch, focusSearc
       {/* PROTOTYPE variant B (`searchTop`): the logo alone, then the search icon beside the collapse button. */}
       <div className={cn('flex items-center', collapsed ? 'flex-col gap-2' : searchTop ? 'gap-2 pl-2' : 'justify-between pl-2', searchTop && !onToggle && 'pr-9')}>
         <Link to="/workspace" onClick={onNavigate} title="ICN AI Hub" className="flex shrink-0 items-center gap-2.5">
-          <img src={logo} alt="ICN" className="size-8 rounded-lg ring-1 ring-slate-200" />
+          <img src={searchTop ? logoClear : logo} alt="ICN" className={cn('size-8', !searchTop && 'rounded-lg ring-1 ring-slate-200')} />
           {!collapsed && !searchTop && <span className="text-sm font-semibold text-slate-900">ICN AI Hub</span>}
         </Link>
         {searchTop && !collapsed && <span className="ml-auto w-9"><SearchPopup compact onNavigate={onNavigate} /></span>}
@@ -277,7 +278,7 @@ export default function AppShell() {
           <Menu className="size-5" />
         </button>
         <Link to="/workspace" className="flex items-center gap-2 lg:hidden">
-          <img src={logo} alt="ICN" className="size-7 rounded-md ring-1 ring-slate-200" />
+          <img src={searchTop ? logoClear : logo} alt="ICN" className={cn('size-7', !searchTop && 'rounded-md ring-1 ring-slate-200')} />
           {!searchTop && <span className="text-sm font-semibold text-slate-900">ICN AI Hub</span>}
         </Link>
         <div className="ml-auto flex items-center gap-1">
