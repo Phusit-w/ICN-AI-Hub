@@ -179,7 +179,7 @@ function AuditTab() {
 }
 
 const USEFUL_AGENTS = 'Agent ที่มีประโยชน์ที่สุดเดือนนี้'
-const KIND_LABEL = { agent: 'ผู้ช่วย', skill: 'ทักษะ' }
+const KIND_LABEL = { agent: 'Agent', skill: 'ทักษะ' }
 
 /** Company sharing requests waiting for the Admin: approve to share with everyone, or send back to stay at department. */
 function ShareRequestsTab() {
@@ -187,7 +187,7 @@ function ShareRequestsTab() {
   if (!state.shareRequests.length) {
     return (
       <EmptyState icon={Building2} title="ไม่มีคำขอแชร์ทั้งบริษัทที่รออยู่">
-        เมื่อมีคนขอแชร์ผู้ช่วยหรือทักษะให้ทั้งบริษัท คำขอจะแสดงที่นี่ให้อนุมัติ
+        เมื่อมีคนขอแชร์ Agent หรือทักษะให้ทั้งบริษัท คำขอจะแสดงที่นี่ให้อนุมัติ
       </EmptyState>
     )
   }

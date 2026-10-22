@@ -87,7 +87,7 @@ export function planRequest(prompt, { agents, agentId }) {
   const sensitive = isSensitive(prompt)
   const withSteps = agents.find((a) => a.id === (agentId ?? STEPS_RULES.find(([re]) => re.test(prompt))?.[1]))
   if (withSteps && hasSteps(withSteps)) {
-    const reason = agentId ? `ใช้ผู้ช่วย "${withSteps.name}" ที่คุณเลือก ทำตาม ${stepsLabel(withSteps)}` : `ตรงกับผู้ช่วย "${withSteps.name}" ที่ใช้กันในบริษัท`
+    const reason = agentId ? `ใช้ Agent "${withSteps.name}" ที่คุณเลือก ทำตาม ${stepsLabel(withSteps)}` : `ตรงกับ Agent "${withSteps.name}" ที่ใช้กันในบริษัท`
     return { sensitive, agentId: withSteps.id, reason, steps: stepsFor(stepAgents(withSteps, agents), sensitive) }
   }
 

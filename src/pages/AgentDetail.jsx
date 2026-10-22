@@ -35,7 +35,7 @@ export default function AgentDetail() {
   const { state, actions } = useStore()
   const agent = state.agents.find((a) => a.id === id)
   if (!agent) {
-    return <EmptyState title="ไม่พบผู้ช่วยนี้" action={<Button to="/agents">กลับไป Agent Library</Button>} />
+    return <EmptyState title="ไม่พบ Agent นี้" action={<Button to="/agents">กลับไป Agent Library</Button>} />
   }
   const model = modelById(agent.model)
   const owner = userById(agent.owner)
@@ -89,7 +89,7 @@ export default function AgentDetail() {
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
-          <Section title="ผู้ช่วยนี้ทำอะไร" icon={FileText}>
+          <Section title="Agent นี้ทำอะไร" icon={FileText}>
             <p className="text-sm leading-relaxed text-slate-600">{agent.description}</p>
             {agent.examples.length > 0 && (
               <>
@@ -150,7 +150,7 @@ export default function AgentDetail() {
               <p className="mt-3 text-xs text-slate-500">แต่ละขั้นรับผลงานจากขั้นก่อนหน้า แล้วส่งต่อตามลำดับ</p>
             </Section>
           ) : (
-            <Section title="ผู้ช่วยที่ใช้ผู้ช่วยนี้เป็นขั้นตอน" icon={ListOrdered}>
+            <Section title="Agent ที่ใช้ Agent นี้เป็นขั้นตอน" icon={ListOrdered}>
               {usedBy.length ? (
                 <ul className="divide-y divide-slate-100">
                   {usedBy.map((a) => (
@@ -160,7 +160,7 @@ export default function AgentDetail() {
                     </li>
                   ))}
                 </ul>
-              ) : <p className="text-sm text-slate-500">ยังไม่ถูกใช้เป็นขั้นตอนของผู้ช่วยตัวอื่น</p>}
+              ) : <p className="text-sm text-slate-500">ยังไม่ถูกใช้เป็นขั้นตอนของ Agent ตัวอื่น</p>}
             </Section>
           )}
 
@@ -215,7 +215,7 @@ export default function AgentDetail() {
           </Section>
 
           {runs.length > 0 && (
-            <Section title="งานล่าสุดที่ใช้ผู้ช่วยนี้">
+            <Section title="งานล่าสุดที่ใช้ Agent นี้">
               <ul className="space-y-2">
                 {runs.map((r) => <li key={r.id}><Link to={`/workspace?run=${r.id}`} className="block truncate text-sm text-slate-700 hover:text-brand-700">{r.title}</Link></li>)}
               </ul>

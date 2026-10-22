@@ -54,7 +54,7 @@ export default function BuilderChat({ messages, onSend, initialText = '' }) {
       </ol>
       <form onSubmit={(e) => { e.preventDefault(); send() }} className="relative m-3 mt-0 flex items-end gap-1 rounded-[24px] border border-slate-300 bg-white p-1.5 focus-within:border-brand-400 focus-within:ring-4 focus-within:ring-brand-100">
         {options.length > 0 && (
-          <ul role="listbox" aria-label="เรียกผู้ช่วยมาช่วยเขียน" className="absolute bottom-full left-0 z-20 mb-1 max-h-60 w-72 overflow-y-auto rounded-xl border border-slate-200 bg-white p-1 shadow-xl">
+          <ul role="listbox" aria-label="เรียก Agent มาช่วยเขียน" className="absolute bottom-full left-0 z-20 mb-1 max-h-60 w-72 overflow-y-auto rounded-xl border border-slate-200 bg-white p-1 shadow-xl">
             {options.map((a, i) => (
               <li
                 key={a.id} role="option" aria-selected={i === activeIndex}
@@ -66,11 +66,11 @@ export default function BuilderChat({ messages, onSend, initialText = '' }) {
         )}
         <textarea
           ref={box} value={text} onChange={(e) => edit(e.target.value)} onKeyDown={onKeyDown} rows={1} aria-label="ข้อความถึง AI"
-          placeholder="เล่าว่าอยากได้ผู้ช่วยแบบไหน หรือพิมพ์ @ เรียกผู้ช่วยที่มีอยู่"
+          placeholder="เล่าว่าอยากได้ Agent แบบไหน หรือพิมพ์ @ เรียก Agent ที่มีอยู่"
           className="block max-h-40 min-h-10 min-w-0 flex-1 resize-none self-center bg-transparent px-2.5 py-2 text-[15px] placeholder:text-slate-400 focus:outline-none [field-sizing:content]"
         />
         <MicButton onText={(said) => edit(text.trim() ? `${text.trimEnd()} ${said}` : said)} />
-        {/* Dark, not brand: the page's one primary button is "สร้างผู้ช่วย". */}
+        {/* Dark, not brand: the page's one primary button is "สร้าง Agent". */}
         <button type="submit" disabled={!text.trim()} aria-label="ส่ง" className="flex size-10 shrink-0 items-center justify-center rounded-full bg-slate-800 text-white transition hover:bg-slate-900 disabled:bg-slate-200 disabled:text-slate-400">
           <ArrowUp className="size-5" />
         </button>

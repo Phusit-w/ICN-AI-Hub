@@ -21,12 +21,12 @@ export default function StepsField({ steps, onChange }) {
   }
 
   return (
-    <Field label={`ขั้นตอน (${steps.length})`} hint="ไม่บังคับ — ใส่เมื่องานต้องส่งต่อให้ผู้ช่วยตัวอื่นทำทีละขั้น ตามลำดับจากบนลงล่าง">
+    <Field label={`ขั้นตอน (${steps.length})`} hint="ไม่บังคับ — ใส่เมื่องานต้องส่งต่อให้ Agent ตัวอื่นทำทีละขั้น ตามลำดับจากบนลงล่าง">
       {steps.length > 0 && (
         <ol aria-label="ขั้นตอน" className="space-y-2">
           {steps.map((id, i) => {
             const agent = state.agents.find((a) => a.id === id)
-            const name = agent?.name ?? 'ผู้ช่วยในขั้นตอนถูกลบแล้ว'
+            const name = agent?.name ?? 'Agent ในขั้นตอนถูกลบแล้ว'
             return (
               // Steps may repeat an Agent, so a row is its position.
               <li key={`${i}-${id}`} className="flex items-center gap-3 rounded-xl bg-slate-50 px-3 py-2">

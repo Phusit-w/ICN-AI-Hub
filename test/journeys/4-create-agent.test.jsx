@@ -10,14 +10,14 @@ describe('Journey 4: create an Agent', () => {
     const app = startJourney()
 
     await app.click(within(mainMenu()).getByRole('link', { name: /AI Agent/ }))
-    await app.click(screen.getByRole('link', { name: 'สร้างผู้ช่วย' }))
-    expect(screen.getByText(/อยากได้ผู้ช่วยแบบไหน/, { selector: 'p' })).toBeVisible()
+    await app.click(screen.getByRole('link', { name: 'สร้าง Agent' }))
+    expect(screen.getByText(/อยากได้ Agent แบบไหน/, { selector: 'p' })).toBeVisible()
     await app.type(app.box('ข้อความถึง AI'), 'ช่วยร่างอีเมลตอบลูกค้าที่ร้องเรียนเรื่องส่งของช้า{Enter}')
 
     expect(app.box('ชื่อ')).not.toHaveValue('')
     expect(app.box('คำอธิบาย')).toHaveValue('ช่วยร่างอีเมลตอบลูกค้าที่ร้องเรียนเรื่องส่งของช้า')
     expect(app.box('คำสั่ง').value).toContain('ช่วยร่างอีเมลตอบลูกค้า')
-    await app.click(screen.getByRole('button', { name: 'สร้างผู้ช่วย' }))
+    await app.click(screen.getByRole('button', { name: 'สร้าง Agent' }))
 
     expect(app.url()).toMatch(/^\/agents\/(?!new)/)
     expect(screen.getByText(/^สร้าง .+ แล้ว/)).toBeVisible()
@@ -38,14 +38,14 @@ describe('Journey 4: create an Agent', () => {
     const app = startJourney('/agents/new')
     await app.type(app.box('ข้อความถึง AI'), 'ตอบคำถามเรื่องวันลา{Enter}')
 
-    await app.type(app.box('ชื่อ'), '{Control>}a{/Control}ผู้ช่วยวันลา')
+    await app.type(app.box('ชื่อ'), '{Control>}a{/Control}Agent วันลา')
     await app.type(app.box('คำอธิบาย'), '{Control>}a{/Control}ตอบเรื่องวันลาของพนักงาน')
-    expect(app.box('ชื่อ')).toHaveValue('ผู้ช่วยวันลา')
+    expect(app.box('ชื่อ')).toHaveValue('Agent วันลา')
 
     await app.type(app.box('คำสั่ง'), '{Control>}a{/Control}ตอบให้สั้นที่สุด')
     await app.click(screen.getByRole('button', { name: /ให้ AI ช่วยเขียน/ }))
     expect(app.box('คำสั่ง').value).not.toBe('ตอบให้สั้นที่สุด')
-    expect(app.box('คำสั่ง').value).toContain('ผู้ช่วยวันลา')
+    expect(app.box('คำสั่ง').value).toContain('Agent วันลา')
     expect(app.box('คำสั่ง').value).toContain('ตอบให้สั้นที่สุด') // what the user wrote is kept
   })
 
@@ -63,7 +63,7 @@ describe('Journey 4: create an Agent', () => {
     expect(screen.queryByRole('list', { name: 'ขั้นตอน' })).toBeNull()
 
     await app.click(screen.getByRole('button', { name: /ให้ AI ช่วยเขียน/ }))
-    await app.click(screen.getByRole('button', { name: 'สร้างผู้ช่วย' }))
+    await app.click(screen.getByRole('button', { name: 'สร้าง Agent' }))
     expect(app.url()).toMatch(/^\/agents\/(?!new)/)
     expectWithinBudget(app, 3)
   })
@@ -79,7 +79,7 @@ describe('Journey 4: create an Agent', () => {
   it('the builder chat does not go into the chat history', async () => {
     const app = startJourney('/agents/new')
     await app.type(app.box('ข้อความถึง AI'), 'สรุปรายงานประชุมโครงการ{Enter}')
-    await app.click(screen.getByRole('button', { name: 'สร้างผู้ช่วย' }))
+    await app.click(screen.getByRole('button', { name: 'สร้าง Agent' }))
 
     expect(within(screen.getAllByRole('navigation', { name: 'ประวัติแชต' })[0]).queryByText(/สรุปรายงานประชุมโครงการ/)).toBeNull()
   })

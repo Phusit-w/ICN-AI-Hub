@@ -10,7 +10,7 @@ const reuseRow = () => screen.getByRole('region', { name: 'ใช้ซ้ำ' }
 
 // The system plans Research, Document, Image and Review Agents for this request.
 const PLAN_REQUEST = 'ช่วยค้นข้อมูลตลาด Solar Rooftop สรุปเป็นรายงาน และสร้างภาพประกอบ'
-const SAVED_NAME = /ผู้ช่วยช่วยค้นข้อมูลตลาด Solar Rooftop/
+const SAVED_NAME = /Agent ช่วยค้นข้อมูลตลาด Solar Rooftop/
 
 async function send(app, text) {
   await app.type(app.box('ข้อความ'), text)
@@ -87,7 +87,7 @@ describe('Save for reuse after a one-Agent Run', () => {
     await saveForReuse(app)
     await app.click(newChatLink())
 
-    const saved = within(reuseRow()).getByRole('button', { name: /ผู้ช่วยสรุปจุดขายของระบบ Smart Warehouse/ })
+    const saved = within(reuseRow()).getByRole('button', { name: /Agent สรุปจุดขายของระบบ Smart Warehouse/ })
     expect(saved).toBeVisible()
     expect(saved).not.toHaveTextContent(/ขั้นตอน/)
   })

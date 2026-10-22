@@ -19,7 +19,7 @@ _Avoid_: Node, task
 A reusable capability that any number of Agents can be given; chosen while building an Agent, not something a User goes looking for on its own.
 _Avoid_: Plugin, tool
 
-**Favourite agent** (ผู้ช่วยประจำ):
+**Favourite agent** (Agent ประจำ):
 An Agent a user has starred so it stays at hand on Home, the Agents page and the composer.
 _Avoid_: Pinned agent, bookmark
 

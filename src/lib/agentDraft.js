@@ -35,7 +35,7 @@ export function draftForm(text, agents) {
   const base = rankByMatch(agents, agentSearchText, text)[0] ?? agents.find((a) => a.id === 'agent-document') ?? agents[0]
   return {
     ...formFromAgent(base),
-    name: `ผู้ช่วย${truncate(text.trim().replace(/\s+/g, ' '), 36)}`,
+    name: `Agent ${truncate(text.trim().replace(/\s+/g, ' '), 36)}`,
     description: text.trim(),
     instruction: `${INSTRUCTION_STARTERS[base.dept] ?? INSTRUCTION_STARTERS.core}\n- งานหลัก: ${text.trim()}`,
     steps: [],
@@ -87,7 +87,7 @@ export function builderTurn(form, text, agents) {
   }
   const reply = first
     ? `ร่าง “${next.name}” ให้แล้ว${draft.based ? ` โดยเริ่มจาก ${draft.based}` : ''} ดูและแก้ได้ทางขวา อยากให้ทำอะไรเพิ่ม หรือมีอะไรที่ห้ามทำไหม`
-    : `เพิ่มในคำสั่งแล้ว: “${said}” มีอะไรอีกไหม หรือกด “สร้างผู้ช่วย” ได้เลย`
+    : `เพิ่มในคำสั่งแล้ว: “${said}” มีอะไรอีกไหม หรือกด “สร้าง Agent” ได้เลย`
   const helpedBy = mentioned.length > 0 ? ` — ใช้คำสั่งและความรู้ของ ${mentioned.map((a) => a.name).join(', ')} มาช่วยเขียนแล้ว (ไม่ได้ใส่เป็นขั้นตอน)` : ''
   return { form: next, reply: reply + helpedBy }
 }
@@ -107,7 +107,7 @@ export function writeInstruction(form) {
     .filter((l) => l && !OWN_LINE.test(l) && !ANSWER_RULES.includes(l))
     .map((l) => (l.startsWith('-') ? l : `- ${l}`)))]
   return [
-    `คุณคือ “${form.name.trim() || 'ผู้ช่วย'}” ของ ICN`,
+    `คุณคือ “${form.name.trim() || 'Agent'}” ของ ICN`,
     ...(form.description.trim() ? [`หน้าที่: ${form.description.trim()}`] : []),
     '', 'สิ่งที่ต้องทำ:', ...rules,
     '', 'รูปแบบคำตอบ:', ...ANSWER_RULES,

@@ -69,7 +69,7 @@ describe.each([
 
     expect(primaries().map((b) => b.textContent)).toEqual(['ดาวน์โหลด'])
     await app.click(screen.getByRole('button', { name: 'บันทึก' }))
-    expect(screen.getByRole('link', { name: /บันทึกเป็นผู้ช่วยแล้ว/ })).toBeVisible()
+    expect(screen.getByRole('link', { name: /บันทึกเป็น Agent แล้ว/ })).toBeVisible()
   })
 })
 

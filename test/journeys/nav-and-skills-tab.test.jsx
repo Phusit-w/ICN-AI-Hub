@@ -21,11 +21,11 @@ describe('Navigation: new chat plus a two-item menu', () => {
     expect(screen.getAllByRole('link', { name: 'แชตใหม่' })[0]).toHaveAttribute('aria-current', 'page')
   })
 
-  it('on new chat, an Agent in "ใช้ซ้ำ" is not shown again under "ผู้ช่วยของแผนกคุณ"', () => {
+  it('on new chat, an Agent in "ใช้ซ้ำ" is not shown again under "Agent ของแผนกคุณ"', () => {
     startJourney('/')
-    const names = (region) => within(region).getAllByRole('button').map((b) => b.textContent.replace(/^ผู้ช่วย /, '').replace(/·.*$/, ''))
+    const names = (region) => within(region).getAllByRole('button').map((b) => b.textContent.replace(/^Agent /, '').replace(/·.*$/, ''))
     const reuse = names(screen.getByRole('region', { name: 'ใช้ซ้ำ' }))
-    const dept = screen.queryByRole('region', { name: /ผู้ช่วยของแผนกคุณ/ })
+    const dept = screen.queryByRole('region', { name: /Agent ของแผนกคุณ/ })
     if (dept) for (const b of within(dept).getAllByRole('button')) {
       expect(reuse.some((n) => b.textContent.startsWith(n))).toBe(false)
     }
@@ -34,7 +34,7 @@ describe('Navigation: new chat plus a two-item menu', () => {
   it('the Agents page recommends only once the user says what the job is', async () => {
     const app = startJourney('/agents')
     expect(screen.queryByRole('heading', { name: 'แนะนำสำหรับงานนี้' })).toBeNull()
-    await app.type(screen.getByRole('textbox', { name: /ค้นหาผู้ช่วย/ }), 'VPN')
+    await app.type(screen.getByRole('textbox', { name: /ค้นหา Agent/ }), 'VPN')
     expect(screen.getByRole('heading', { name: 'แนะนำสำหรับงานนี้' })).toBeInTheDocument()
   })
 
@@ -79,10 +79,10 @@ describe('Navigation: new chat plus a two-item menu', () => {
 })
 
 describe('Skills have no page or tab of their own (spec story 40)', () => {
-  it('the AI Agent page has no tabs, and "＋ สร้างผู้ช่วย" is its main action', () => {
+  it('the AI Agent page has no tabs, and "＋ สร้าง Agent" is its main action', () => {
     startJourney('/agents')
     expect(screen.queryByRole('tab')).toBeNull()
-    expect(screen.getByRole('link', { name: 'สร้างผู้ช่วย' }).className).toContain('bg-brand-600')
+    expect(screen.getByRole('link', { name: 'สร้าง Agent' }).className).toContain('bg-brand-600')
   })
 
   it('an old Skills link lands on the AI Agent page', () => {
@@ -111,7 +111,7 @@ describe('Skills have no page or tab of their own (spec story 40)', () => {
 
   it('adding a Skill to several Agents still works from its detail', async () => {
     const app = startJourney('/agents?skill=skill-pricing')
-    await app.click(within(skillDialog('Pricing Calculator')).getByRole('button', { name: 'เพิ่มให้ผู้ช่วย' }))
+    await app.click(within(skillDialog('Pricing Calculator')).getByRole('button', { name: 'เพิ่มให้ Agent' }))
     const attach = screen.getByRole('dialog', { name: /เพิ่ม .Pricing Calculator. ให้ Agent/ })
     await app.click(within(attach).getByRole('button', { name: /Research Agent/ }))
     await app.click(within(attach).getByRole('button', { name: /^Document Agent/ }))
@@ -125,7 +125,7 @@ describe('Skills have no page or tab of their own (spec story 40)', () => {
     for (const name of [...within(screen.getByText(/^ทักษะ/).parentElement).queryAllByRole('button', { name: /^เอา .+ ออก$/ })]) await app.click(name)
     await app.click(screen.getByRole('button', { name: 'เพิ่มทักษะ' }))
     await app.click(screen.getByRole('menuitem', { name: 'Pricing Calculator' }))
-    await app.click(screen.getByRole('button', { name: 'สร้างผู้ช่วย' }))
+    await app.click(screen.getByRole('button', { name: 'สร้าง Agent' }))
 
     expect(screen.getAllByRole('link', { name: /Pricing Calculator/ })).toHaveLength(1)
   })

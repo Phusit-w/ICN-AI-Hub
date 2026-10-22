@@ -8,7 +8,7 @@ const SHARED = 'แชร์ให้ฉัน'
 
 const chips = () => screen.getByRole('group', { name: 'แสดงเฉพาะ' })
 const chip = (name) => within(chips()).getByRole('button', { name })
-const agentList = () => screen.getByRole('list', { name: 'รายการผู้ช่วย' })
+const agentList = () => screen.getByRole('list', { name: 'รายการ Agent' })
 
 describe('Shared items: filter chips and "ใช้งาน"', () => {
   it('the old community link lands on the Agents page with the "popular" filter on', () => {

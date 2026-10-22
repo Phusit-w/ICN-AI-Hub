@@ -5,7 +5,7 @@ import { cn } from '../../lib/utils'
 import EntityIcon from './EntityIcon'
 
 /**
- * "ผู้ช่วยของแผนกคุณ": the agents the user's department already uses, ready on day one,
+ * "Agent ของแผนกคุณ": the agents the user's department already uses, ready on day one,
  * so nobody has to build an agent or a skill before getting value. One click fills one into the composer.
  * `exclude`: agent ids already shown elsewhere on the screen (the "ใช้ซ้ำ" row), so no agent shows twice.
  */
@@ -17,7 +17,7 @@ export default function DepartmentAgents({ pick, onPick, exclude = [], max = 4 }
   return (
     <section aria-labelledby="dept-agents-title" className="text-left">
       <div className="mb-2 flex items-center justify-between">
-        <h2 id="dept-agents-title" className="text-sm font-semibold text-slate-900">ผู้ช่วยของแผนกคุณ <span className="font-normal text-slate-500">· {dept.th}</span></h2>
+        <h2 id="dept-agents-title" className="text-sm font-semibold text-slate-900">Agent ของแผนกคุณ <span className="font-normal text-slate-500">· {dept.th}</span></h2>
         <Link to="/agents" className="text-xs font-medium text-brand-700 hover:underline">ดูทุกแผนก</Link>
       </div>
       <ul className="grid gap-2 sm:grid-cols-2">

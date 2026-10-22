@@ -43,7 +43,7 @@ function SkillDetail({ skill, onClose, onAttach }) {
   const usedBy = state.agents.filter((a) => a.skills.includes(skill.id))
   return (
     <Modal open wide onClose={onClose} title={skill.name} subtitle={skill.purpose}
-      footer={<><Button variant="ghost" onClick={onClose}>ปิด</Button><Button variant="primary" icon={Plus} onClick={onAttach}>เพิ่มให้ผู้ช่วย</Button></>}
+      footer={<><Button variant="ghost" onClick={onClose}>ปิด</Button><Button variant="primary" icon={Plus} onClick={onAttach}>เพิ่มให้ Agent</Button></>}
     >
       <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
         <Badge>{skill.category}</Badge><ShareBadge share={skill.share} awaiting={isAwaitingCompanyShare(state, 'skill', skill.id)} /><span>v{skill.version}</span><span>by {userById(skill.owner).name}</span>
@@ -89,7 +89,7 @@ function SkillDetail({ skill, onClose, onAttach }) {
 
 /**
  * A Skill's detail, opened over the Agents page by `?skill=<id>` so it can be linked (search results, Agent detail,
- * old Skills links). "เพิ่มให้ผู้ช่วย" moves on to adding the Skill to several Agents. Closing drops the parameter.
+ * old Skills links). "เพิ่มให้ Agent" moves on to adding the Skill to several Agents. Closing drops the parameter.
  */
 export default function SkillDialog() {
   const { state } = useStore()

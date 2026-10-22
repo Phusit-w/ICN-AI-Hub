@@ -213,7 +213,7 @@ function GlobalSearch({ onNavigate, autoFocus = false }) {
   const term = q.trim().toLowerCase()
   const match = (s) => s.toLowerCase().includes(term)
   const results = term ? [
-    ...state.agents.filter((a) => match(a.name) || match(a.description)).slice(0, 5).map((a) => ({ id: a.id, label: a.name, sub: 'ผู้ช่วย', icon: a.kind, to: `/agents/${a.id}` })),
+    ...state.agents.filter((a) => match(a.name) || match(a.description)).slice(0, 5).map((a) => ({ id: a.id, label: a.name, sub: 'Agent', icon: a.kind, to: `/agents/${a.id}` })),
     ...state.skills.filter((s) => match(s.name) || match(s.purpose)).slice(0, 4).map((s) => ({ id: s.id, label: s.name, sub: 'ทักษะ', icon: s.icon, to: skillLink(s.id), skill: true })),
   ] : []
 
@@ -221,7 +221,7 @@ function GlobalSearch({ onNavigate, autoFocus = false }) {
   return (
     <div ref={box} data-tour="search" className="relative">
       <SearchInput
-        placeholder="ค้นหาผู้ช่วย ทักษะ…" value={q}
+        placeholder="ค้นหา Agent ทักษะ…" value={q}
         onChange={(e) => { setQ(e.target.value); setOpen(true) }} onFocus={() => setOpen(true)}
         onKeyDown={(e) => { if (e.key === 'Enter' && results[0]) go(results[0].to) }}
         aria-label="ค้นหาทั้งระบบ" autoFocus={autoFocus}

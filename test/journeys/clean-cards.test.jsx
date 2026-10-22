@@ -6,7 +6,7 @@ import { mainMenu, startJourney, newChatLink } from '../journey'
 // The rest of the card opens details. The Favourite star sits on the card (shown on hover and keyboard focus).
 // Uses and version live on the detail pages.
 
-const agentList = () => screen.getByRole('list', { name: 'รายการผู้ช่วย' })
+const agentList = () => screen.getByRole('list', { name: 'รายการ Agent' })
 const cardOf = (list, name) => within(list).getAllByRole('listitem').find((li) => within(li).queryByText(name))
 const NUMBERS = /ครั้ง|v\d|★|\d\.\d/
 
@@ -56,7 +56,7 @@ describe('Clean Agent cards', () => {
   it('the page has at most one primary button', async () => {
     const app = startJourney('/agents')
     expect(primaries().length).toBeLessThanOrEqual(1)
-    await app.type(screen.getByRole('textbox', { name: /ค้นหาผู้ช่วย/ }), 'VPN')
+    await app.type(screen.getByRole('textbox', { name: /ค้นหา Agent/ }), 'VPN')
     expect(primaries()).toHaveLength(1)
   })
 })

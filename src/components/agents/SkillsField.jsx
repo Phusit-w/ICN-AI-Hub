@@ -39,7 +39,7 @@ export default function SkillsField({ skills, onChange }) {
           <Plus className="size-3.5" /> เพิ่มทักษะ
         </Menu>
       </div>
-      <Modal open={creating} onClose={() => setCreating(false)} title="สร้างทักษะใหม่" subtitle="บอกว่าอยากให้ทักษะนี้ทำอะไร AI จะกรอกให้ แล้วทักษะใหม่จะถูกใส่ให้ผู้ช่วยตัวนี้">
+      <Modal open={creating} onClose={() => setCreating(false)} title="สร้างทักษะใหม่" subtitle="บอกว่าอยากให้ทักษะนี้ทำอะไร AI จะกรอกให้ แล้วทักษะใหม่จะถูกใส่ให้ Agent ตัวนี้">
         <QuickCreateSkill onCreate={(form) => { onChange([...skills, saveSkill(form).id]); setCreating(false) }} />
       </Modal>
     </Field>

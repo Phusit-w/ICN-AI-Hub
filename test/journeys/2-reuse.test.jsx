@@ -71,9 +71,9 @@ describe('Journey 2: reuse a Favourite agent or an Agent with Steps', () => {
     const app = startJourney()
 
     await app.click(within(reuseRow()).getByRole('button', { name: /Sales Proposal Agent/ }))
-    await app.click(within(homeCommandBox(app)).getByRole('button', { name: 'กลับไปเลือกผู้ช่วยอัตโนมัติ' }))
+    await app.click(within(homeCommandBox(app)).getByRole('button', { name: 'กลับไปเลือก Agent อัตโนมัติ' }))
 
-    expect(screen.getByRole('combobox', { name: 'เลือกผู้ช่วย' })).toHaveDisplayValue(/อัตโนมัติ/)
+    expect(screen.getByRole('combobox', { name: 'เลือก Agent' })).toHaveDisplayValue(/อัตโนมัติ/)
   })
 
   it('picking another Agent replaces the picked one: one pick at a time', async () => {
@@ -95,7 +95,7 @@ describe('Journey 2: reuse a Favourite agent or an Agent with Steps', () => {
     await app.click(screen.getByRole('button', { name: 'บันทึก' }))
     await app.click(newChatLink())
 
-    expect(within(reuseRow()).getByRole('button', { name: /ผู้ช่วยสรุปจุดขายของระบบ Smart Warehouse/ })).toBeVisible()
+    expect(within(reuseRow()).getByRole('button', { name: /Agent สรุปจุดขายของระบบ Smart Warehouse/ })).toBeVisible()
   })
 
   it('with no Favourites the reuse row says how to get some', async () => {

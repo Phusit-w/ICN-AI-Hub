@@ -138,15 +138,15 @@ function AgentCard({ agent, best = false, ...props }) {
 function CreateFromSearch({ q }) {
   return (
     <div className="rounded-xl border border-dashed border-brand-300 bg-brand-50/50 p-6 text-center">
-      <p className="text-sm text-slate-600">ยังไม่มีผู้ช่วยสำหรับ “{q}”</p>
-      <Button variant="primary" icon={Sparkles} to={`/agents/new?q=${encodeURIComponent(q)}`} className="mt-3">สร้างผู้ช่วยสำหรับ “{q}”</Button>
+      <p className="text-sm text-slate-600">ยังไม่มี Agent สำหรับ “{q}”</p>
+      <Button variant="primary" icon={Sparkles} to={`/agents/new?q=${encodeURIComponent(q)}`} className="mt-3">สร้าง Agent สำหรับ “{q}”</Button>
       <p className="mt-2 text-xs text-slate-400">AI จะกรอกรายละเอียดให้ คุณแค่ตรวจแล้วกดสร้าง</p>
     </div>
   )
 }
 
 /**
- * The AI Agent page: find an Agent for a job, or build one with "＋ สร้างผู้ช่วย".
+ * The AI Agent page: find an Agent for a job, or build one with "＋ สร้าง Agent".
  * Skills have no tab here (spec story 40); `?skill=<id>` opens one Skill's detail over the page.
  */
 export default function AgentLibrary() {
@@ -191,13 +191,13 @@ export default function AgentLibrary() {
     .sort(SORTS[sort]), filter, me), [state.agents, listTerm, need, location, share, team, sort, filter, me])
 
   const typedNoMatch = q.trim() && top.length === 0
-  // Recommendations bring their own primary ("ใช้งาน" on the best pick, or "สร้างผู้ช่วยสำหรับ …"), so creating steps back.
+  // Recommendations bring their own primary ("ใช้งาน" on the best pick, or "สร้าง Agent สำหรับ …"), so creating steps back.
   const showPicks = !filter && (term || need)
 
   return (
     <div className="mx-auto max-w-5xl" data-eyt-frame>
       <div className="flex justify-end">
-        <Button variant={showPicks ? 'secondary' : 'primary'} icon={Plus} to="/agents/new" data-tour="agents-create">สร้างผู้ช่วย</Button>
+        <Button variant={showPicks ? 'secondary' : 'primary'} icon={Plus} to="/agents/new" data-tour="agents-create">สร้าง Agent</Button>
       </div>
       <section className="text-center">
         {variant === 'B' && cube && <div className="eyt-fit mt-2 flex justify-center"><EyeTracker size={88} accessory="magnifier" /></div>}
@@ -205,7 +205,7 @@ export default function AgentLibrary() {
         <p className="mt-1 text-sm text-slate-500">บอกงานมา เราจะแนะนำ AI Agent ที่เหมาะที่สุดให้ หรือเลือกเองจากรายการด้านล่าง</p>
         <div className="relative mx-auto mt-5 max-w-xl">
           <input
-            value={q} onChange={(e) => { setQ(e.target.value); setNeed(null) }} aria-label="ค้นหาผู้ช่วยจากงานที่อยากให้ช่วย"
+            value={q} onChange={(e) => { setQ(e.target.value); setNeed(null) }} aria-label="ค้นหา Agent จากงานที่อยากให้ช่วย"
             onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
             placeholder={hinting ? '' : 'เช่น ทำ proposal ให้ลูกค้า, วันลา, VPN'}
             className="block h-12 w-full rounded-2xl border border-slate-200 bg-white px-5 text-[15px] shadow-sm focus:border-brand-400 focus:ring-4 focus:ring-brand-100 focus:outline-none"
@@ -245,7 +245,7 @@ export default function AgentLibrary() {
 
       <section className={filter || !(term || need) ? 'mt-8' : 'mt-10'}>
         <div className="mb-3 flex flex-wrap items-center gap-3">
-          <h2 className="text-sm font-semibold text-slate-900">ผู้ช่วยทั้งหมด <span className="font-normal text-slate-400">({list.length})</span></h2>
+          <h2 className="text-sm font-semibold text-slate-900">Agent ทั้งหมด <span className="font-normal text-slate-400">({list.length})</span></h2>
           <button
             type="button" onClick={() => setShowFilters(!showFilters)} aria-pressed={showFilters}
             className={cn('ml-auto inline-flex h-8 items-center gap-1.5 rounded-lg border px-3 text-[13px]', showFilters ? 'border-brand-300 bg-brand-50 text-brand-700' : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300')}
@@ -270,13 +270,13 @@ export default function AgentLibrary() {
           </div>
         )}
         {list.length === 0 ? (
-          (!typedNoMatch || filter) && <p className="rounded-xl border border-dashed border-slate-200 p-6 text-center text-sm text-slate-400">ไม่มีผู้ช่วยตรงตัวกรองนี้</p>
+          (!typedNoMatch || filter) && <p className="rounded-xl border border-dashed border-slate-200 p-6 text-center text-sm text-slate-400">ไม่มี Agent ตรงตัวกรองนี้</p>
         ) : (
-          <ul className="grid gap-3 sm:grid-cols-2 md:grid-cols-3" aria-label="รายการผู้ช่วย">
+          <ul className="grid gap-3 sm:grid-cols-2 md:grid-cols-3" aria-label="รายการ Agent">
             {list.map((a) => <AgentCard key={a.id} agent={a} />)}
           </ul>
         )}
-        <Link to="/agents/new" className="mt-4 inline-flex items-center gap-1 text-[13px] text-slate-500 hover:text-brand-700">ไม่เจอที่ต้องการ? สร้างผู้ช่วยของคุณเอง ไม่ต้องเขียนโค้ด <ArrowRight className="size-3.5" /></Link>
+        <Link to="/agents/new" className="mt-4 inline-flex items-center gap-1 text-[13px] text-slate-500 hover:text-brand-700">ไม่เจอที่ต้องการ? สร้าง Agent ของคุณเอง ไม่ต้องเขียนโค้ด <ArrowRight className="size-3.5" /></Link>
       </section>
       <SkillDialog />
     </div>

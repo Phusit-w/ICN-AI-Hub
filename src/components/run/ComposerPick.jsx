@@ -130,7 +130,7 @@ function AgentPicker({ value, label, groups, onChange, menuDir }) {
   return (
     <span ref={box} className="relative flex">
       <button
-        ref={trigger} type="button" aria-label="เลือกผู้ช่วย" aria-haspopup="listbox" aria-expanded={open} aria-controls={open ? listId : undefined}
+        ref={trigger} type="button" aria-label="เลือก Agent" aria-haspopup="listbox" aria-expanded={open} aria-controls={open ? listId : undefined}
         onClick={() => (open ? close(false) : show(selected))} onKeyDown={onTriggerKey}
         className={cn(
           'relative z-10 flex h-8 min-w-0 items-center gap-1 rounded-full px-2.5 text-xs transition-[color,background-color,opacity,scale] focus-visible:ring-2 focus-visible:ring-brand-300 focus-visible:outline-none',
@@ -152,7 +152,7 @@ function AgentPicker({ value, label, groups, onChange, menuDir }) {
         )}
       >
         <div
-          id={listId} role="listbox" aria-label="เลือกผู้ช่วย" onKeyDown={onListKey} style={{ height: place.h }}
+          id={listId} role="listbox" aria-label="เลือก Agent" onKeyDown={onListKey} style={{ height: place.h }}
           className={cn('absolute right-0 w-72 overflow-y-auto p-2', place.dir === 'up' ? 'bottom-0' : 'top-0')}
         >
           {option(0, '', 'อัตโนมัติ — ระบบเลือกให้ (แนะนำ)')}
@@ -179,13 +179,13 @@ export default function ComposerPick({ pick, onChange, chooseAgent = false, menu
   const myDept = userById(state.userId).dept
 
   const clearAgent = agent && (
-    <button type="button" onClick={clear} aria-label="กลับไปเลือกผู้ช่วยอัตโนมัติ" title="กลับไปเลือกอัตโนมัติ" className={clearClass}><X className="size-3" /></button>
+    <button type="button" onClick={clear} aria-label="กลับไปเลือก Agent อัตโนมัติ" title="กลับไปเลือกอัตโนมัติ" className={clearClass}><X className="size-3" /></button>
   )
   if (!chooseAgent) {
     return agent ? (
       <span className={pillClass}>
         <Bot className="size-3.5 shrink-0" aria-hidden />
-        <span className="max-w-56 truncate">ผู้ช่วย: {agent.name}</span>
+        <span className="max-w-56 truncate">Agent: {agent.name}</span>
         {clearAgent}
       </span>
     ) : null

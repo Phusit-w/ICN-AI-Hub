@@ -40,7 +40,7 @@ export default function SearchPopup({ compact = false, onNavigate }) {
     const chat = (t) => ({ id: `t-${t.id}`, label: t.title, sub: 'แชต', chat: true, to: `/workspace?run=${t.latest.id}` })
     if (!term) return threads.slice(0, 5).map(chat)
     return [
-      ...state.agents.filter((a) => match(a.name) || match(a.description)).slice(0, 5).map((a) => ({ id: a.id, label: a.name, sub: 'ผู้ช่วย', icon: a.kind, to: `/agents/${a.id}` })),
+      ...state.agents.filter((a) => match(a.name) || match(a.description)).slice(0, 5).map((a) => ({ id: a.id, label: a.name, sub: 'Agent', icon: a.kind, to: `/agents/${a.id}` })),
       ...state.skills.filter((s) => match(s.name) || match(s.purpose)).slice(0, 4).map((s) => ({ id: s.id, label: s.name, sub: 'ทักษะ', icon: s.icon, skill: true, to: skillLink(s.id) })),
       ...threads.filter((t) => match(t.title)).slice(0, 4).map(chat),
     ]
@@ -118,7 +118,7 @@ export default function SearchPopup({ compact = false, onNavigate }) {
             <input
               ref={input} type="search" value={q} onChange={(e) => { setQ(e.target.value); setActive(0) }} onKeyDown={onInputKey}
               role="combobox" aria-expanded={open} aria-controls={listId} aria-activedescendant={results[active] ? `${listId}-${active}` : undefined}
-              aria-label="ค้นหาทั้งระบบ" placeholder="ค้นหาผู้ช่วย ทักษะ แชต…"
+              aria-label="ค้นหาทั้งระบบ" placeholder="ค้นหา Agent ทักษะ แชต…"
               className="min-w-0 flex-1 bg-transparent text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none [&::-webkit-search-cancel-button]:hidden"
             />
             <kbd className="rounded border border-slate-200 px-1.5 py-0.5 text-[10px] text-slate-400">Esc</kbd>

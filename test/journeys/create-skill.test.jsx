@@ -58,11 +58,11 @@ describe('Create a Skill', () => {
     expectOnePrimary()
   })
 
-  it('the Agent builder has exactly one primary button, "สร้างผู้ช่วย"', async () => {
+  it('the Agent builder has exactly one primary button, "สร้าง Agent"', async () => {
     const app = startJourney('/agents/new', { view: 'admin' })
-    expectOnePrimary('สร้างผู้ช่วย')
+    expectOnePrimary('สร้าง Agent')
     await app.type(app.box('ข้อความถึง AI'), 'ร่างอีเมลตอบลูกค้า{Enter}')
-    expectOnePrimary('สร้างผู้ช่วย')
+    expectOnePrimary('สร้าง Agent')
     await app.click(screen.getByRole('button', { name: 'ตั้งค่าแบบละเอียด' }))
     expectOnePrimary()
   })

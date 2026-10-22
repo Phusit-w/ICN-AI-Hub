@@ -19,7 +19,7 @@ export function canSaveForReuse(run) {
 }
 
 /** `thread` is every run of the conversation, oldest first; the first request names it. */
-export const defaultReuseName = (thread) => `ผู้ช่วย${truncate(thread[0].title, 40)}`
+export const defaultReuseName = (thread) => `Agent ${truncate(thread[0].title, 40)}`
 
 /**
  * What the saved Agent is built on. Several Agents did the work: it hands the work to every Agent in the Plan, in

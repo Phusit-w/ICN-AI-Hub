@@ -9,7 +9,7 @@ describe('Company sharing request', () => {
 
     await app.type(app.box('ข้อความถึง AI'), 'ช่วยร่างอีเมลตอบลูกค้าที่ร้องเรียนเรื่องส่งของช้า{Enter}')
     await app.click(screen.getByRole('button', { name: /^Company/ }))
-    await app.click(screen.getByRole('button', { name: 'สร้างผู้ช่วย' }))
+    await app.click(screen.getByRole('button', { name: 'สร้าง Agent' }))
 
     expect(screen.getByText('รออนุมัติ')).toBeVisible()
     expect(screen.getByText('ในแผนก')).toBeVisible()

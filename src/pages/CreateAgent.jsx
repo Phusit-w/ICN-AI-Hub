@@ -20,7 +20,7 @@ import { useCube, useVariant } from './workspace-prototype/PrototypeSwitcher'
 const WIZARD_PAGES = ['ข้อมูลพื้นฐาน', 'คำสั่งการทำงาน', 'Model & ข้อมูล', 'Knowledge & Skills', 'Tools & Output', 'การแชร์ & ขั้นตอน']
 const KINDS = ['research', 'document', 'sales', 'hr', 'it', 'accounting', 'data', 'image', 'review']
 
-const GREETING = 'สวัสดีค่ะ อยากได้ผู้ช่วยแบบไหน เล่างานที่อยากให้ช่วยด้วยคำของคุณเองได้เลย แล้วฉันจะกรอกฟอร์มทางขวาให้\nพิมพ์ @ เพื่อเรียกผู้ช่วยที่มีอยู่มาช่วยเขียน เช่น @HR Policy Agent'
+const GREETING = 'สวัสดีค่ะ อยากได้ Agent แบบไหน เล่างานที่อยากให้ช่วยด้วยคำของคุณเองได้เลย แล้วฉันจะกรอกฟอร์มทางขวาให้\nพิมพ์ @ เพื่อเรียก Agent ที่มีอยู่มาช่วยเขียน เช่น @HR Policy Agent'
 
 /**
  * Default way to create an Agent, like GPT Builder (spec stories 29–34, 36–37, 39): chat with a simulated AI on one
@@ -55,8 +55,8 @@ function AgentBuilder({ form, setForm, initialText, onCreate, onDetailed }) {
           <div className="flex items-start gap-3">
             <EntityIcon icon={form.kind} size="lg" />
             <div className="min-w-0 flex-1 space-y-3">
-              <Field label="ชื่อ" htmlFor="b-name"><Input id="b-name" value={form.name} onChange={(e) => set({ name: e.target.value })} placeholder="เช่น ผู้ช่วยตอบอีเมลลูกค้า" /></Field>
-              <Field label="คำอธิบาย" htmlFor="b-desc"><Textarea id="b-desc" rows={2} value={form.description} onChange={(e) => set({ description: e.target.value })} placeholder="ผู้ช่วยนี้ช่วยใคร ทำอะไร" /></Field>
+              <Field label="ชื่อ" htmlFor="b-name"><Input id="b-name" value={form.name} onChange={(e) => set({ name: e.target.value })} placeholder="เช่น Agent ตอบอีเมลลูกค้า" /></Field>
+              <Field label="คำอธิบาย" htmlFor="b-desc"><Textarea id="b-desc" rows={2} value={form.description} onChange={(e) => set({ description: e.target.value })} placeholder="Agent นี้ช่วยใคร ทำอะไร" /></Field>
             </div>
           </div>
           <Field label="คำสั่ง" htmlFor="b-ins" hint="เขียนเหมือนสอนงานพนักงานใหม่: ทำอะไร ต้องทำอะไรเสมอ และห้ามทำอะไร">
@@ -71,7 +71,7 @@ function AgentBuilder({ form, setForm, initialText, onCreate, onDetailed }) {
           <ShareChoice value={form.share} onChange={(share) => set({ share })} companyNeedsApproval={!isAdminView(state)} />
           <StepsField steps={form.steps} onChange={(steps) => set({ steps })} />
           <div className="flex justify-end border-t border-slate-100 pt-4">
-            <Button variant="primary" icon={Rocket} onClick={() => onCreate(form)} disabled={!form.name.trim() || !form.description.trim()}>สร้างผู้ช่วย</Button>
+            <Button variant="primary" icon={Rocket} onClick={() => onCreate(form)} disabled={!form.name.trim() || !form.description.trim()}>สร้าง Agent</Button>
           </div>
         </Card>
       </div>
@@ -293,7 +293,7 @@ export default function CreateAgent() {
             {step < WIZARD_PAGES.length - 1 ? (
               <Button variant="primary" onClick={() => setStep(step + 1)} disabled={!valid[step]}>ถัดไป <ArrowRight className="size-4" /></Button>
             ) : (
-              <Button variant="primary" icon={Rocket} onClick={() => create()} disabled={!canFinish}>{source ? 'สร้างสำเนา' : 'สร้างผู้ช่วย'}</Button>
+              <Button variant="primary" icon={Rocket} onClick={() => create()} disabled={!canFinish}>{source ? 'สร้างสำเนา' : 'สร้าง Agent'}</Button>
             )}
           </div>
         </Card>

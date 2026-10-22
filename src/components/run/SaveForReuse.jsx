@@ -31,10 +31,10 @@ export default function SaveForReuse({ run }) {
 
   // The Run already used a reusable Agent with Steps: point at it instead of saving a copy.
   if (withSteps) {
-    return <Link to={agentHref(withSteps.id)} className="inline-flex h-8 items-center gap-1.5 px-2 text-xs text-slate-400 hover:text-brand-700"><Bot className="size-4" />ใช้ผู้ช่วย {withSteps.name} ที่มีอยู่แล้ว</Link>
+    return <Link to={agentHref(withSteps.id)} className="inline-flex h-8 items-center gap-1.5 px-2 text-xs text-slate-400 hover:text-brand-700"><Bot className="size-4" />ใช้ Agent {withSteps.name} ที่มีอยู่แล้ว</Link>
   }
   if (run.savedAs) {
-    return <Link to={agentHref(run.savedAs.id)} className="inline-flex h-8 items-center gap-1.5 px-2 text-xs font-medium text-emerald-700 hover:underline"><BookmarkCheck className="size-4" />บันทึกเป็นผู้ช่วยแล้ว</Link>
+    return <Link to={agentHref(run.savedAs.id)} className="inline-flex h-8 items-center gap-1.5 px-2 text-xs font-medium text-emerald-700 hover:underline"><BookmarkCheck className="size-4" />บันทึกเป็น Agent แล้ว</Link>
   }
   if (!canSave) return null
 
@@ -44,7 +44,7 @@ export default function SaveForReuse({ run }) {
     const agent = agentFromRun(run, thread, { name: n, owner: state.userId, agents: state.agents })
     actions.addAgent(agent)
     actions.annotateRun(run.id, { savedAs: { id: agent.id } })
-    actions.toast(`บันทึกเป็นผู้ช่วย “${n}” แล้ว`, { action: { label: 'เปิดดู', to: agentHref(agent.id) } })
+    actions.toast(`บันทึกเป็น Agent “${n}” แล้ว`, { action: { label: 'เปิดดู', to: agentHref(agent.id) } })
     setOpen(false)
   }
 
@@ -57,10 +57,10 @@ export default function SaveForReuse({ run }) {
           className="rise absolute bottom-10 left-0 z-30 w-80 rounded-xl border border-slate-200 bg-white p-3 shadow-xl"
         >
           <p className="text-xs text-slate-500">
-            บันทึกเป็น<b className="font-semibold text-brand-700">ผู้ช่วย</b> — เรียกใช้ซ้ำได้จากคลังผู้ช่วย
+            บันทึกเป็น<b className="font-semibold text-brand-700">Agent</b> — เรียกใช้ซ้ำได้จากคลัง Agent
           </p>
           <input
-            autoFocus value={name} onChange={(e) => setName(e.target.value)} aria-label="ชื่อผู้ช่วย"
+            autoFocus value={name} onChange={(e) => setName(e.target.value)} aria-label="ชื่อ Agent"
             className="mt-2 h-9 w-full rounded-lg border border-slate-200 px-3 text-sm focus:border-brand-400 focus:ring-2 focus:ring-brand-100 focus:outline-none"
           />
           <div className="mt-2 flex items-center justify-between">

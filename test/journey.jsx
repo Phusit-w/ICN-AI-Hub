@@ -122,5 +122,5 @@ export function expectArtifactShown() {
 
 /** The Workspace composer shows `name` as the picked Agent (with or without Steps). */
 export function expectAgentPicked(name) {
-  expect(screen.getByRole('combobox', { name: 'เลือกผู้ช่วย' })).toHaveDisplayValue(name)
+  expect(screen.getByRole('combobox', { name: 'เลือก Agent' })).toHaveDisplayValue(name)
 }

@@ -220,7 +220,7 @@ function AssistantMessage({ run, latest, onShowSteps, docRunId, onOpenDoc }) {
         {!chat && run.status === 'completed' && (
           <>
             <p className="text-[15px] text-slate-700">
-              เสร็จแล้ว — ผู้ช่วย {run.steps.length} ตัวช่วยกันทำ{loops > 0 && ` (ระหว่างทางตรวจพบข้อมูลไม่ครบ จึงส่งกลับไปแก้ ${loops} ครั้ง)`}
+              เสร็จแล้ว — Agent {run.steps.length} ตัวช่วยกันทำ{loops > 0 && ` (ระหว่างทางตรวจพบข้อมูลไม่ครบ จึงส่งกลับไปแก้ ${loops} ครั้ง)`}
             </p>
             {final && <ArtifactCard run={run} final={final} latest={latest} onShowSteps={onShowSteps} onOpen={onOpenDoc} opened={docRunId === run.id} />}
           </>
@@ -342,7 +342,7 @@ function ChatView({ thread, onShowSteps, variant, deskRunId, onOpenDesk, onClose
   )
 }
 
-const GUIDE = ['สั่งงาน', 'ตรวจแผน', 'ผู้ช่วยกำลังทำงาน', 'รับผลงาน']
+const GUIDE = ['สั่งงาน', 'ตรวจแผน', 'Agent กำลังทำงาน', 'รับผลงาน']
 
 function StepGuide({ status }) {
   const at = { planned: 1, running: 2, completed: 4 }[status] ?? 0
@@ -421,7 +421,7 @@ function StepsPanel({ run, onClose }) {
         <LiveActivity run={run} />
         {run.events.length > 0 && (
           <section>
-            <h3 className="mb-3 text-xs font-medium text-slate-500">การส่งต่องานระหว่างผู้ช่วย</h3>
+            <h3 className="mb-3 text-xs font-medium text-slate-500">การส่งต่องานระหว่าง Agent</h3>
             <ol className="relative space-y-3 border-l border-slate-200 pl-4">
               {[...run.events].reverse().map((e, i) => (
                 <li key={i} className="relative">

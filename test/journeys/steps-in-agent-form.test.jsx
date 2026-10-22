@@ -6,7 +6,7 @@ import { expectAgentPicked, expectArtifactShown, mainMenu, startJourney } from '
 // picked from "＋ เพิ่มขั้นตอน", they can be reordered and removed, and only Agents without Steps are offered.
 // The builder's form is the main path; the Admin's detailed form keeps the Steps chosen there.
 
-const NAME = 'ผู้ช่วยทำรายงานตลาดพร้อมภาพ'
+const NAME = 'Agent ทำรายงานตลาดพร้อมภาพ'
 
 /** The new Agent's Steps, as the form lists them, in order. */
 const stepNames = () => within(screen.getByRole('list', { name: 'ขั้นตอน' })).getAllByRole('listitem')
@@ -29,7 +29,7 @@ async function createAgentWithSteps(app) {
   for (const name of ['Image Agent', 'Research Agent', 'Document Agent']) await addStep(app, name)
   await app.click(screen.getByRole('button', { name: 'เลื่อน Image Agent ลง' })) // Research, Image, Document
   await app.click(screen.getByRole('button', { name: 'เลื่อน Document Agent ขึ้น' })) // Research, Document, Image
-  await app.click(screen.getByRole('button', { name: 'สร้างผู้ช่วย' }))
+  await app.click(screen.getByRole('button', { name: 'สร้าง Agent' }))
 }
 
 describe('The "ขั้นตอน" section of the Agent form', () => {
@@ -52,7 +52,7 @@ describe('The "ขั้นตอน" section of the Agent form', () => {
     expect(stepNames()).toEqual(['Research Agent', 'Document Agent', 'Image Agent'])
     await app.click(screen.getByRole('button', { name: 'เอา Image Agent ออก' }))
     expect(stepNames()).toEqual(['Research Agent', 'Document Agent'])
-    await app.click(screen.getByRole('button', { name: 'สร้างผู้ช่วย' }))
+    await app.click(screen.getByRole('button', { name: 'สร้าง Agent' }))
     await app.click(within(mainMenu()).getByRole('link', { name: /AI Agent/ }))
 
     expect(screen.getAllByRole('link', { name: NAME })[0].closest('li')).toHaveTextContent('2 ขั้นตอน')
