@@ -22,7 +22,7 @@ import Feedback from '../components/run/Feedback'
 import ComposerPick, { pickFromParams, usePick } from '../components/run/ComposerPick'
 import { userById } from '../data/catalog'
 import PlanCard from './workspace-prototype/PlanCard'
-import PrototypeSwitcher, { PROTOTYPE_ON, useVariant } from './workspace-prototype/PrototypeSwitcher'
+import { useVariant } from './workspace-prototype/PrototypeSwitcher'
 import { artifactMeta } from './workspace-prototype/artifactMeta'
 import logo from '../assets/icn-logo.png'
 
@@ -427,7 +427,7 @@ export default function Workspace() {
   const { state, actions } = useStore()
   const [params, setParams] = useSearchParams()
   const location = useLocation()
-  const [variant, setVariant] = useVariant() // PROTOTYPE: A = one column, B = chat + work area
+  const [variant] = useVariant() // PROTOTYPE: A = one column, B = chat + work area
   const [stepsRunId, setStepsRunId] = useState(null) // the Run whose steps are open in the side panel
   const [deskPick, setDeskPick] = useState(null) // B: the Run the user chose to look at in the work area
   const handled = useRef(null)
@@ -460,7 +460,6 @@ export default function Workspace() {
 
   return (
     <div className="flex h-[calc(100dvh-5.5rem)] gap-6 lg:h-[calc(100dvh-6rem)]">
-      {PROTOTYPE_ON && <PrototypeSwitcher current={variant} onChange={setVariant} />}
       <section className={cn('flex min-h-0 min-w-0 flex-1', split ? 'flex-col gap-4 lg:flex-row lg:gap-6' : 'flex-col')}>
         {run ? (
           <>

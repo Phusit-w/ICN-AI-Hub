@@ -1,4 +1,4 @@
-// PROTOTYPE (branch prototype/workspace-layout): switches the Workspace between layout variants. Not for main.
+// PROTOTYPE (branch prototype/workspace-layout): switches every page between design variants. Not for main.
 import { useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
@@ -50,7 +50,7 @@ export default function PrototypeSwitcher({ current, onChange }) {
 
   const v = VARIANTS[index]
   return (
-    <div role="group" aria-label="สลับแบบหน้า Workspace (prototype)" className="fixed top-3 left-1/2 z-[60] flex -translate-x-1/2 items-center gap-1 rounded-full bg-slate-900 px-1.5 py-1 text-xs text-white shadow-lg ring-1 ring-white/20">
+    <div role="group" aria-label="สลับแบบ A/B (prototype)" className="fixed top-3 left-1/2 z-[60] flex -translate-x-1/2 items-center gap-1 rounded-full bg-slate-900 px-1.5 py-1 text-xs text-white shadow-lg ring-1 ring-white/20">
       <button type="button" onClick={() => go(-1)} aria-label="แบบก่อนหน้า" className="rounded-full p-1.5 hover:bg-white/15"><ChevronLeft className="size-4" /></button>
       <span className="min-w-52 px-1 text-center font-medium" aria-live="polite">{v.key} · {v.name}</span>
       <button type="button" onClick={() => go(1)} aria-label="แบบถัดไป" className="rounded-full p-1.5 hover:bg-white/15"><ChevronRight className="size-4" /></button>

@@ -15,7 +15,7 @@ import EntityIcon from '../agents/EntityIcon'
 import { SearchInput } from '../ui/Form'
 import { HelpButton } from './Help'
 import SearchPopup from './SearchPopup'
-import { useVariant } from '../../pages/workspace-prototype/PrototypeSwitcher'
+import PrototypeSwitcher, { PROTOTYPE_ON, useVariant } from '../../pages/workspace-prototype/PrototypeSwitcher'
 import { useTour } from '../tour/Tour'
 import logo from '../../assets/icn-logo.png'
 import logoClear from '../../assets/icn-logo-clear.png' // PROTOTYPE variant B: the same logo with its pale-blue square made transparent
@@ -247,7 +247,7 @@ export default function AppShell() {
   const { pathname } = useLocation()
   const [collapsed, setCollapsed] = usePersistentState('icn.sidebar.collapsed', false)
   const [focusSearch, setFocusSearch] = useState(false)
-  const [variant] = useVariant() // PROTOTYPE: B moves the search into the sidebar head
+  const [variant, setVariant] = useVariant() // PROTOTYPE: B moves the search into the sidebar head
   const searchTop = variant === 'B'
   // A tour step pointing into the sidebar needs it on screen: expanded on desktop, the drawer on phones.
   const { sidebarStep } = useTour()
@@ -289,6 +289,7 @@ export default function AppShell() {
       <main className="mx-auto max-w-[1440px] px-4 pt-2 pb-6 sm:px-6 lg:px-8 lg:pb-8">
         <Outlet />
       </main>
+      {PROTOTYPE_ON && <PrototypeSwitcher current={variant} onChange={setVariant} />}
       <Toaster />
       <RunFinishedToasts />
     </div>
