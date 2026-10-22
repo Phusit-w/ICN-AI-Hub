@@ -93,7 +93,7 @@ function AgentCard({ agent, best = false, ...props }) {
   const [cube] = useCube()
   return (
   <ItemCard
-    lead={variant === 'B' && cube ? <AgentCube agent={agent} size={36} idle /> : undefined}
+    lead={variant === 'B' && cube ? <AgentCube agent={agent} size={48} idle /> : undefined}
     icon={agent.kind} name={agent.name} description={agent.description} favoriteId={agent.id} badge={stepsLabel(agent)}
     to={`/agents/${agent.id}`} useTo={`/workspace?agent=${agent.id}`} primary={best}
     className={best ? 'border-brand-400' : undefined} {...props}
