@@ -78,7 +78,7 @@ function AgentPicker({ value, label, groups, onChange, menuDir }) {
     const pill = trigger.current?.getBoundingClientRect()
     if (!pill) return
     const form = trigger.current.closest('form')
-    const bar = (form?.parentElement ?? trigger.current).getBoundingClientRect() // the composer and the policy line under it
+    const bar = (form?.parentElement ?? trigger.current).getBoundingClientRect() // the composer
     const full = Math.min(352, window.innerHeight * 0.6)
     const above = bar.top - GAP - EDGE
     const below = window.innerHeight - bar.bottom - GAP - EDGE

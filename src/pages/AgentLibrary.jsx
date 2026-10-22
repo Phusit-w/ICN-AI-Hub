@@ -129,12 +129,14 @@ export default function AgentLibrary() {
   }, [state.agents, need, term])
   const top = picks.slice(0, 3)
 
+  // With a share filter on, the list is the answer and the recommendations are hidden, so a chosen need narrows the list itself.
+  const listTerm = filter ? term : q.trim()
   const list = useMemo(() => applyShareFilter(state.agents
-    .filter((a) => !q.trim() || matchScore(agentSearchText(a), q) > 0)
+    .filter((a) => !listTerm || matchScore(agentSearchText(a), listTerm) > 0)
     .filter((a) => !need?.dept || a.dept === need.dept)
     .filter((a) => location === 'all' || modelById(a.model).location === location)
     .filter((a) => share === 'all' || a.share === share)
-    .sort(SORTS[sort]), filter, me), [state.agents, q, need, location, share, sort, filter, me])
+    .sort(SORTS[sort]), filter, me), [state.agents, listTerm, need, location, share, sort, filter, me])
 
   const typedNoMatch = q.trim() && top.length === 0
   // Recommendations bring their own primary ("ใช้งาน" on the best pick, or "สร้างผู้ช่วยสำหรับ …"), so creating steps back.

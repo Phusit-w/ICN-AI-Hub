@@ -16,7 +16,7 @@ describe('Navigation: new chat plus a two-item menu', () => {
   it('the app opens on new chat: greeting, composer and the reuse row, with "แชตใหม่" marked as the current page', () => {
     const app = startJourney('/')
     expect(app.url()).toBe('/workspace')
-    expect(screen.getByRole('heading', { level: 1, name: /วันนี้ให้ช่วยอะไรดี/ })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1, name: /สวัสดี คุณ/ })).toBeInTheDocument()
     expect(screen.getByRole('region', { name: 'ใช้ซ้ำ' })).toBeInTheDocument()
     expect(screen.getAllByRole('link', { name: 'แชตใหม่' })[0]).toHaveAttribute('aria-current', 'page')
   })
