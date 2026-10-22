@@ -4,8 +4,8 @@ import { useSearchParams } from 'react-router-dom'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 export const VARIANTS = [
-  { key: 'A', name: 'แชตกลางจอ' },
-  { key: 'B', name: 'โต๊ะทำงาน' },
+  { key: 'A', name: 'Clean Minimal' },
+  { key: 'B', name: 'Minimal+Animation' },
 ]
 
 const STORAGE_KEY = 'icn-ws-variant'
@@ -52,7 +52,7 @@ export default function PrototypeSwitcher({ current, onChange }) {
   return (
     <div role="group" aria-label="สลับแบบหน้า Workspace (prototype)" className="fixed top-3 left-1/2 z-[60] flex -translate-x-1/2 items-center gap-1 rounded-full bg-slate-900 px-1.5 py-1 text-xs text-white shadow-lg ring-1 ring-white/20">
       <button type="button" onClick={() => go(-1)} aria-label="แบบก่อนหน้า" className="rounded-full p-1.5 hover:bg-white/15"><ChevronLeft className="size-4" /></button>
-      <span className="min-w-36 px-1 text-center font-medium" aria-live="polite">{v.key} · {v.name}</span>
+      <span className="min-w-52 px-1 text-center font-medium" aria-live="polite">{v.key} · {v.name}</span>
       <button type="button" onClick={() => go(1)} aria-label="แบบถัดไป" className="rounded-full p-1.5 hover:bg-white/15"><ChevronRight className="size-4" /></button>
     </div>
   )
