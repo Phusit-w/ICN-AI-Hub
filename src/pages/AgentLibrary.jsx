@@ -90,7 +90,7 @@ const SORTS = {
 }
 
 /** An Agent in the clean card shape. `best` marks the top recommendation for a typed need: its "ใช้งาน" is the page's one primary. */
-/** The card's lead: an Agent with Steps is drawn as a small stack (a team), a single Agent as one tile or Cube. */
+/** The card's lead: an Agent with Steps is drawn as a small stack (a team), a single Agent as one icon tile or, in variant B with Cubes on, a Cube. */
 function CardLead({ agent, variant, cube }) {
   const { state } = useStore()
   const team = hasSteps(agent)
@@ -109,7 +109,7 @@ function CardLead({ agent, variant, cube }) {
       </span>
     )
   }
-  if (!team) return undefined
+  if (!team) return <EntityIcon icon={agent.kind} />
   return (
     <span className="relative mr-2.5 mb-2.5 inline-flex">
       <span className="absolute top-2.5 left-2.5 size-9 rounded-lg bg-brand-50 ring-1 ring-inset ring-brand-100" aria-hidden />
