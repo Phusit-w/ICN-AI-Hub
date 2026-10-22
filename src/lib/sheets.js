@@ -41,5 +41,5 @@ export async function downloadExcel(artifact) {
   const url = URL.createObjectURL(new Blob([buffer], { type: XLSX_TYPE }))
   const link = Object.assign(document.createElement('a'), { href: url, download: /\.xlsx$/i.test(artifact.title) ? artifact.title : `${artifact.title}.xlsx` })
   link.click()
-  URL.revokeObjectURL(url)
+  setTimeout(() => URL.revokeObjectURL(url), 10000) // revoking at once can cancel the download in some browsers
 }
