@@ -74,6 +74,8 @@ function reducer(state, action) {
       return { ...state, runs: state.runs.filter((r) => r.id !== action.id) }
     case 'addAgent':
       return { ...state, agents: [action.agent, ...state.agents] }
+    case 'updateAgent':
+      return { ...state, agents: state.agents.map((a) => (a.id === action.id ? { ...a, ...action.patch } : a)) }
     case 'addSkill':
       return { ...state, skills: [action.skill, ...state.skills] }
     case 'attachSkill':
@@ -173,6 +175,7 @@ export function AppStoreProvider({ children }) {
       }),
       discardRun: (id) => dispatch({ type: 'removeRun', id }),
       /** Add an Agent or Skill and return it as stored, so the caller can tell whether sharing it company-wide waits for the Admin. */
+      updateAgent: (id, patch) => dispatch({ type: 'updateAgent', id, patch }),
       addAgent: (agent) => { const a = holdForAdmin('agent', agent); dispatch({ type: 'addAgent', agent: a }); return a },
       addSkill: (skill) => { const sk = holdForAdmin('skill', skill); dispatch({ type: 'addSkill', skill: sk }); return sk },
       attachSkill: (skillId, agentIds) => dispatch({ type: 'attachSkill', skillId, agentIds }),

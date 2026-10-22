@@ -87,16 +87,17 @@ const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
    holds it to be read, and folds it away. Never the same line
    twice running. */
 const LINES = [
-  "Hey, I see you.",
-  "Boop.",
-  "That tickles.",
-  "Hi there!",
-  "Stop poking me.",
-  "I'm watching you.",
-  "Again? Okay.",
-  "You found me.",
+  "สวัสดี เห็นคุณนะ",
+  "บู๊ป",
+  "จั๊กจี้นะ",
+  "สวัสดีครับ",
+  "อย่าจิ้มสิ",
+  "กำลังมองคุณอยู่",
+  "อีกแล้วเหรอ โอเค",
+  "เจอแล้วสิ",
 ];
-const TINTS = ["#3b5bff", "#179c52", "#e0307f"];
+/* the navy family of this project, not Bencho's blue, green and pink */
+const TINTS = ["#1e3a5f", "#3f6594", "#0f766e"];
 const KEY_MS = 38;
 const HOLD_MS = 1500;
 

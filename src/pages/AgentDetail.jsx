@@ -1,5 +1,6 @@
+import { Fragment, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { ArrowLeft, Copy, ThumbsUp, FileText, History, ListOrdered, Lock, Play, Wrench, BookOpen, Puzzle } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Copy, Palette, ThumbsUp, FileText, History, ListOrdered, Lock, Play, Wrench, BookOpen, Puzzle } from 'lucide-react'
 import { isAwaitingCompanyShare, useStore } from '../store/AppStore'
 import { DATA_CLASSES, deptById, knowledgeById, modelById, toolById, userById } from '../data/catalog'
 import { fmt } from '../lib/utils'
@@ -11,6 +12,8 @@ import Button from '../components/ui/Button'
 import Badge, { DeptBadge, ModelBadge, ShareBadge } from '../components/ui/Badge'
 import EntityIcon from '../components/agents/EntityIcon'
 import AgentCube from '../components/agents/AgentCube'
+import CubeField from '../components/agents/CubeField'
+import { cubeOf } from '../lib/cube'
 import { useCube, useVariant } from './workspace-prototype/PrototypeSwitcher'
 import { FavoriteButton } from '../components/agents/AgentCard'
 import { Avatar } from '../components/ui/Overlay'
@@ -27,8 +30,9 @@ function Section({ title, icon, children, action }) {
 export default function AgentDetail() {
   const [variant] = useVariant() // PROTOTYPE: B shows the Agent as its Cube
   const [cubeOn] = useCube()
+  const [editingCube, setEditingCube] = useState(false)
   const { id } = useParams()
-  const { state } = useStore()
+  const { state, actions } = useStore()
   const agent = state.agents.find((a) => a.id === id)
   if (!agent) {
     return <EmptyState title="ไม่พบผู้ช่วยนี้" action={<Button to="/agents">กลับไป Agent Library</Button>} />
@@ -47,7 +51,14 @@ export default function AgentDetail() {
 
       <Card className="p-6">
         <div className="flex flex-col gap-5 md:flex-row md:items-start">
-          {variant === 'B' && cubeOn ? <AgentCube agent={agent} size={72} /> : <EntityIcon icon={agent.kind} size="lg" />}
+          {variant === 'B' && cubeOn ? (
+            <span className="flex flex-col items-start gap-1">
+              <AgentCube agent={agent} size={72} />
+              {agent.owner === state.userId && (
+                <Button size="sm" variant="ghost" icon={Palette} onClick={() => setEditingCube(!editingCube)} aria-expanded={editingCube}>ปรับ Cube</Button>
+              )}
+            </span>
+          ) : <EntityIcon icon={agent.kind} size="lg" />}
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
               <h1 className="text-2xl font-semibold tracking-tight text-slate-900">{agent.name}</h1>
@@ -71,6 +82,10 @@ export default function AgentDetail() {
           </div>
         </div>
       </Card>
+
+      {variant === 'B' && cubeOn && editingCube && (
+        <Card className="p-5"><CubeField kind={agent.kind} value={cubeOf(agent)} onChange={(cube) => actions.updateAgent(agent.id, { cube })} /></Card>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
@@ -110,6 +125,19 @@ export default function AgentDetail() {
 
           {hasSteps(agent) ? (
             <Section title={`ขั้นตอน (${agent.steps.length})`} icon={ListOrdered}>
+              {variant === 'B' && cubeOn && (
+                <div className="mb-4 flex flex-wrap items-center gap-2" aria-hidden>
+                  {stepAgents(agent, state.agents).map((a, i) => (
+                    <Fragment key={a.id}>
+                      {i > 0 && <ArrowRight className="size-4 text-slate-300" />}
+                      <span className="flex flex-col items-center gap-0.5">
+                        <AgentCube agent={a} size={48} calm />
+                        <span className="max-w-20 truncate text-[11px] text-slate-500">{a.name.replace(' Agent', '')}</span>
+                      </span>
+                    </Fragment>
+                  ))}
+                </div>
+              )}
               <ol aria-label="ขั้นตอน" className="space-y-2">
                 {stepAgents(agent, state.agents).map((a, i) => (
                   <li key={a.id} className="flex items-center gap-3">
