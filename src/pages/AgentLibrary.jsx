@@ -97,20 +97,19 @@ export default function AgentLibrary() {
       <section className="text-center">
         <h1 className="mt-3 text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">หาผู้ช่วย AI ที่เหมาะกับงาน</h1>
         <p className="mt-1 text-sm text-slate-500">บอกงานมา เราจะแนะนำผู้ช่วย AI ที่เหมาะที่สุดให้ หรือเลือกเองจากรายการด้านล่าง</p>
-        <ShareFilterChips className="mt-4 justify-center overflow-x-auto" />
         <input
           value={q} onChange={(e) => { setQ(e.target.value); setNeed(null) }} aria-label="ค้นหาผู้ช่วยจากงานที่อยากให้ช่วย"
           placeholder="เช่น ทำ proposal ให้ลูกค้า, วันลา, VPN"
           className="mx-auto mt-5 block h-12 w-full max-w-xl rounded-2xl border border-slate-200 bg-white px-5 text-[15px] shadow-sm focus:border-brand-400 focus:ring-4 focus:ring-brand-100 focus:outline-none"
         />
-        <div className="mt-3 flex flex-wrap justify-center gap-2">
+        <ShareFilterChips className="mt-3">
           {NEEDS.map((n) => (
             <button
               key={n.label} type="button" aria-pressed={need === n} onClick={() => { setNeed(need === n ? null : n); setQ('') }}
-              className={cn('rounded-full border px-3 py-1 text-[13px] transition', need === n ? 'border-brand-400 bg-brand-50 text-brand-700' : 'border-slate-200 bg-white text-slate-600 hover:border-brand-300')}
+              className={cn('h-8 shrink-0 rounded-full border px-3 text-[13px] transition', need === n ? 'border-brand-400 bg-brand-50 text-brand-700' : 'border-slate-200 bg-white text-slate-600 hover:border-brand-300')}
             >{n.label}</button>
           ))}
-        </div>
+        </ShareFilterChips>
       </section>
 
       {/* With a share filter on, the filtered list is the answer, so it moves up in place of the recommendations. */}
