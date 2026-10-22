@@ -1,6 +1,12 @@
-/** Live Feedback given on Runs that used the Agent. */
+/**
+ * The Agents a Run's Feedback counts for: the one the user picked (an Agent with Steps counts as a whole, not per Step),
+ * or, when the system planned the work, every Agent that did it.
+ */
+const creditedAgents = (run) => (run.agentId ? [run.agentId] : run.steps.map((s) => s.agentId))
+
+/** Live Feedback given on Runs that count for the Agent. */
 const liveFeedback = (agent, { runs, feedback }) =>
-  runs.filter((r) => feedback[r.id] && r.steps.some((s) => s.agentId === agent.id)).map((r) => feedback[r.id])
+  runs.filter((r) => feedback[r.id] && creditedAgents(r).includes(agent.id)).map((r) => feedback[r.id])
 
 /**
  * An Agent's Feedback summary, the one place every page gets it from: its seeded verdicts plus the live

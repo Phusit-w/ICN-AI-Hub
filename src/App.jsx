@@ -5,7 +5,6 @@ import AgentLibrary from './pages/AgentLibrary'
 import AgentDetail from './pages/AgentDetail'
 import CreateAgent from './pages/CreateAgent'
 import CreateSkill from './pages/CreateSkill'
-import Workflows from './pages/Workflows'
 import Governance from './pages/Governance'
 import { skillLink } from './lib/routes'
 import { isAdminView, useStore } from './store/AppStore'
@@ -35,7 +34,8 @@ export default function App() {
         <Route path="agents/:id" element={<AgentDetail />} />
         <Route path="skills" element={<OldSkillsLink />} />
         <Route path="skills/new" element={<CreateSkill />} />
-        <Route path="workflows" element={<Workflows />} />
+        {/* Workflows became Agents with Steps (ADR 0001); old links land on the Agents page. */}
+        <Route path="workflows" element={<Navigate to="/agents" replace />} />
         {/* The Community page is gone; shared items are found with the Agents page's "popular" filter. */}
         <Route path="community" element={<Navigate to="/agents?filter=popular" replace />} />
         <Route path="governance" element={<AdminOnly><Governance /></AdminOnly>} />

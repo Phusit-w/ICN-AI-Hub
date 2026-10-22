@@ -1,19 +1,19 @@
 import { describe, expect, it } from 'vitest'
 import { screen, within } from '@testing-library/react'
 import {
-  expectAgentPicked, expectArtifactShown, expectWithinBudget, expectWorkflowPicked, mainMenu, newChatLink, startJourney,
+  expectAgentPicked, expectArtifactShown, expectWithinBudget, mainMenu, newChatLink, startJourney,
 } from '../journey'
 
-// Journey 2: reuse a Favourite agent or a Workflow. Budget: 1 click, and the user stays on the new-chat screen.
-// "Sales Proposal Agent" is a default Favourite; "Market Research Report" is a Workflow the user ran recently.
+// Journey 2: reuse a Favourite agent or an Agent with Steps. Budget: 1 click, and the user stays on the new-chat screen.
+// "Sales Proposal Agent" is a default Favourite; "Market Research Report" is an Agent with Steps the user ran recently.
 
-/** The new-chat composer, where a reused Agent or Workflow should show up. */
+/** The new-chat composer, where a reused Agent should show up. */
 const homeCommandBox = (app) => app.box('ข้อความ').closest('form')
 
 /** The "ใช้ซ้ำ" row under the new-chat composer. */
 const reuseRow = () => screen.getByRole('region', { name: 'ใช้ซ้ำ' })
 
-describe('Journey 2: reuse a Favourite agent or a Workflow', () => {
+describe('Journey 2: reuse a Favourite agent or an Agent with Steps', () => {
   it('clicking a Favourite agent fills it into the command box in 1 click without leaving new chat', async () => {
     const app = startJourney()
 
@@ -24,17 +24,17 @@ describe('Journey 2: reuse a Favourite agent or a Workflow', () => {
     expectWithinBudget(app, 1)
   })
 
-  it('clicking a Workflow fills it into the command box in 1 click without leaving new chat', async () => {
+  it('an Agent with Steps shows how many Steps it has, and fills into the command box in 1 click without leaving new chat', async () => {
     const app = startJourney()
 
-    await app.click(within(reuseRow()).getByRole('button', { name: /Market Research Report/ }))
+    await app.click(within(reuseRow()).getByRole('button', { name: /Market Research Report.*4 ขั้นตอน/ }))
 
     expect(app.url()).toBe('/workspace')
-    expectWorkflowPicked('Market Research Report')
+    expectAgentPicked('Market Research Report')
     expectWithinBudget(app, 1)
   })
 
-  it('sending with a reused Workflow runs it straight away, with no Plan to confirm', async () => {
+  it('sending with a reused Agent with Steps runs its Steps in order straight away, with no Plan to confirm', async () => {
     const app = startJourney()
 
     await app.click(within(reuseRow()).getByRole('button', { name: /Market Research Report/ }))
@@ -47,6 +47,13 @@ describe('Journey 2: reuse a Favourite agent or a Workflow', () => {
     expectArtifactShown()
     // The pick (1 click, journey 2's budget) plus the send, the same click Journey 1 counts: no Plan click.
     expectWithinBudget(app, 2)
+
+    // Each Step did its part, in the Agent's order.
+    await app.click(screen.getByRole('button', { name: 'ตัวเลือกเพิ่มเติม' }))
+    await app.click(screen.getByRole('menuitem', { name: 'ดูขั้นตอน' }))
+    const panel = screen.getByRole('complementary', { name: 'ขั้นตอนการทำงาน' })
+    const stepNames = within(panel).getAllByText(/^(Research|Data|Document|Image) Agent$/).map((el) => el.textContent)
+    expect([...new Set(stepNames)]).toEqual(['Research Agent', 'Data Agent', 'Document Agent', 'Image Agent'])
   })
 
   it('sending with a Favourite agent runs it straight away', async () => {
@@ -69,14 +76,13 @@ describe('Journey 2: reuse a Favourite agent or a Workflow', () => {
     expect(screen.getByRole('combobox', { name: 'เลือกผู้ช่วย' })).toHaveDisplayValue(/อัตโนมัติ/)
   })
 
-  it('picking a Workflow replaces a picked Agent: one pick at a time', async () => {
+  it('picking another Agent replaces the picked one: one pick at a time', async () => {
     const app = startJourney()
 
     await app.click(within(reuseRow()).getByRole('button', { name: /Sales Proposal Agent/ }))
     await app.click(within(reuseRow()).getByRole('button', { name: /Market Research Report/ }))
 
-    expectWorkflowPicked('Market Research Report')
-    expect(screen.queryByRole('combobox', { name: 'เลือกผู้ช่วย' })).toBeNull() // a Workflow pick replaces the Agent picker
+    expectAgentPicked('Market Research Report')
   })
 
   it('something saved for reuse from a finished Run shows up in the reuse row', async () => {

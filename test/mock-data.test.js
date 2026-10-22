@@ -1,13 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import { AGENTS } from '../src/data/agents'
 import { SKILLS } from '../src/data/skills'
-import { WORKFLOWS } from '../src/data/workflows'
 import { KNOWLEDGE, MODELS, TOOLS, USERS } from '../src/data/catalog'
 import { AUDIT_LOG, DEPT_USAGE, KPIS, LAUNCH_DATE, MODEL_USAGE, MONTHLY_COST } from '../src/data/governance'
 
 // Ticket 05, seam 2: the mock data tells one story, ICN about 3 months after launch with ~25 Users of ~60 staff.
 
-const ITEMS = [...AGENTS, ...SKILLS, ...WORKFLOWS]
+const ITEMS = [...AGENTS, ...SKILLS]
 const runsSinceLaunch = MONTHLY_COST.reduce((n, m) => n + m.runs, 0)
 const sum = (xs, f) => xs.reduce((n, x) => n + f(x), 0)
 
@@ -18,7 +17,7 @@ describe('Mock data: ICN three months after launch', () => {
     expect(Math.round((MONTHLY_COST.at(-1).local + MONTHLY_COST.at(-1).cloud) * 1000)).toBe(KPIS.costMtd)
   })
 
-  it("each Agent, Skill and Workflow is used tens to low hundreds of times, within the Runs since launch", () => {
+  it("each Agent and Skill is used tens to low hundreds of times, within the Runs since launch", () => {
     for (const x of ITEMS) {
       expect(x.uses, x.id).toBeGreaterThanOrEqual(10)
       expect(x.uses, x.id).toBeLessThan(400)
@@ -63,7 +62,7 @@ describe('Mock data: ICN three months after launch', () => {
   })
 
   it('names no brand-name systems and has no ratings left', () => {
-    const text = JSON.stringify({ AGENTS, SKILLS, WORKFLOWS, TOOLS, KNOWLEDGE, AUDIT_LOG })
+    const text = JSON.stringify({ AGENTS, SKILLS, TOOLS, KNOWLEDGE, AUDIT_LOG })
     expect(text).not.toMatch(/Salesforce|\bSAP\b|ServiceNow|Confluence/)
     expect(text).not.toMatch(/"rating"/)
   })
@@ -78,7 +77,7 @@ describe('Mock data: ICN three months after launch', () => {
     for (const l of AUDIT_LOG) expect(names, l.action).toContain(l.user)
   })
 
-  it('every Skill, tool, knowledge source and Workflow step points at something that exists', () => {
+  it('every Skill, tool and knowledge source points at something that exists', () => {
     const has = (list) => list.map((x) => x.id)
     for (const a of AGENTS) {
       for (const s of a.skills) expect(has(SKILLS), a.id).toContain(s)
@@ -86,14 +85,38 @@ describe('Mock data: ICN three months after launch', () => {
       for (const k of a.knowledge) expect(has(KNOWLEDGE), a.id).toContain(k)
     }
     for (const s of SKILLS) for (const t of s.tools) expect(has(TOOLS), s.id).toContain(t)
-    for (const w of WORKFLOWS) {
-      for (const n of w.nodes.filter((n) => n.ref)) expect(has(n.type === 'agent' ? AGENTS : SKILLS), w.id).toContain(n.ref)
-    }
   })
 
   it('has no Coding Agent or Security Review Agent', () => {
     const names = AGENTS.map((a) => a.name)
     expect(names).not.toContain('Coding Agent')
     expect(names).not.toContain('Security Review Agent')
+  })
+})
+
+// Agents-only redesign, seam 2: Workflows are folded into Agents with Steps (ADR 0001).
+describe('Mock data: Agents with Steps instead of Workflows', () => {
+  const byId = (id) => AGENTS.find((a) => a.id === id)
+
+  it('has no Workflow collection left', () => {
+    const dataFiles = Object.keys(import.meta.glob('../src/data/*.js'))
+    expect(dataFiles).not.toContain('../src/data/workflows.js')
+  })
+
+  it('keeps every former Workflow as an Agent with Steps under the same name', () => {
+    for (const name of ['Sales Proposal Pipeline', 'New Hire Onboarding', 'IT Incident Triage', 'Month-end Close Report', 'Market Research Report']) {
+      const agent = AGENTS.find((a) => a.name === name)
+      expect(agent, name).toBeDefined()
+      expect(agent.steps.length, name).toBeGreaterThan(0)
+    }
+  })
+
+  it('every Step is an existing Agent that has no Steps of its own', () => {
+    for (const a of AGENTS) {
+      for (const id of a.steps) {
+        expect(byId(id), `${a.id} → ${id}`).toBeDefined()
+        expect(byId(id).steps, `${a.id} → ${id}`).toEqual([])
+      }
+    }
   })
 })

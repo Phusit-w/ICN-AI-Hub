@@ -12,7 +12,6 @@ export const TASKS = {
   it: 'วิเคราะห์และแก้ปัญหาเบื้องต้น',
   accounting: 'กระทบยอดและตรวจตัวเลข',
   skill: 'ทำงานตาม Skill ที่กำหนด',
-  condition: 'ตรวจเงื่อนไขก่อนไปขั้นถัดไป',
   chat: 'ตอบคำถาม',
 }
 
@@ -28,7 +27,6 @@ export const ACTIVITIES = {
   it: ['ค้นใน IT How-to Guides', 'ทดสอบวิธีแก้ 3 ขั้นตอน', 'สรุปผล'],
   accounting: ['ดึงข้อมูล PO / GR / Invoice จากระบบบัญชี (ERP)', 'จับคู่ 3-Way Match', 'สรุปรายการไม่ตรง'],
   skill: ['เตรียม Input', 'ประมวลผลตาม Skill', 'ส่งต่อผลลัพธ์'],
-  condition: ['อ่านผลตรวจจากขั้นก่อนหน้า', 'ประเมินเงื่อนไข'],
   chat: ['ทำความเข้าใจคำถาม', 'เรียบเรียงคำตอบ'],
 }
 
@@ -41,7 +39,7 @@ const CHAT_REPLY = `สวัสดี ฉันคือ ICN Assistant ผู�
 
 พิมพ์งานที่ต้องการได้เลย ระบบจะเลือกผู้ช่วยที่เหมาะให้เอง`
 
-const isProposal = (run) => run.workflowId === 'wf-sales-proposal'
+const isProposal = (run) => run.agentId === 'agent-proposal-pipeline'
 
 export function outputFor(step, run) {
   const subject = run.title
@@ -85,9 +83,8 @@ export function outputFor(step, run) {
     case 'image':
       return { type: 'diagram', title: 'Solution architecture.png', nodes: ['Warehouse Devices', 'ICN Smart WMS', 'ERP', 'Executive Dashboard'] }
     case 'review':
-    case 'condition':
       return {
-        type: 'checklist', title: step.kind === 'review' ? 'Review checklist' : 'ผลการตรวจเงื่อนไข',
+        type: 'checklist', title: 'Review checklist',
         items: [
           { text: 'มีครบทุกหัวข้อตาม Template', ok: true },
           { text: 'ตัวเลขราคาสอดคล้องกับ Price List', ok: true },

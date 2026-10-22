@@ -1,13 +1,13 @@
 import { Link } from 'react-router-dom'
-import { ArrowRight, Workflow } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import { cn } from '../../lib/utils'
+import { stepsLabel } from '../../lib/steps'
 import EntityIcon from '../agents/EntityIcon'
 
 const chip = 'flex items-center gap-2 rounded-full border bg-white py-1 pr-3.5 pl-1 text-sm transition'
 
-/** "ใช้ซ้ำ": Favourite agents and the Workflows the user uses; one click fills one into the composer above. */
-export default function ReuseRow({ items, pick, onPick, hasFavorites }) {
-  const isPicked = ({ kind, item }) => (kind === 'agent' ? pick.agentId : pick.workflowId) === item.id
+/** "ใช้ซ้ำ": the Agents the user reuses (`agents`), with or without Steps; one click fills one into the composer above. */
+export default function ReuseRow({ agents, pick, onPick, hasFavorites }) {
   return (
     <section data-tour="home-reuse" aria-labelledby="reuse-title" className="text-left">
       <div className="mb-2 flex items-center justify-between">
@@ -15,18 +15,17 @@ export default function ReuseRow({ items, pick, onPick, hasFavorites }) {
         <Link to="/agents" className="text-xs font-medium text-brand-700 hover:underline">ผู้ช่วยทั้งหมด</Link>
       </div>
       <ul className="flex flex-wrap gap-2">
-        {items.map((it) => {
-          const picked = isPicked(it)
+        {agents.map((agent) => {
+          const picked = pick.agentId === agent.id
           return (
-            <li key={`${it.kind}:${it.item.id}`}>
+            <li key={agent.id}>
               <button
-                type="button" aria-pressed={picked} onClick={() => onPick(picked ? {} : it.pick)}
+                type="button" aria-pressed={picked} onClick={() => onPick(picked ? {} : { agentId: agent.id })}
                 className={cn(chip, picked ? 'border-brand-300 bg-brand-50 text-brand-700' : 'border-slate-200 text-slate-700 hover:border-brand-300')}
               >
-                {it.kind === 'agent'
-                  ? <EntityIcon icon={it.item.kind} size="sm" className="!rounded-full" />
-                  : <span className="flex size-7 items-center justify-center rounded-full bg-slate-100 text-slate-600"><Workflow className="size-3.5" aria-hidden /></span>}
-                <span className="sr-only">{it.kind === 'agent' ? 'ผู้ช่วย' : 'สายงาน'} </span>{it.item.name}
+                <EntityIcon icon={agent.kind} size="sm" className="!rounded-full" />
+                <span className="sr-only">ผู้ช่วย </span>{agent.name}
+                {stepsLabel(agent) && <span className="text-xs text-slate-500">· {stepsLabel(agent)}</span>}
               </button>
             </li>
           )

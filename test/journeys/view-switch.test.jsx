@@ -72,27 +72,6 @@ describe('The User view', () => {
     expect(app.url()).toBe('/workspace')
   })
 
-  it('a detailed-builder link lands on the simple editor for that Workflow, without "ขั้นสูง"', () => {
-    const app = startJourney('/workflows?id=wf-market-report&advanced=1')
-    expect(app.url()).toBe('/workflows?id=wf-market-report')
-    expect(screen.getByRole('textbox', { name: 'ชื่อสายงาน' })).toHaveValue('Market Research Report')
-    expect(screen.queryByRole('button', { name: 'ทดลองรัน' })).toBeNull()
-    expect(screen.queryByRole('button', { name: 'ขั้นสูง' })).toBeNull()
-  })
-
-  it('a Workflow with conditions does not open the detailed builder; it can still be used', () => {
-    startJourney('/workflows?id=wf-sales-proposal')
-    expect(screen.queryByRole('button', { name: 'ทดลองรัน' })).toBeNull()
-    expect(screen.getByRole('link', { name: 'ใช้งาน' })).toBeInTheDocument()
-  })
-
-  it('a new AI Workflow draft has no "ขั้นสูง"', async () => {
-    const app = startJourney('/workflows')
-    await app.type(app.box('อยากให้สายงานทำอะไร'), 'ค้นข้อมูลคู่แข่ง สรุปเป็นเอกสาร{Enter}')
-    expect(screen.getByRole('button', { name: 'บันทึก' })).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'ขั้นสูง' })).toBeNull()
-  })
-
   it('the step-by-step Agent link falls back to quick create, without "ตั้งค่าขั้นสูง"', async () => {
     const app = startJourney('/agents/new?advanced=1')
     await app.type(app.box('อยากได้ผู้ช่วยแบบไหน'), 'ร่างอีเมลตอบลูกค้า')
@@ -134,12 +113,6 @@ describe('The Admin view', () => {
     const app = startJourney('/governance', { view: 'admin' })
     expect(app.url()).toBe('/governance')
     expect(screen.getByRole('region', { name: 'ตัวเลขสำคัญ' })).toBeInTheDocument()
-  })
-
-  it('sees "ขั้นสูง" in the Workflow editor and opens the detailed builder', async () => {
-    const app = startJourney('/workflows?id=wf-market-report', { view: 'admin' })
-    await app.click(screen.getByRole('button', { name: 'ขั้นสูง' }))
-    expect(screen.getByRole('button', { name: 'ทดลองรัน' })).toBeVisible()
   })
 
   it('sees "ตั้งค่าขั้นสูง" in quick create and opens the step-by-step Agent form', async () => {

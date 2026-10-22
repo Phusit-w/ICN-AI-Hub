@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { cleanup, screen, within } from '@testing-library/react'
-import { actionFor, expectWorkflowPicked, startJourney } from '../journey'
+import { actionFor, expectAgentPicked, startJourney } from '../journey'
 
 // Ticket 07: no Community page. Shared items are found with filter chips and used with "ใช้งาน".
 const POPULAR = 'ยอดนิยมในองค์กร'
@@ -42,23 +42,11 @@ describe('Shared items: filter chips and "ใช้งาน"', () => {
     expect(app.url()).toBe('/workspace?agent=agent-it-support')
   })
 
-  it('the Workflows page has the same chips and the active one shows', async () => {
-    const app = startJourney('/workflows')
-    expect(within(chips()).getAllByRole('button').map((b) => b.textContent)).toEqual([POPULAR, SHARED])
-    await app.click(chip(POPULAR))
-    expect(app.url()).toBe('/workflows?filter=popular')
-    expect(chip(POPULAR)).toHaveAttribute('aria-pressed', 'true')
-    expect(screen.getByText('IT Incident Triage')).toBeInTheDocument()
-  })
-
-  it('"ใช้งาน" on a shared Workflow picks it as-is and never offers a copy', async () => {
-    const app = startJourney('/workflows?filter=shared')
-    expect(screen.queryAllByRole('button', { name: /คัดลอก|Fork|สำเนา/ })).toHaveLength(0)
-    expect(screen.queryAllByRole('link', { name: /คัดลอก|Fork|สำเนา/ })).toHaveLength(0)
-
+  it('"ใช้งาน" on a shared Agent with Steps picks it as-is in the composer', async () => {
+    const app = startJourney('/agents?filter=shared')
     await app.click(actionFor('IT Incident Triage', 'ใช้งาน'))
-    expect(app.url()).toBe('/workspace?workflow=wf-it-incident')
-    expectWorkflowPicked('IT Incident Triage')
+    expect(app.url()).toBe('/workspace?agent=agent-it-incident')
+    expectAgentPicked('IT Incident Triage')
   })
 
   it('copying a shared Agent stays a secondary action on its detail page', () => {
@@ -67,7 +55,7 @@ describe('Shared items: filter chips and "ใช้งาน"', () => {
   })
 
   it('no page links to the community page any more', () => {
-    for (const route of ['/', '/workspace', '/agents', '/agents?tab=skills', '/agents/agent-it-support', '/workflows', '/governance']) {
+    for (const route of ['/', '/workspace', '/agents', '/agents?tab=skills', '/agents/agent-it-support', '/agents/agent-it-incident', '/governance']) {
       startJourney(route, { view: route === '/governance' ? 'admin' : 'user' })
       const hrefs = [...document.querySelectorAll('a[href]')].map((a) => a.getAttribute('href'))
       expect(hrefs.filter((h) => h.includes('community')), route).toEqual([])

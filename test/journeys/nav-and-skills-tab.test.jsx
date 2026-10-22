@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest'
 import { screen, within } from '@testing-library/react'
 import { mainMenu, startJourney } from '../journey'
 
-// "แชตใหม่" sits above the menu and is the home screen, so the menu itself has 3 items in the Admin view.
-// The User view has no governance, so its menu has 2 (see view-switch.test.jsx).
-const MENU = ['สายงาน', 'ผู้ช่วย AI', 'ภาพรวมและการกำกับดูแล']
+// "แชตใหม่" sits above the menu and is the home screen, so the menu itself has 2 items in the Admin view.
+// The User view has no governance, so its menu has 1 (see view-switch.test.jsx). There is no "สายงาน" (ADR 0001).
+const MENU = ['ผู้ช่วย AI', 'ภาพรวมและการกำกับดูแล']
 const admin = { view: 'admin' }
 
 /** Menu item names; a live count badge (e.g. "2" running Runs) is not part of the item's name. */
@@ -12,7 +12,7 @@ const menuItems = (nav) => within(nav).getAllByRole('link').map((l) => l.getAttr
 
 const skillDialog = (name) => screen.getByRole('dialog', { name })
 
-describe('Navigation: new chat plus a three-item menu', () => {
+describe('Navigation: new chat plus a two-item menu', () => {
   it('the app opens on new chat: greeting, composer and the reuse row, with "แชตใหม่" marked as the current page', () => {
     const app = startJourney('/')
     expect(app.url()).toBe('/workspace')
@@ -23,7 +23,7 @@ describe('Navigation: new chat plus a three-item menu', () => {
 
   it('on new chat, an Agent in "ใช้ซ้ำ" is not shown again under "ผู้ช่วยของแผนกคุณ"', () => {
     startJourney('/')
-    const names = (region) => within(region).getAllByRole('button').map((b) => b.textContent.replace(/^ผู้ช่วย |^สายงาน /, ''))
+    const names = (region) => within(region).getAllByRole('button').map((b) => b.textContent.replace(/^ผู้ช่วย /, '').replace(/·.*$/, ''))
     const reuse = names(screen.getByRole('region', { name: 'ใช้ซ้ำ' }))
     const dept = screen.queryByRole('region', { name: /ผู้ช่วยของแผนกคุณ/ })
     if (dept) for (const b of within(dept).getAllByRole('button')) {
@@ -38,20 +38,20 @@ describe('Navigation: new chat plus a three-item menu', () => {
     expect(screen.getByRole('heading', { name: 'แนะนำสำหรับงานนี้' })).toBeInTheDocument()
   })
 
-  it('the main menu has exactly 3 items, in order, with governance in its own group at the bottom', () => {
+  it('the main menu has exactly 2 items, in order, with governance in its own group at the bottom', () => {
     startJourney('/', admin)
     expect(menuItems(mainMenu())).toEqual(MENU)
     const groups = within(mainMenu()).getAllByRole('list')
     expect(within(groups.at(-1)).getAllByRole('link').map((l) => l.textContent)).toEqual(['ภาพรวมและการกำกับดูแล'])
   })
 
-  it('the collapsed icon-only menu shows the same 3 items', async () => {
+  it('the collapsed icon-only menu shows the same 2 items', async () => {
     const app = startJourney('/', admin)
     await app.click(screen.getByRole('button', { name: 'ย่อแถบเมนู' }))
     expect(within(mainMenu()).getAllByRole('link').map((l) => l.getAttribute('aria-label'))).toEqual(MENU)
   })
 
-  it('the mobile menu shows the same 3 items', async () => {
+  it('the mobile menu shows the same 2 items', async () => {
     const app = startJourney('/', admin)
     await app.click(screen.getByRole('button', { name: 'เปิดเมนู' }))
     const mobile = within(screen.getByRole('dialog')).getByRole('navigation', { name: 'Main' })
@@ -62,6 +62,19 @@ describe('Navigation: new chat plus a three-item menu', () => {
     const app = startJourney('/community')
     expect(app.url()).toBe('/agents?filter=popular')
     expect(within(mainMenu()).queryByRole('link', { name: /ชุมชน/ })).toBeNull()
+  })
+
+  it('Workflows are gone: no "สายงาน" in the menu, and an old Workflows link lands on the Agents page', () => {
+    const app = startJourney('/workflows?id=wf-market-report', admin)
+    expect(app.url()).toBe('/agents')
+    expect(within(mainMenu()).queryByRole('link', { name: /สายงาน/ })).toBeNull()
+  })
+
+  it('an Agent with Steps has a card like any Agent, with a badge saying how many Steps it has', () => {
+    startJourney('/agents')
+    const name = screen.getAllByRole('link', { name: 'Sales Proposal Pipeline' })[0]
+    expect(within(name.closest('li')).getByText('5 ขั้นตอน')).toBeVisible()
+    expect(within(name.closest('li')).getByRole('link', { name: 'ใช้งาน' })).toHaveAttribute('href', '/workspace?agent=agent-proposal-pipeline')
   })
 })
 

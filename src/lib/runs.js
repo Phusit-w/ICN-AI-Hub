@@ -4,8 +4,9 @@
 import { LOCAL_MODEL_ID, modelById } from '../data/catalog'
 import { TASKS, outputFor } from './mockOutputs'
 import { uid } from './utils'
+import { hasSteps, stepAgents, stepsLabel } from './steps'
 
-const DURATION = { research: 5200, sales: 4600, document: 5600, image: 4200, review: 3800, condition: 1800, skill: 3000, chat: 1600 }
+const DURATION = { research: 5200, sales: 4600, document: 5600, image: 4200, review: 3800, chat: 1600 }
 
 const SENSITIVE = /(เงินเดือน|salary|บัตรประชาชน|confidential|ลับ|ปิดงบ|invoice|ใบแจ้งหนี้|resume|เรซูเม่|ประวัติพนักงาน)/i
 export const isSensitive = (text) => SENSITIVE.test(text)
@@ -21,61 +22,35 @@ export function resolveModel(agent, sensitive) {
   return CLOUD_KINDS.includes(agent.kind) ? 'claude' : LOCAL_MODEL_ID
 }
 
-function makeStep({ agent, skill, label, kind, nodeId, sensitive }) {
-  const k = kind ?? agent?.kind ?? 'skill'
+function makeStep({ agent, label, kind, sensitive }) {
+  const k = kind ?? agent.kind
   return {
-    id: uid('step'), nodeId, kind: k,
-    agentId: agent?.id ?? null, skillId: skill?.id ?? null,
-    name: agent?.name ?? skill?.name ?? label,
+    id: uid('step'), kind: k,
+    agentId: agent?.id ?? null,
+    name: agent?.name ?? label,
     task: TASKS[k] ?? TASKS.skill,
-    model: k === 'condition' ? null : resolveModel(agent ?? { model: 'auto', kind: k }, sensitive),
+    model: resolveModel(agent ?? { model: 'auto', kind: k }, sensitive),
     status: 'waiting', elapsed: 0, duration: DURATION[k] ?? 4400,
     loopBackTo: null, loopsLeft: 0, loops: 0, output: null,
   }
 }
 
-// Kahn topological order over forward edges; ties broken left-to-right on the canvas.
-function topoOrder(wf) {
-  const forward = wf.edges.filter((e) => e.kind !== 'loop')
-  const indeg = Object.fromEntries(wf.nodes.map((n) => [n.id, 0]))
-  forward.forEach((e) => { indeg[e.to] += 1 })
-  const byX = (a, b) => wf.nodes.find((n) => n.id === a).x - wf.nodes.find((n) => n.id === b).x
-  const queue = Object.keys(indeg).filter((id) => indeg[id] === 0).sort(byX)
-  const order = []
-  while (queue.length) {
-    const id = queue.shift()
-    order.push(id)
-    forward.filter((e) => e.from === id).forEach((e) => {
-      indeg[e.to] -= 1
-      if (indeg[e.to] === 0) { queue.push(e.to); queue.sort(byX) }
-    })
-  }
-  return order
-}
+// Requests that match a company Agent with Steps. The system chose it, so its Plan still waits for "เริ่มเลย".
+const STEPS_RULES = [
+  [/proposal|ข้อเสนอ|เสนอราคา|\btor\b/i, 'agent-proposal-pipeline'],
+  [/onboard|พนักงานใหม่/i, 'agent-new-hire-onboarding'],
+  [/vpn|เข้าระบบไม่ได้|ticket|เครื่องพิมพ์|printer|อีเมลใช้ไม่ได้/i, 'agent-it-incident'],
+  [/ปิดงบ|month.?end|กระทบยอด|reconcil/i, 'agent-month-end'],
+]
 
-export function stepsFromWorkflow(wf, { agents, skills, sensitive }) {
-  const steps = topoOrder(wf)
-    .map((id) => wf.nodes.find((n) => n.id === id))
-    .filter((n) => n.type === 'condition' || (n.type === 'agent' && agents.some((a) => a.id === n.ref)) || (n.type === 'skill' && skills.some((s) => s.id === n.ref)))
-    .map((n) => makeStep({
-      agent: n.type === 'agent' ? agents.find((a) => a.id === n.ref) : null,
-      skill: n.type === 'skill' ? skills.find((s) => s.id === n.ref) : null,
-      label: n.label, kind: n.type === 'agent' ? undefined : n.type, nodeId: n.id, sensitive,
-    }))
-  wf.edges.filter((e) => e.kind === 'loop').forEach((e) => {
-    const from = steps.findIndex((s) => s.nodeId === e.from)
-    const to = steps.findIndex((s) => s.nodeId === e.to)
-    if (from > to && to >= 0) Object.assign(steps[from], { loopBackTo: to, loopsLeft: 1, loopReason: e.label })
-  })
+/** One step per Agent, in order. A Review after a Research sends the work back once when information is missing. */
+function stepsFor(agents, sensitive) {
+  const steps = agents.map((agent) => makeStep({ agent, sensitive }))
+  const research = steps.findIndex((s) => s.kind === 'research')
+  const review = steps.findIndex((s) => s.kind === 'review')
+  if (research >= 0 && review > research) Object.assign(steps[review], { loopBackTo: research, loopsLeft: 1, loopReason: 'ข้อมูลยังไม่ครบ' })
   return steps
 }
-
-const WORKFLOW_RULES = [
-  [/proposal|ข้อเสนอ|เสนอราคา|\btor\b/i, 'wf-sales-proposal'],
-  [/onboard|พนักงานใหม่/i, 'wf-hr-onboarding'],
-  [/vpn|เข้าระบบไม่ได้|ticket|เครื่องพิมพ์|printer|อีเมลใช้ไม่ได้/i, 'wf-it-incident'],
-  [/ปิดงบ|month.?end|กระทบยอด|reconcil/i, 'wf-month-end'],
-]
 
 const AGENT_RULES = [
   [/ค้น|หาข้อมูล|research|ตลาด|คู่แข่ง/i, 'agent-research'],
@@ -103,27 +78,28 @@ export function threadsOf(runs) {
   return [...byId.values()].sort((a, b) => b.latest.createdAt - a.latest.createdAt)
 }
 
-/** Decide which agents should handle a free-text request. */
-export function planRequest(prompt, { agents, skills, workflows, agentId, workflowId }) {
+/**
+ * Decide which agents should handle a free-text request. `agentId` is the Agent the user picked, if any.
+ * An Agent with Steps (picked, or matched by keyword) runs its Steps, so a Plan is always one level deep.
+ * `plan.agentId` is the Agent the Run is started with: the one Feedback counts for.
+ */
+export function planRequest(prompt, { agents, agentId }) {
   const sensitive = isSensitive(prompt)
-  const wfId = workflowId ?? (agentId ? null : WORKFLOW_RULES.find(([re]) => re.test(prompt))?.[1])
-  const workflow = workflows.find((w) => w.id === wfId)
-  if (workflow) {
-    return { sensitive, workflowId: workflow.id, reason: `ตรงกับ Workflow "${workflow.name}" ที่ใช้กันในบริษัท`, steps: stepsFromWorkflow(workflow, { agents, skills, sensitive }) }
+  const withSteps = agents.find((a) => a.id === (agentId ?? STEPS_RULES.find(([re]) => re.test(prompt))?.[1]))
+  if (withSteps && hasSteps(withSteps)) {
+    const reason = agentId ? `ใช้ผู้ช่วย "${withSteps.name}" ที่คุณเลือก ทำตาม ${stepsLabel(withSteps)}` : `ตรงกับผู้ช่วย "${withSteps.name}" ที่ใช้กันในบริษัท`
+    return { sensitive, agentId: withSteps.id, reason, steps: stepsFor(stepAgents(withSteps, agents), sensitive) }
   }
 
   let ids = agentId ? [agentId] : AGENT_RULES.filter(([re]) => re.test(prompt)).map(([, id]) => id)
   // A short message with no task keywords is conversation, not work — answer it directly.
   if (!ids.length && prompt.length <= 40) {
-    return { sensitive, workflowId: null, reason: 'คำถามทั่วไป ตอบได้ทันที', steps: [makeStep({ kind: 'chat', label: 'ICN Assistant', sensitive })] }
+    return { sensitive, agentId: null, reason: 'คำถามทั่วไป ตอบได้ทันที', steps: [makeStep({ kind: 'chat', label: 'ICN Assistant', sensitive })] }
   }
   if (!ids.length) ids = ['agent-research', 'agent-document']
   if (!ids.includes('agent-review')) ids.push('agent-review')
-  const steps = ids.map((id) => agents.find((a) => a.id === id)).filter(Boolean).map((agent) => makeStep({ agent, sensitive }))
-  const research = steps.findIndex((s) => s.kind === 'research')
-  const review = steps.findIndex((s) => s.kind === 'review')
-  if (research >= 0 && review > research) Object.assign(steps[review], { loopBackTo: research, loopsLeft: 1, loopReason: 'ข้อมูลยังไม่ครบ' })
-  return { sensitive, workflowId: null, reason: agentId ? 'ใช้ Agent ที่คุณเลือก และให้ Review Agent ตรวจก่อนส่ง' : 'ระบบเลือก Agent ตามคำสำคัญในคำขอของคุณ', steps }
+  const steps = stepsFor(ids.map((id) => agents.find((a) => a.id === id)).filter(Boolean), sensitive)
+  return { sensitive, agentId: agentId ?? null, reason: agentId ? 'ใช้ Agent ที่คุณเลือก และให้ Review Agent ตรวจก่อนส่ง' : 'ระบบเลือก Agent ตามคำสำคัญในคำขอของคุณ', steps }
 }
 
 /** `threadId` groups follow-up messages into one conversation; a new conversation uses the run's own id. */
@@ -131,7 +107,7 @@ export function createRun({ prompt, plan, owner, threadId, createdAt = Date.now(
   const id = uid('run')
   return {
     id, threadId: threadId ?? id, title: prompt.length > 70 ? `${prompt.slice(0, 70)}…` : prompt, prompt, owner,
-    workflowId: plan.workflowId, sensitive: plan.sensitive, reason: plan.reason, steps: plan.steps,
+    agentId: plan.agentId, sensitive: plan.sensitive, reason: plan.reason, steps: plan.steps,
     status: 'planned', current: -1, createdAt, startedAt: null, finishedAt: null, events: [],
   }
 }

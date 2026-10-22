@@ -2,12 +2,11 @@ import { describe, expect, it } from 'vitest'
 import { screen, within } from '@testing-library/react'
 import { mainMenu, startJourney, newChatLink } from '../journey'
 
-// Ticket 08: Agent and Workflow cards show only an icon, name, one-line description and "ใช้งาน".
+// Ticket 08: Agent cards show only an icon, name, one-line description and "ใช้งาน" (and "N ขั้นตอน" for an Agent with Steps).
 // The rest of the card opens details. The Favourite star sits on the card (shown on hover and keyboard focus).
 // Uses and version live on the detail pages.
 
 const agentList = () => screen.getByRole('list', { name: 'รายการผู้ช่วย' })
-const workflowList = (name) => screen.getByRole('list', { name })
 const cardOf = (list, name) => within(list).getAllByRole('listitem').find((li) => within(li).queryByText(name))
 const NUMBERS = /ครั้ง|v\d|★|\d\.\d/
 
@@ -62,31 +61,29 @@ describe('Clean Agent cards', () => {
   })
 })
 
-describe('Clean Workflow cards', () => {
-  it('have the same shape: name, description and "ใช้งาน", and no numbers', () => {
-    startJourney('/workflows')
-    const card = cardOf(workflowList('สายงานแนะนำจากเพื่อนร่วมงาน'), 'IT Incident Triage')
+describe('Agents with Steps', () => {
+  it('have the same clean card, plus a badge with the number of Steps', () => {
+    startJourney('/agents')
+    const card = cardOf(agentList(), 'IT Incident Triage')
     expect(within(card).getByRole('link', { name: 'IT Incident Triage' })).toBeInTheDocument()
     expect(within(card).getByRole('link', { name: 'ใช้งาน' })).toBeInTheDocument()
+    expect(within(card).getByText('1 ขั้นตอน')).toBeInTheDocument()
     expect(card.textContent).not.toMatch(NUMBERS)
   })
 
-  it('open the Workflow from the card, which shows uses and version', async () => {
-    const app = startJourney('/workflows')
-    await app.click(screen.getByRole('link', { name: 'Market Research Report' }))
-    expect(app.url()).toBe('/workflows?id=wf-market-report')
-    expect(screen.getByText(/v1\.0/)).toBeInTheDocument()
-    expect(screen.getByText(/ใช้ 72 ครั้ง/)).toBeInTheDocument()
+  it('open from the card on a detail page with uses, version and the Steps in order', async () => {
+    const app = startJourney('/agents')
+    await app.click(within(cardOf(agentList(), 'Market Research Report')).getByRole('link', { name: 'Market Research Report' }))
+    expect(app.url()).toBe('/agents/agent-market-report')
+    expect(screen.getByText(/72 ครั้งที่ใช้งาน/)).toBeInTheDocument()
+    expect(screen.getByText('v1.0')).toBeInTheDocument()
+    const steps = within(screen.getByRole('list', { name: 'ขั้นตอน' })).getAllByRole('listitem').map((li) => li.textContent.replace(/^\d+/, ''))
+    expect(steps).toEqual(['Research Agent', 'Data Agent', 'Document Agent', 'Image Agent'])
   })
 
-  it('a Workflow opened in the detailed builder also shows its numbers', () => {
-    startJourney('/workflows?id=wf-sales-proposal', { view: 'admin' })
-    expect(screen.getByText(/v1\.2/)).toBeInTheDocument()
-    expect(screen.getByText(/ใช้ 112 ครั้ง/)).toBeInTheDocument()
-  })
-
-  it('the page has at most one primary button', () => {
-    startJourney('/workflows')
-    expect(primaries().length).toBeLessThanOrEqual(1)
+  it("a Step's Agent says which Agents use it as a Step", () => {
+    startJourney('/agents/agent-image')
+    expect(screen.getByRole('link', { name: 'Sales Proposal Pipeline' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Market Research Report' })).toBeInTheDocument()
   })
 })

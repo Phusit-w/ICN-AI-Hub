@@ -1,10 +1,11 @@
 import { Link, useParams } from 'react-router-dom'
-import { ArrowLeft, Copy, ThumbsUp, FileText, History, Lock, Play, Workflow, Wrench, BookOpen, Puzzle } from 'lucide-react'
+import { ArrowLeft, Copy, ThumbsUp, FileText, History, ListOrdered, Lock, Play, Wrench, BookOpen, Puzzle } from 'lucide-react'
 import { isAwaitingCompanyShare, useStore } from '../store/AppStore'
 import { DATA_CLASSES, deptById, knowledgeById, modelById, toolById, userById } from '../data/catalog'
 import { fmt } from '../lib/utils'
 import { feedbackLabel, feedbackSummary } from '../lib/feedback'
 import { skillLink } from '../lib/routes'
+import { agentsUsingAsStep, hasSteps, stepAgents } from '../lib/steps'
 import { Card, CardHeader, EmptyState } from '../components/ui/Card'
 import Button from '../components/ui/Button'
 import Badge, { DeptBadge, ModelBadge, ShareBadge } from '../components/ui/Badge'
@@ -32,8 +33,8 @@ export default function AgentDetail() {
   const owner = userById(agent.owner)
   const summary = feedbackSummary(agent, state)
   const skills = agent.skills.map((s) => state.skills.find((x) => x.id === s)).filter(Boolean)
-  const workflows = state.workflows.filter((w) => w.nodes.some((n) => n.ref === agent.id))
-  const runs = state.runs.filter((r) => r.steps.some((s) => s.agentId === agent.id)).slice(0, 4)
+  const usedBy = agentsUsingAsStep(agent, state.agents)
+  const runs = state.runs.filter((r) => r.agentId === agent.id || r.steps.some((s) => s.agentId === agent.id)).slice(0, 4)
   const classification = DATA_CLASSES.find((c) => c.id === agent.classification)
 
   return (
@@ -103,26 +104,33 @@ export default function AgentDetail() {
             ) : <p className="text-sm text-slate-500">ยังไม่มี Skill</p>}
           </Section>
 
-          <Section title="สายงานที่ใช้ผู้ช่วยนี้" icon={Workflow}>
-            {workflows.length ? (
-              <ul className="divide-y divide-slate-100">
-                {workflows.map((w) => (
-                  <li key={w.id} className="flex items-center gap-3 py-2.5">
-                    <div className="min-w-0 flex-1">
-                      <Link to={`/workflows?id=${w.id}`} className="text-sm font-medium text-slate-800 hover:text-brand-700">{w.name}</Link>
-                      <div className="mt-1 flex flex-wrap items-center gap-1 text-[11px] text-slate-500">
-                        {w.nodes.filter((n) => n.type === 'agent').map((n, i) => {
-                          const a = state.agents.find((x) => x.id === n.ref)
-                          return <span key={n.id} className={n.ref === agent.id ? 'font-semibold text-brand-700' : ''}>{i > 0 && '→ '}{a?.name.replace(' Agent', '')}</span>
-                        })}
-                      </div>
-                    </div>
-                    <DeptBadge dept={w.dept} />
+          {hasSteps(agent) ? (
+            <Section title={`ขั้นตอน (${agent.steps.length})`} icon={ListOrdered}>
+              <ol aria-label="ขั้นตอน" className="space-y-2">
+                {stepAgents(agent, state.agents).map((a, i) => (
+                  <li key={a.id} className="flex items-center gap-3">
+                    <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-slate-600">{i + 1}</span>
+                    <EntityIcon icon={a.kind} size="sm" />
+                    <Link to={`/agents/${a.id}`} className="text-sm font-medium text-slate-800 hover:text-brand-700">{a.name}</Link>
                   </li>
                 ))}
-              </ul>
-            ) : <p className="text-sm text-slate-500">ยังไม่ถูกใช้ใน Workflow ใด</p>}
-          </Section>
+              </ol>
+              <p className="mt-3 text-xs text-slate-500">แต่ละขั้นรับผลงานจากขั้นก่อนหน้า แล้วส่งต่อตามลำดับ</p>
+            </Section>
+          ) : (
+            <Section title="ผู้ช่วยที่ใช้ผู้ช่วยนี้เป็นขั้นตอน" icon={ListOrdered}>
+              {usedBy.length ? (
+                <ul className="divide-y divide-slate-100">
+                  {usedBy.map((a) => (
+                    <li key={a.id} className="flex items-center gap-3 py-2.5">
+                      <Link to={`/agents/${a.id}`} className="min-w-0 flex-1 text-sm font-medium text-slate-800 hover:text-brand-700">{a.name}</Link>
+                      <DeptBadge dept={a.dept} />
+                    </li>
+                  ))}
+                </ul>
+              ) : <p className="text-sm text-slate-500">ยังไม่ถูกใช้เป็นขั้นตอนของผู้ช่วยตัวอื่น</p>}
+            </Section>
+          )}
 
           {agent.versions.length > 0 && (
             <Section title="ประวัติเวอร์ชัน" icon={History}>

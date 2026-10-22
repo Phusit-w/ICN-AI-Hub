@@ -1,4 +1,5 @@
 // `kind` drives the icon and the mock output the simulated run produces.
+// `steps` lists, in order, the Agents a multi-stage job hands its work to (GLOSSARY: Step). A Step's Agent has no Steps itself.
 const agent = (a) => ({
   share: 'company',
   classification: 'internal',
@@ -7,6 +8,7 @@ const agent = (a) => ({
   skills: [],
   examples: [],
   versions: [],
+  steps: [],
   ...a,
 })
 
@@ -259,5 +261,52 @@ export const AGENTS = [
     output: { format: 'Excel table', language: 'TH', template: 'Audit Findings' },
     owner: 'u-sudarat', uses: 35, version: '1.0', updated: '2026-08-28',
     examples: ['ตรวจขั้นตอนจัดซื้อนี้เทียบระเบียบ'],
+  }),
+  // Former Workflows (ADR 0001): their agent nodes became Steps, their skill nodes became Skills.
+  agent({
+    id: 'agent-proposal-pipeline', name: 'Sales Proposal Pipeline', kind: 'sales', dept: 'sales',
+    description: 'จาก Requirement ลูกค้า → Proposal พร้อมภาพประกอบ ตรวจครบก่อนส่ง',
+    instruction: 'Turn a customer requirement into a checked Proposal: research the customer, draft the offer, write the document, add images, then review it before it goes out.',
+    model: 'auto', steps: ['agent-research', 'agent-sales-proposal', 'agent-document', 'agent-image', 'agent-review'],
+    output: { format: 'Word document', language: 'TH', template: 'Sales Proposal v3' },
+    owner: 'u-thanawat', uses: 112, version: '1.2', updated: '2026-10-08',
+    examples: ['ทำ Proposal ระบบ Smart Warehouse ให้ลูกค้า Thai Retail Group'],
+  }),
+  agent({
+    id: 'agent-new-hire-onboarding', name: 'New Hire Onboarding', kind: 'hr', dept: 'hr',
+    description: 'สร้างแผน Onboarding, สรุปสวัสดิการ และอีเมลต้อนรับพนักงานใหม่',
+    instruction: 'Prepare a new hire: summarise the benefits that apply, build the onboarding plan and welcome email, then review it before it goes to the manager.',
+    model: 'icn-local', skills: ['skill-report-format'], steps: ['agent-hr-policy', 'agent-onboarding', 'agent-review'],
+    output: { format: 'Word document', language: 'TH', template: 'Onboarding Plan' },
+    owner: 'u-arisa', uses: 53, version: '1.2', updated: '2026-09-18',
+    examples: ['เตรียม Onboarding ให้พนักงานใหม่ฝ่ายขาย เริ่มงาน 1 พ.ย.'],
+  }),
+  agent({
+    id: 'agent-it-incident', name: 'IT Incident Triage', kind: 'it', dept: 'it',
+    description: 'แก้ปัญหาเบื้องต้นอัตโนมัติ ถ้าแก้ไม่ได้ร่างอีเมลแจ้ง IT พร้อมข้อมูลครบ',
+    instruction: 'Try the first-line fix for the reported problem. If it is not solved, draft an IT request with everything IT needs to act.',
+    model: 'icn-local', skills: ['skill-it-request'], steps: ['agent-it-support'],
+    output: { format: 'Short answer', language: 'TH', template: 'IT Ticket' },
+    owner: 'u-kittipong', uses: 70, version: '1.2', updated: '2026-09-25',
+    examples: ['VPN ต่อไม่ได้ตั้งแต่เช้า'],
+  }),
+  agent({
+    id: 'agent-month-end', name: 'Month-end Close Report', kind: 'accounting', dept: 'accounting',
+    description: 'กระทบยอด → วิเคราะห์งบ → รายงานปิดงบประจำเดือน (ประมวลผลบน Local AI)',
+    instruction: 'Close the month: reconcile invoices, analyse the budget, write the month-end report and review it before it goes to the CFO.',
+    model: 'icn-local', classification: 'confidential', share: 'department',
+    steps: ['agent-invoice', 'agent-budget', 'agent-document', 'agent-review'],
+    output: { format: 'Word document', language: 'TH', template: 'Month-end Report' },
+    owner: 'u-nok', uses: 25, version: '1.4', updated: '2026-10-02',
+    examples: ['ทำรายงานปิดงบเดือนตุลาคม พร้อมกระทบยอด Invoice'],
+  }),
+  agent({
+    id: 'agent-market-report', name: 'Market Research Report', kind: 'research', dept: 'core',
+    description: 'ค้นคว้า วิเคราะห์ตัวเลข และทำรายงานพร้อม Infographic',
+    instruction: 'Research the topic, analyse the numbers, write the report and add an infographic.',
+    model: 'auto', steps: ['agent-research', 'agent-data', 'agent-document', 'agent-image'],
+    output: { format: 'Word document', language: 'TH', template: 'Corporate Report' },
+    owner: 'u-pranee', uses: 72, version: '1.0', updated: '2026-08-20',
+    examples: ['หาข้อมูลตลาด EV Charger ในไทย วิเคราะห์ตัวเลข และทำรายงานพร้อม Infographic'],
   }),
 ]

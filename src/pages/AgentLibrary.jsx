@@ -11,6 +11,7 @@ import Button from '../components/ui/Button'
 import { Select } from '../components/ui/Form'
 import Tabs from '../components/ui/Tabs'
 import { ItemCard } from '../components/agents/AgentCard'
+import { stepsLabel } from '../lib/steps'
 import SkillsTab from './SkillsTab'
 
 // One-tap shortcuts for people who don't know what to type yet.
@@ -33,7 +34,7 @@ const SORTS = {
 /** An Agent in the clean card shape. `best` marks the top recommendation for a typed need: its "ใช้งาน" is the page's one primary. */
 const AgentCard = ({ agent, best = false, ...props }) => (
   <ItemCard
-    icon={agent.kind} name={agent.name} description={agent.description} favoriteId={agent.id}
+    icon={agent.kind} name={agent.name} description={agent.description} favoriteId={agent.id} badge={stepsLabel(agent)}
     to={`/agents/${agent.id}`} useTo={`/workspace?agent=${agent.id}`} primary={best}
     className={best ? 'border-brand-400' : undefined} {...props}
   />

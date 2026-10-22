@@ -3,6 +3,7 @@ import { Play, Star } from 'lucide-react'
 import { useStore } from '../../store/AppStore'
 import { cn } from '../../lib/utils'
 import Button from '../ui/Button'
+import Badge from '../ui/Badge'
 import EntityIcon from './EntityIcon'
 
 /** `reveal`: hidden until its card is hovered or has keyboard focus (stays shown once starred). */
@@ -20,11 +21,12 @@ export function FavoriteButton({ id, reveal = false, className }) {
 }
 
 /**
- * The one card shape for Agents and Workflows: icon, name, one line of description and "ใช้งาน".
+ * The one card shape for Agents: icon, name, one line of description and "ใช้งาน", plus an optional `badge`
+ * such as "3 ขั้นตอน".
  * The name's link stretches over the whole card, so clicking anywhere but the controls opens the details.
  * Pass `favoriteId` for an Agent to get its Favourite star. `primary` makes "ใช้งาน" the page's one brand button.
  */
-export function ItemCard({ icon, tone, name, description, to, useTo, favoriteId, primary = false, className, ...props }) {
+export function ItemCard({ icon, tone, name, description, badge, to, useTo, favoriteId, primary = false, className, ...props }) {
   return (
     <li className={cn('group relative flex flex-col rounded-xl border border-slate-200 bg-white p-4 transition hover:border-brand-300 hover:shadow-sm', className)} {...props}>
       <div className="flex items-start justify-between gap-2">
@@ -36,6 +38,7 @@ export function ItemCard({ icon, tone, name, description, to, useTo, favoriteId,
         className="mt-3 truncate text-sm font-semibold text-slate-900 group-hover:text-brand-700 after:absolute after:inset-0 after:rounded-xl focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-brand-300"
       >{name}</Link>
       <p className="mt-0.5 truncate text-[13px] text-slate-500">{description}</p>
+      {badge && <Badge tone="outline" className="mt-2 self-start">{badge}</Badge>}
       <Button size="sm" variant={primary ? 'primary' : 'subtle'} icon={Play} to={useTo} className="relative z-10 mt-3 self-start">ใช้งาน</Button>
     </li>
   )

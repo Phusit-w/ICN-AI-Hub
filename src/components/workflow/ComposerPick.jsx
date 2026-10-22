@@ -1,52 +1,37 @@
 import { useEffect, useState } from 'react'
-import { Bot, ChevronDown, Workflow, X } from 'lucide-react'
+import { Bot, ChevronDown, X } from 'lucide-react'
 import { useStore } from '../../store/AppStore'
 import { DEPARTMENTS, deptById, userById } from '../../data/catalog'
 import { cn } from '../../lib/utils'
 
-// A pick is what the user chose for a request: { agentId } or { workflowId }, never both,
-// or {} when the system chooses. The composer and the "ใช้ซ้ำ" row share it.
+// A pick is what the user chose for a request: { agentId } (with or without Steps), or {} when the system chooses.
+// The composer and the "ใช้ซ้ำ" row share it.
 
-const toPick = (agentId, workflowId) => (workflowId ? { workflowId } : agentId ? { agentId } : {})
+const toPick = (agentId) => (agentId ? { agentId } : {})
 
-/** Pick state that follows `agentId` / `workflowId` whenever they change (e.g. from the URL). */
-export function usePick(agentId, workflowId) {
-  const [pick, setPick] = useState(() => toPick(agentId, workflowId))
-  useEffect(() => { setPick(toPick(agentId, workflowId)) }, [agentId, workflowId])
+/** Pick state that follows `agentId` whenever it changes (e.g. from the URL). */
+export function usePick(agentId) {
+  const [pick, setPick] = useState(() => toPick(agentId))
+  useEffect(() => { setPick(toPick(agentId)) }, [agentId])
   return [pick, setPick]
 }
 
-/** The pick carried in a URL's `?agent=` / `?workflow=`. */
-export const pickFromParams = (params) => toPick(params.get('agent'), params.get('workflow'))
-
-/** Query string for carrying `pick` to another page, e.g. '&agent=agent-sales'. */
-export const pickQuery = (pick) =>
-  pick.workflowId ? `&workflow=${encodeURIComponent(pick.workflowId)}` : pick.agentId ? `&agent=${encodeURIComponent(pick.agentId)}` : ''
+/** The pick carried in a URL's `?agent=`. */
+export const pickFromParams = (params) => toPick(params.get('agent'))
 
 const pillClass = 'flex h-8 min-w-0 items-center gap-1.5 rounded-full bg-brand-50 pr-1 pl-2.5 text-xs text-brand-700'
 const clearClass = 'rounded-full p-1 hover:bg-brand-100'
 
 /**
- * Shows the picked Agent or Workflow inside a composer, each with a one-click clear.
+ * Shows the picked Agent inside a composer, with a one-click clear.
  * `chooseAgent` adds a quiet "อัตโนมัติ" dropdown for picking any Agent when nothing is picked.
  */
 export default function ComposerPick({ pick, onChange, chooseAgent = false }) {
   const { state } = useStore()
-  const workflow = pick.workflowId && state.workflows.find((w) => w.id === pick.workflowId)
   const agent = pick.agentId && state.agents.find((a) => a.id === pick.agentId)
   const clear = () => onChange({})
   const myDept = userById(state.userId).dept
 
-  if (workflow) {
-    // A picked Workflow replaces agent picking: its steps are fixed.
-    return (
-      <span className={pillClass}>
-        <Workflow className="size-3.5 shrink-0" aria-hidden />
-        <span className="max-w-56 truncate">สายงาน: {workflow.name}</span>
-        <button type="button" onClick={clear} aria-label="เลิกใช้สายงานนี้" title="เลิกใช้สายงานนี้" className={clearClass}><X className="size-3" /></button>
-      </span>
-    )
-  }
   const clearAgent = agent && (
     <button type="button" onClick={clear} aria-label="กลับไปเลือกผู้ช่วยอัตโนมัติ" title="กลับไปเลือกอัตโนมัติ" className={clearClass}><X className="size-3" /></button>
   )

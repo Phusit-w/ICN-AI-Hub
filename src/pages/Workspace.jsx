@@ -23,7 +23,7 @@ import ReuseRow from '../components/workflow/ReuseRow'
 import DepartmentAgents from '../components/agents/DepartmentAgents'
 import { WelcomeCard } from '../components/layout/Help'
 import { userById } from '../data/catalog'
-import { reuseItems } from '../lib/reuse'
+import { reuseAgents } from '../lib/reuse'
 import logo from '../assets/icn-logo.png'
 
 // One-tap examples for a newcomer who doesn't know what to ask yet.
@@ -63,7 +63,7 @@ function Composer({ onSend, pick, onPickChange, ...props }) {
           <textarea
             ref={ref} value={text} onChange={(e) => setText(e.target.value)} rows={1} aria-label="ข้อความ"
             onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() } }}
-            placeholder={pick.workflowId ? `พิมพ์ข้อมูลสำหรับสายงานนี้ เช่น ชื่อลูกค้า หรือรายละเอียดงาน…` : 'พิมพ์งานหรือคำถามที่ต้องการ…'}
+            placeholder="พิมพ์งานหรือคำถามที่ต้องการ…"
             className="block max-h-40 min-h-10 min-w-0 flex-1 resize-none self-center bg-transparent px-1 py-2 text-[15px] placeholder:text-slate-400 focus:outline-none [field-sizing:content]"
           />
           <span className="flex shrink-0 items-center gap-1 self-end py-1"><ComposerPick pick={pick} onChange={onPickChange} chooseAgent /></span>
@@ -131,7 +131,7 @@ function AssistantMessage({ run, latest, onShowSteps }) {
   const chat = isChatRun(run)
   const current = run.steps[run.current]
   const final = run.status === 'completed' ? finalStep(run) : null
-  const loops = run.steps.reduce((n, s) => n + (s.kind === 'condition' || s.kind === 'review' ? s.loops : 0), 0)
+  const loops = run.steps.reduce((n, s) => n + (s.kind === 'review' ? s.loops : 0), 0)
 
   return (
     <div className="flex gap-3">
@@ -319,7 +319,7 @@ function NewChat({ pick, onPickChange, onSend }) {
   const { state } = useStore()
   const me = userById(state.userId)
   const hasRuns = state.runs.some((r) => r.owner === state.userId)
-  const reuse = reuseItems(state)
+  const reuse = reuseAgents(state)
   return (
     <div className="min-h-0 flex-1 overflow-y-auto">
       <div className="mx-auto max-w-3xl space-y-8 px-1 pt-2 pb-6 lg:pt-6">
@@ -338,8 +338,8 @@ function NewChat({ pick, onPickChange, onSend }) {
             </ul>
           )}
         </section>
-        <DepartmentAgents pick={pick} onPick={onPickChange} exclude={reuse.filter((it) => it.kind === 'agent').map((it) => it.item.id)} />
-        <ReuseRow items={reuse} pick={pick} onPick={onPickChange} hasFavorites={state.favorites.length > 0} />
+        <DepartmentAgents pick={pick} onPick={onPickChange} exclude={reuse.map((a) => a.id)} />
+        <ReuseRow agents={reuse} pick={pick} onPick={onPickChange} hasFavorites={state.favorites.length > 0} />
       </div>
     </div>
   )
@@ -353,15 +353,15 @@ export default function Workspace() {
   const handled = useRef(null)
   const q = params.get('q')
 
-  const [pick, setPick] = usePick(params.get('agent'), params.get('workflow'))
+  const [pick, setPick] = usePick(params.get('agent'))
   const run = state.runs.find((r) => r.id === params.get('run')) ?? null
   const thread = useMemo(() => (run ? runsOfThread(state.runs, run.threadId) : []), [state.runs, run])
 
-  // `pick` is { agentId } or { workflowId } when the user chose one, otherwise {} and the planner decides.
+  // `pick` is { agentId } when the user chose an Agent, otherwise {} and the planner decides.
   const send = (prompt, pick, threadId, attachments) => {
-    // One rule: a chat answer, or an Agent or Workflow the user picked, starts straight away.
-    // Several Agents the system chose itself (even a Workflow matched by keyword) wait at the Plan for "เริ่มเลย".
-    const picked = Boolean(pick?.agentId || pick?.workflowId)
+    // One rule: a chat answer, or an Agent the user picked (with or without Steps), starts straight away.
+    // Several Agents the system chose itself (even an Agent with Steps matched by keyword) wait at the Plan for "เริ่มเลย".
+    const picked = Boolean(pick?.agentId)
     const id = actions.planRun(prompt, pick ?? {}, state, { threadId, attachments, autoStart: (plan) => picked || isChatRun(plan) })
     setParams({ run: id })
   }

@@ -48,7 +48,7 @@ export function agentFromForm(form, { owner, note, forkedFrom }) {
     knowledge: form.knowledge, uploads: form.uploads, skills: form.skills, tools: form.tools,
     output: { format: form.format, language: form.language, template: form.template || 'Default' },
     share: form.share, owner, uses: 0, version: '1.0', updated: today,
-    examples: [], versions: [{ v: '1.0', date: today, by: owner, note }],
+    examples: [], versions: [{ v: '1.0', date: today, by: owner, note }], steps: [],
     forkedFrom,
   }
 }

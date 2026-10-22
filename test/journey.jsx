@@ -120,12 +120,7 @@ export function expectArtifactShown() {
   expect(screen.getAllByRole('button', { name: /ดาวน์โหลด/ }).length).toBeGreaterThan(0)
 }
 
-/** The Workspace composer shows `name` as the picked Agent. */
+/** The Workspace composer shows `name` as the picked Agent (with or without Steps). */
 export function expectAgentPicked(name) {
   expect(screen.getByRole('combobox', { name: 'เลือกผู้ช่วย' })).toHaveDisplayValue(name)
-}
-
-/** The Workspace composer shows `name` as the picked Workflow. */
-export function expectWorkflowPicked(name) {
-  expect(screen.getByText(`สายงาน: ${name}`)).toBeVisible()
 }

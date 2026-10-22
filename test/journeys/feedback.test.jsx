@@ -91,6 +91,22 @@ describe("An Agent's Feedback summary", () => {
 
     expect(screen.getByText('มีประโยชน์ 89% จาก 38 ครั้ง')).toBeVisible()
   })
+
+  it('Feedback on an Agent with Steps counts for that Agent, not for each Step', async () => {
+    const app = startJourney('/workspace?agent=agent-market-report')
+    await app.type(app.box('ข้อความ'), 'ตลาดเครื่องปรับอากาศอินเวอร์เตอร์ในไทย ปี 2026')
+    await send(app)
+    await app.letRunsFinish()
+
+    await app.click(helpful())
+    await app.click(within(mainMenu()).getByRole('link', { name: 'ผู้ช่วย AI' }))
+    await app.click(screen.getAllByRole('link', { name: 'Market Research Report' })[0])
+    expect(screen.getByText('มีประโยชน์ 100% จาก 1 ครั้ง')).toBeVisible()
+
+    // Research Agent did the first Step; its seeded 9 of 10 stays as it was.
+    await app.click(screen.getByRole('link', { name: 'Research Agent' }))
+    expect(screen.getByText('มีประโยชน์ 90% จาก 10 ครั้ง')).toBeVisible()
+  })
 })
 
 describe('No star ratings left', () => {
@@ -109,8 +125,8 @@ describe('No star ratings left', () => {
     expect(within(screen.getByRole('dialog')).queryAllByText(RATING)).toEqual([])
   })
 
-  it('an opened Workflow has no rating', () => {
-    startJourney('/workflows?id=wf-sales-proposal')
+  it('an opened Agent with Steps has no rating', () => {
+    startJourney('/agents/agent-proposal-pipeline')
     expect(screen.queryAllByText(RATING)).toEqual([])
   })
 })

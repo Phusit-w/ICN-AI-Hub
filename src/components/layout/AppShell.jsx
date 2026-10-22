@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import {
-  Bot, Menu, PanelLeftClose, PanelLeftOpen, Search, ShieldCheck, SquarePen, Workflow, X,
+  Bot, Menu, PanelLeftClose, PanelLeftOpen, Search, ShieldCheck, SquarePen, X,
 } from 'lucide-react'
 import { isAdminView, useStore } from '../../store/AppStore'
 import { userById, VIEW_PERSONAS } from '../../data/catalog'
@@ -19,7 +19,6 @@ import logo from '../../assets/icn-logo.png'
 
 const NAV = [
   { section: 'งานของฉัน', items: [
-    { to: '/workflows', label: 'สายงาน', icon: Workflow },
     { to: '/agents', label: 'ผู้ช่วย AI', icon: Bot },
   ] },
   { section: 'องค์กร', adminOnly: true, items: [
@@ -209,14 +208,13 @@ function GlobalSearch({ onNavigate, autoFocus = false }) {
   const results = term ? [
     ...state.agents.filter((a) => match(a.name) || match(a.description)).slice(0, 5).map((a) => ({ id: a.id, label: a.name, sub: 'ผู้ช่วย', icon: a.kind, to: `/agents/${a.id}` })),
     ...state.skills.filter((s) => match(s.name) || match(s.purpose)).slice(0, 4).map((s) => ({ id: s.id, label: s.name, sub: 'ทักษะ', icon: s.icon, to: skillLink(s.id), skill: true })),
-    ...state.workflows.filter((w) => match(w.name)).slice(0, 3).map((w) => ({ id: w.id, label: w.name, sub: 'สายงาน', icon: 'condition', to: `/workflows?id=${w.id}`, skill: true })),
   ] : []
 
   const go = (to) => { setOpen(false); setQ(''); navigate(to); onNavigate?.() }
   return (
     <div ref={box} data-tour="search" className="relative">
       <SearchInput
-        placeholder="ค้นหาผู้ช่วย ทักษะ สายงาน…" value={q}
+        placeholder="ค้นหาผู้ช่วย ทักษะ…" value={q}
         onChange={(e) => { setQ(e.target.value); setOpen(true) }} onFocus={() => setOpen(true)}
         onKeyDown={(e) => { if (e.key === 'Enter' && results[0]) go(results[0].to) }}
         aria-label="ค้นหาทั้งระบบ" autoFocus={autoFocus}

@@ -35,13 +35,16 @@ describe('Workspace: chat or Plan, decided by the system', () => {
     expectWithinBudget(app, 2)
   })
 
-  it('a request matched to a Workflow by keyword is still a system Plan and waits for "เริ่มเลย"', async () => {
+  it('a request matched to an Agent with Steps by keyword is still a system Plan, showing its Steps one by one', async () => {
     const app = startJourney('/workspace')
 
     await app.type(app.box('ข้อความ'), 'ทำ Proposal ระบบ Smart Warehouse ให้ลูกค้า Siam Logistics')
     await send(app)
 
     expect(screen.getByRole('button', { name: 'เริ่มเลย' })).toBeVisible()
+    // "Sales Proposal Pipeline" is expanded into its Steps, so the Plan is one level deep.
+    const stages = screen.getAllByRole('button', { name: /ออกจากแผน$/ }).map((b) => b.getAttribute('aria-label').replace(/^ลบ | ออกจากแผน$/g, ''))
+    expect(stages).toEqual(['Research Agent', 'Sales Proposal Agent', 'Document Agent', 'Image Agent', 'Review Agent'])
   })
 
   it('a request with a picked Agent starts immediately, with no Plan to confirm', async () => {
@@ -56,8 +59,23 @@ describe('Workspace: chat or Plan, decided by the system', () => {
     expectWithinBudget(app, 1)
   })
 
-  it('a request with a picked Workflow starts immediately, with no Plan to confirm', async () => {
-    const app = startJourney('/workspace?workflow=wf-market-report')
+  it('"TOR" matches the Proposal Agent with Steps only as a word, not inside words like "inventory"', async () => {
+    const app = startJourney('/workspace')
+
+    await app.type(app.box('ข้อความ'), 'วิเคราะห์ข้อมูล inventory คลังสินค้า และสรุปเป็นรายงาน')
+    await send(app)
+
+    const stages = () => screen.getAllByRole('button', { name: /ออกจากแผน$/ }).map((b) => b.getAttribute('aria-label'))
+    expect(stages().some((s) => s.includes('Sales Proposal Agent'))).toBe(false)
+
+    await app.click(screen.getAllByRole('link', { name: 'แชตใหม่' })[0])
+    await app.type(app.box('ข้อความ'), 'ตอบ TOR โครงการกล้องวงจรปิด')
+    await send(app)
+    expect(stages().some((s) => s.includes('Sales Proposal Agent'))).toBe(true)
+  })
+
+  it('a request with a picked Agent with Steps starts immediately, with no Plan to confirm', async () => {
+    const app = startJourney('/workspace?agent=agent-market-report')
 
     await app.type(app.box('ข้อความ'), 'ตลาดเครื่องปรับอากาศอินเวอร์เตอร์ในไทย ปี 2026')
     await send(app)
@@ -149,5 +167,19 @@ describe('Workspace: chat or Plan, decided by the system', () => {
     expect(screen.queryByRole('tablist', { name: 'รูปแบบการแสดงผล' })).toBeNull()
     expect(screen.queryByRole('tab', { name: /Workflow/ })).toBeNull()
     expect(screen.queryByText(/โหมด/)).toBeNull()
+  })
+
+  it('in an Agent with Steps, a Review after a Research sends the work back once', async () => {
+    const app = startJourney('/workspace?agent=agent-proposal-pipeline')
+
+    await app.type(app.box('ข้อความ'), 'ทำ Proposal ระบบ Smart Warehouse ให้ลูกค้า Siam Logistics')
+    await send(app)
+    await app.letRunsFinish()
+    expectArtifactShown()
+
+    await app.click(screen.getByRole('button', { name: 'ตัวเลือกเพิ่มเติม' }))
+    await app.click(screen.getByRole('menuitem', { name: 'ดูขั้นตอน' }))
+    const panel = screen.getByRole('complementary', { name: 'ขั้นตอนการทำงาน' })
+    expect(within(panel).getAllByText(/ส่งงานกลับไปที่ Research Agent/)).toHaveLength(1)
   })
 })

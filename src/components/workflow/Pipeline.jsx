@@ -45,7 +45,7 @@ export default function Pipeline({ steps, selectedId, onSelect, vertical = false
               )}
             >
               <div className="flex items-start gap-2.5">
-                <EntityIcon icon={s.kind} size="sm" tone={s.kind === 'skill' || s.kind === 'condition' ? 'skill' : 'agent'} />
+                <EntityIcon icon={s.kind} size="sm" tone="agent" />
                 <div className="min-w-0 flex-1">
                   <div className="truncate text-[13px] font-semibold text-slate-800">{s.name}</div>
                   <div className="truncate text-[11.5px] text-slate-500">{s.task}</div>
@@ -61,7 +61,7 @@ export default function Pipeline({ steps, selectedId, onSelect, vertical = false
                   <RotateCcw className="size-3" aria-hidden /> ถ้าไม่ผ่าน → กลับไป {steps[s.loopBackTo]?.name}
                 </div>
               )}
-              {s.loops > 0 && s.kind !== 'condition' && s.status !== 'returned' && (
+              {s.loops > 0 && s.status !== 'returned' && (
                 <div className="mt-2 text-[11px] text-slate-500">รอบที่ {s.loops + 1}</div>
               )}
             </div>
