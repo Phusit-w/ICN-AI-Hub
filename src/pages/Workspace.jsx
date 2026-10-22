@@ -174,7 +174,7 @@ function ArtifactCard({ run, final, latest, onShowSteps }) {
 }
 
 function SensitiveNote() {
-  return <p className="flex items-center gap-1.5 text-xs text-emerald-700"><ShieldCheck className="size-3.5" /> พบข้อมูลลับ — ประมวลผลบน AI ภายในบริษัท ข้อมูลไม่ออกนอกองค์กร</p>
+  return <p className="flex items-center gap-1.5 text-xs text-emerald-700"><ShieldCheck className="size-3.5" /> พบข้อมูล — ประมวลผลบน AI ภายในบริษัท ข้อมูลไม่ออกนอกองค์กร</p>
 }
 
 function Typing() {
