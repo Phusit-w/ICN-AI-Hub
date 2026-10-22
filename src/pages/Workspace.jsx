@@ -1,7 +1,7 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
-import { useLocation, useSearchParams } from 'react-router-dom'
+import { Link, useLocation, useSearchParams } from 'react-router-dom'
 import {
-  ArrowRight, ArrowUp, ChevronDown, ChevronUp, CircleCheck, CircleDashed, Copy, Download, Eye, ListChecks, LoaderCircle,
+  ArrowRight, ArrowUp, CalendarClock, ChevronDown, ChevronUp, CircleCheck, CircleDashed, Copy, Download, Eye, ListChecks, LoaderCircle,
   Plus, Share2, ShieldCheck, Undo2, X,
 } from 'lucide-react'
 import { useStore } from '../store/AppStore'
@@ -333,6 +333,32 @@ function Desk({ run, onClose }) {
   )
 }
 
+function UserMessage({ prompt, attachments }) {
+  return (
+    <div className="flex flex-col items-end gap-1.5">
+      <AttachmentList files={attachments} className="flex max-w-[85%] flex-wrap justify-end gap-1.5" />
+      <p className="max-w-[85%] rounded-2xl rounded-br-md bg-slate-100 px-4 py-2.5 text-[15px] whitespace-pre-line text-slate-800">{prompt}</p>
+    </div>
+  )
+}
+
+/** Confirms a Schedule the User asked for in the chat. The rule lives on the Agent; the card only reads it. */
+function ScheduleCard({ agentId }) {
+  const { state } = useStore()
+  const agent = state.agents.find((a) => a.id === agentId)
+  if (!agent?.schedule) return null
+  return (
+    <section aria-label="ตั้งเวลา" className="flex items-start gap-3 rounded-2xl border border-brand-200 bg-brand-50/50 p-4">
+      <CalendarClock className="mt-0.5 size-5 shrink-0 text-brand-600" aria-hidden />
+      <div className="min-w-0 text-sm text-slate-700">
+        <p className="font-semibold text-slate-900">ตั้งเวลาแล้ว · {agent.schedule.when}</p>
+        <p className="mt-0.5">แต่ละรอบครอบ{agent.schedule.covers} และเพิ่มเป็น Run ใหม่ในแชตนี้</p>
+        <p className="mt-1 text-xs text-slate-500">ตั้งไว้ที่ <Link to={`/agents/${agent.id}`} className="font-medium text-brand-700 hover:underline">{agent.name}</Link> · ในเดโมนี้ยังไม่ทำงานเอง</p>
+      </div>
+    </section>
+  )
+}
+
 function ChatView({ thread, onShowSteps, variant, deskRunId, onOpenDesk, onCloseDesk, docRunId, onOpenDoc }) {
   const bottom = useRef(null)
   const last = thread.at(-1)
@@ -343,13 +369,18 @@ function ChatView({ thread, onShowSteps, variant, deskRunId, onOpenDesk, onClose
     <div className="mx-auto max-w-3xl space-y-8 px-1 py-6">
       {thread.map((run) => (
         <div key={run.id} className="space-y-5">
-          <div className="flex flex-col items-end gap-1.5">
-            <AttachmentList files={run.attachments} className="flex max-w-[85%] flex-wrap justify-end gap-1.5" />
-            <p className="max-w-[85%] rounded-2xl rounded-br-md bg-slate-100 px-4 py-2.5 text-[15px] text-slate-800">{run.prompt}</p>
-          </div>
+          {run.scheduleLabel
+            ? <p className="flex items-center justify-center gap-1.5 text-xs font-medium text-slate-500"><CalendarClock className="size-4" aria-hidden />{run.scheduleLabel}</p>
+            : <UserMessage prompt={run.prompt} attachments={run.attachments} />}
           {variant === 'B'
             ? <DeskNote run={run} selected={run.id === deskRunId} onOpen={() => onOpenDesk(run.id)} onClose={onCloseDesk} />
             : <AssistantMessage run={run} latest={run === last} onShowSteps={() => onShowSteps(run.id)} docRunId={docRunId} onOpenDoc={() => onOpenDoc(run.id)} />}
+          {run.scheduleSet && (
+            <>
+              <UserMessage prompt={run.scheduleSet.prompt} />
+              <ScheduleCard agentId={run.agentId} />
+            </>
+          )}
         </div>
       ))}
       <div ref={bottom} />

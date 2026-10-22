@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useMemo, useReducer, useRef } fro
 import { AGENTS } from '../data/agents'
 import { SKILLS } from '../data/skills'
 import { AUDIT_LOG } from '../data/governance'
-import { SOC_CHECK_CHAT } from '../data/exampleChats'
+import { EXAMPLE_CHATS } from '../data/exampleChats'
 import { CURRENT_USER_ID, userById, VIEW_PERSONAS } from '../data/catalog'
 import { advanceRun, createRun, planRequest, replayRun, startRun } from '../lib/runs'
 import { uid } from '../lib/utils'
@@ -32,15 +32,18 @@ function seedRuns() {
     replayRun(createRun({ prompt, plan: planRequest(prompt, { ...ctx, ...extra }), owner, createdAt: Date.now() - agoMs }), agoMs)
   // Background runs crawl so the chat history still shows live work throughout a demo.
   const background = (run) => ({ ...run, speed: 0.04 })
-  // A scripted Thread: a finished one-Agent Run whose Artifact is the written-out example, not the generic mock.
-  const example = ({ agentId, title, prompt, attachments, output }, agoMs) => {
-    const plan = planRequest(prompt, { ...ctx, agentId })
+  // Scripted Threads: finished one-Agent Runs whose Artifacts are written out, not the generic mock.
+  const example = ({ agentId, title, runs }) => {
+    const plan = planRequest(runs[0].prompt, { ...ctx, agentId })
     const [step] = plan.steps
-    const run = replayRun(createRun({ prompt, plan: { ...plan, steps: [step], reason: `ใช้ Agent "${step.name}" ที่คุณเลือก` }, owner: CURRENT_USER_ID, createdAt: Date.now() - agoMs }), agoMs)
-    return { ...run, title, attachments, steps: [{ ...run.steps[0], output }] }
+    const threadId = uid('thread')
+    return runs.map(({ prompt, attachments, output, ago, scheduleLabel, scheduleSet }) => {
+      const run = replayRun(createRun({ prompt, plan: { ...plan, steps: [step], reason: `ใช้ Agent "${step.name}" ที่คุณเลือก` }, owner: CURRENT_USER_ID, threadId, createdAt: Date.now() - ago }), ago)
+      return { ...run, title, attachments, scheduleLabel, scheduleSet, steps: [{ ...run.steps[0], id: uid('step'), output }] }
+    })
   }
   return [
-    example(SOC_CHECK_CHAT, 3 * 24 * 60 * MIN),
+    ...EXAMPLE_CHATS.flatMap(example),
     background(seed('ทำ Proposal ระบบ Smart Warehouse ให้ลูกค้า Siam Logistics', 13000)),
     background(seed('ทำรายงานปิดงบเดือนกันยายน พร้อมกระทบยอด Invoice', 6000, 'u-nok')),
     seed('หาข้อมูลตลาด EV Charger ในไทย วิเคราะห์ตัวเลข และทำรายงานพร้อม Infographic', 90 * MIN, CURRENT_USER_ID, { agentId: 'agent-market-report' }),

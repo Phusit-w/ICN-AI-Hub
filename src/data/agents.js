@@ -146,6 +146,16 @@ export const AGENTS = [
   }),
   // Department agents, drafted from docs/department-agents.md.
   agent({
+    id: 'agent-step-log', name: 'บันทึกก้าวเดิน Agent', kind: 'data', dept: 'hr',
+    description: 'อ่านข้อความ LINE และรูปตัวนับก้าวของกลุ่มเดิน แล้วบันทึกยอดก้าวรายคนลง Excel แถวไหนอ่านรูปไม่ชัดจะติด “ตรวจสอบ” ไม่เดาตัวเลข',
+    instruction: 'Read each member message: name, department code and the step total in the picture. One row per member. If a number cannot be read in full, leave it empty and flag the row with the reason. Never guess digits.',
+    model: 'icn-local', classification: 'internal', share: 'department',
+    output: { format: 'Excel table', language: 'TH', template: 'Step Log Weekly' },
+    owner: 'u-arisa', feedback: { up: 8, down: 1 }, uses: 11, version: '1.0', updated: '2026-10-12',
+    schedule: { when: 'ทุกวันจันทร์ 20:00', covers: 'สัปดาห์ก่อนหน้า (จันทร์–อาทิตย์)' },
+    examples: ['บันทึกก้าวเดินกลุ่มเดินสัปดาห์นี้จากข้อความ LINE'],
+  }),
+  agent({
     id: 'agent-soc-check', name: 'SOC Check Agent', kind: 'bid', dept: 'bid',
     description: 'ตรวจ SOC เทียบ Datasheet ว่าอ้างหน้าถูก เลขข้อครบ และ Highlight ครอบคลุม แล้วบันทึกผลลง Excel',
     instruction: 'Check every SOC row against the cited Datasheet page. Report page, item label and highlight issues. Do not decide Comply/Better.',

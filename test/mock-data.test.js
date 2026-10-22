@@ -123,23 +123,35 @@ describe('Mock data: Agents with Steps instead of Workflows', () => {
   })
 })
 
-// Real example chats, seam 2: each scripted Thread points at an existing Agent and carries a well-formed table.
+// Real example chats, seam 2: each scripted Thread points at an existing Agent and carries well-formed tables.
+const exampleRuns = EXAMPLE_CHATS.flatMap((chat) => chat.runs.map((run) => ({ ...run, chat })))
+
 describe('Mock data: example chats from real work', () => {
   it('every example chat is by an existing Agent without Steps', () => {
     for (const chat of EXAMPLE_CHATS) {
       const agent = AGENTS.find((a) => a.id === chat.agentId)
       expect(agent, chat.title).toBeDefined()
-      expect(agent.steps ?? [], chat.title).toHaveLength(0)
+      expect(agent.steps, chat.title).toHaveLength(0)
     }
   })
 
   it('every table Artifact has columns and rows, each row as wide as its columns', () => {
-    for (const { output, title } of EXAMPLE_CHATS) {
+    for (const { output, chat } of exampleRuns) {
       for (const sheet of sheetsOf(output)) {
-        expect(sheet.columns.length, `${title}: ${sheet.name}`).toBeGreaterThan(0)
-        expect(sheet.rows.length, `${title}: ${sheet.name}`).toBeGreaterThan(0)
-        for (const row of sheet.rows) expect(row, `${title}: ${sheet.name}`).toHaveLength(sheet.columns.length)
+        const where = `${chat.title}: ${sheet.name}`
+        expect(sheet.columns.length, where).toBeGreaterThan(0)
+        expect(sheet.rows.length, where).toBeGreaterThan(0)
+        for (const row of sheet.rows) expect(row, where).toHaveLength(sheet.columns.length)
+        for (const i of Object.keys(sheet.marks ?? {})) expect(sheet.rows[i], where).toBeDefined()
       }
+    }
+  })
+
+  it('a Schedule belongs to an existing Agent, and a Run started by one is of an Agent that has it', () => {
+    for (const { chat, scheduleLabel, scheduleSet } of exampleRuns) {
+      if (!scheduleLabel && !scheduleSet) continue
+      const agent = AGENTS.find((a) => a.id === chat.agentId)
+      expect(agent.schedule, chat.title).toBeDefined()
     }
   })
 })
