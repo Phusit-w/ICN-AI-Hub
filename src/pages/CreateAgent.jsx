@@ -38,7 +38,7 @@ function AgentBuilder({ form, setForm, initialText, onCreate, onDetailed }) {
     <div className="mx-auto max-w-6xl">
       <div className="mb-5 flex flex-wrap items-start gap-3">
         <div className="min-w-0 flex-1">
-          <h1 className="text-2xl font-semibold tracking-tight text-slate-900">สร้างผู้ช่วย AI</h1>
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-900">สร้างAI Agent</h1>
           <p className="mt-1 text-sm text-slate-500">คุยกับ AI ทางซ้าย ฟอร์มทางขวาจะถูกกรอกให้ แก้เองได้ทุกช่อง แล้วกดสร้าง</p>
         </div>
         {onDetailed && <Button variant="ghost" size="sm" icon={Settings2} onClick={onDetailed}>ตั้งค่าแบบละเอียด</Button>}
@@ -110,7 +110,7 @@ export default function CreateAgent() {
   return (
     <div>
       <PageHeader
-        eyebrow={source ? 'Clone agent' : 'Create'} title={source ? `คัดลอก “${source.name}”` : 'สร้างผู้ช่วย AI ใหม่'}
+        eyebrow={source ? 'Clone agent' : 'Create'} title={source ? `คัดลอก “${source.name}”` : 'สร้างAI Agent ใหม่'}
         subtitle="ทำทีละขั้น ไม่ต้องเขียนโค้ด — ทุกช่องมีคำอธิบาย และดูตัวอย่าง Agent ของคุณได้ทางขวา"
         actions={<Button variant="ghost" onClick={() => navigate(-1)}>ยกเลิก</Button>}
       />

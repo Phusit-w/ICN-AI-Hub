@@ -4,7 +4,7 @@ import { startJourney } from '../journey'
 import { TOUR_STEPS } from '../../src/components/tour/steps'
 
 // Ticket 06 (spec .scratch/agents-only-redesign, Wording): Workflows became Agents with Steps (ADR 0001), so
-// "สายงาน" and "Workflow" appear nowhere a user or presenter reads. Everything says ผู้ช่วย AI and ขั้นตอน.
+// "สายงาน" and "Workflow" appear nowhere a user or presenter reads. Everything says AI Agent and ขั้นตอน.
 const OLD_WORDS = /สายงาน|workflow/i
 
 const ROUTES = ['/workspace', '/agents', '/agents/new', '/agents/agent-proposal-pipeline', '/agents?skill=skill-pricing']
@@ -15,7 +15,7 @@ describe('No "สายงาน" or "Workflow" left on screen', () => {
     expect(document.body.textContent).not.toMatch(OLD_WORDS)
   })
 
-  it('in Help, explained with ผู้ช่วย AI and ขั้นตอน instead', async () => {
+  it('in Help, explained with AI Agent and ขั้นตอน instead', async () => {
     const app = startJourney()
     await app.click(screen.getByRole('button', { name: 'คำศัพท์และวิธีใช้' }))
     const help = screen.getByRole('dialog', { name: 'คำศัพท์ที่ควรรู้' })
@@ -41,6 +41,6 @@ describe('No "สายงาน" or "Workflow" left on screen', () => {
     const text = TOUR_STEPS.map((s) => `${s.title} ${s.body}`).join(' ')
     expect(text).not.toMatch(OLD_WORDS)
     expect(text).toMatch(/บันทึกไว้ใช้ซ้ำ/)
-    expect(TOUR_STEPS.find((s) => s.title === 'ผู้ช่วย AI').body).toMatch(/คุยกับ AI/)
+    expect(TOUR_STEPS.find((s) => s.title === 'AI Agent').body).toMatch(/คุยกับ AI/)
   })
 })

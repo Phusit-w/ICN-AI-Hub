@@ -7,7 +7,7 @@ import { Modal } from '../ui/Overlay'
 
 // Every concept explained by analogy to ordinary office work — for people new to AI.
 export const TERMS = [
-  { icon: 'agent', tone: 'agent', term: 'ผู้ช่วย AI (Agent)', like: 'เหมือนพนักงานผู้เชี่ยวชาญ', text: 'แต่ละตัวถนัดงานต่างกัน เช่น ค้นข้อมูล เขียนเอกสาร ทำภาพ ทำงานร่วมกันเป็นทีมได้' },
+  { icon: 'agent', tone: 'agent', term: 'AI Agent', like: 'เหมือนพนักงานผู้เชี่ยวชาญ', text: 'แต่ละตัวถนัดงานต่างกัน เช่น ค้นข้อมูล เขียนเอกสาร ทำภาพ ทำงานร่วมกันเป็นทีมได้' },
   { icon: 'skill', tone: 'skill', term: 'ทักษะ (Skill)', like: 'เหมือนคู่มือการทำงาน (SOP)', text: 'วิธีทำงานมาตรฐานของบริษัท เช่น รูปแบบรายงาน ใส่ให้ผู้ช่วยหลายตัวใช้ร่วมกันได้' },
   { icon: 'book', tone: 'skill', term: 'ความรู้ (Knowledge)', like: 'เหมือนเอกสารอ้างอิงที่ให้พนักงานอ่าน', text: 'ไฟล์ของบริษัท เช่น ราคาสินค้า คู่มือพนักงาน ที่ผู้ช่วยใช้ตอบคำถาม' },
   { icon: 'target', tone: 'agent', term: 'แผนงาน (Plan)', like: 'เหมือนหัวหน้าแบ่งงานให้ทีม', text: 'เมื่องานต้องใช้ผู้ช่วยหลายตัว ระบบเสนอลำดับผู้ช่วยให้ดูก่อน กด "เริ่มเลย" แล้วจึงเริ่มทำ ได้ผลงานแล้วกด "บันทึกไว้ใช้ซ้ำ" จะได้ผู้ช่วยตัวใหม่ที่ทำงานนี้ตามขั้นตอนเดิม' },
@@ -59,7 +59,7 @@ export function WelcomeCard() {
   const { start } = useTour()
   if (hidden) return null
   const close = () => { writeSeen(); setHidden(true) }
-  const steps = ['พิมพ์งานที่ต้องการเป็นภาษาปกติ', 'ระบบเลือกผู้ช่วย AI ที่เหมาะให้เอง', 'รอรับผลงาน ดูความคืบหน้าได้ตลอด']
+  const steps = ['พิมพ์งานที่ต้องการเป็นภาษาปกติ', 'ระบบเลือกAI Agent ที่เหมาะให้เอง', 'รอรับผลงาน ดูความคืบหน้าได้ตลอด']
   return (
     <div className="rise relative rounded-2xl border border-brand-100 bg-brand-50/50 p-5">
       <button type="button" onClick={close} className="absolute top-3 right-3 rounded-md p-1 text-slate-400 hover:bg-white hover:text-slate-600" aria-label="ปิดคำแนะนำ"><X className="size-4" /></button>

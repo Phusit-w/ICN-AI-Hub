@@ -4,7 +4,7 @@ import { mainMenu, startJourney } from '../journey'
 
 // "แชตใหม่" sits above the menu and is the home screen, so the menu itself has 2 items in the Admin view.
 // The User view has no governance, so its menu has 1 (see view-switch.test.jsx). There is no "สายงาน" (ADR 0001).
-const MENU = ['ผู้ช่วย AI', 'ภาพรวมและการกำกับดูแล']
+const MENU = ['AI Agent', 'ภาพรวมและการกำกับดูแล']
 const admin = { view: 'admin' }
 
 /** Menu item names; a live count badge (e.g. "2" running Runs) is not part of the item's name. */
@@ -79,18 +79,18 @@ describe('Navigation: new chat plus a two-item menu', () => {
 })
 
 describe('Skills have no page or tab of their own (spec story 40)', () => {
-  it('the ผู้ช่วย AI page has no tabs, and "＋ สร้างผู้ช่วย" is its main action', () => {
+  it('the AI Agent page has no tabs, and "＋ สร้างผู้ช่วย" is its main action', () => {
     startJourney('/agents')
     expect(screen.queryByRole('tab')).toBeNull()
     expect(screen.getByRole('link', { name: 'สร้างผู้ช่วย' }).className).toContain('bg-brand-600')
   })
 
-  it('an old Skills link lands on the ผู้ช่วย AI page', () => {
+  it('an old Skills link lands on the AI Agent page', () => {
     const app = startJourney('/skills')
     expect(app.url()).toBe('/agents')
   })
 
-  it('an old link to a specific Skill, global search and Agent detail open that Skill on the ผู้ช่วย AI page', async () => {
+  it('an old link to a specific Skill, global search and Agent detail open that Skill on the AI Agent page', async () => {
     let app = startJourney('/skills?open=skill-pricing')
     expect(app.url()).toBe('/agents?skill=skill-pricing')
     expect(skillDialog('Pricing Calculator')).toBeInTheDocument()

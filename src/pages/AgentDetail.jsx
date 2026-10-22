@@ -39,7 +39,7 @@ export default function AgentDetail() {
 
   return (
     <div className="space-y-6">
-      <Link to="/agents" className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-800"><ArrowLeft className="size-4" /> คลังผู้ช่วย AI</Link>
+      <Link to="/agents" className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-800"><ArrowLeft className="size-4" /> คลังAI Agent</Link>
 
       <Card className="p-6">
         <div className="flex flex-col gap-5 md:flex-row md:items-start">

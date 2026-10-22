@@ -10,7 +10,7 @@ describe('Journey 5: find something shared and use it', () => {
   it('an employee finds a shared Agent and uses it within 2 clicks', async () => {
     const app = startJourney()
 
-    await app.click(within(mainMenu()).getByRole('link', { name: /ผู้ช่วย AI/ }))
+    await app.click(within(mainMenu()).getByRole('link', { name: /AI Agent/ }))
     await app.click(actionFor('IT Support Agent', 'ใช้งาน'))
 
     expect(app.url()).toMatch(/^\/workspace/)
@@ -21,7 +21,7 @@ describe('Journey 5: find something shared and use it', () => {
   it('an employee finds a shared Agent with Steps and uses it as-is within 2 clicks', async () => {
     const app = startJourney()
 
-    await app.click(within(mainMenu()).getByRole('link', { name: /ผู้ช่วย AI/ }))
+    await app.click(within(mainMenu()).getByRole('link', { name: /AI Agent/ }))
     await app.click(actionFor('IT Incident Triage', 'ใช้งาน'))
 
     expect(app.url()).toMatch(/^\/workspace/)

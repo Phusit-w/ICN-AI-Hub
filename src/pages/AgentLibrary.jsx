@@ -27,7 +27,7 @@ const NEEDS = [
   { label: 'งานบัญชี / ปิดงบ', dept: 'accounting', pinned: true },
 ]
 
-// PROTOTYPE variant B: example searches typed out over the empty search box.
+// PROTOTYPE variant B: example searches typed out over the empty search box, and no chip row under it.
 const HINTS = ['ทำ proposal ให้ลูกค้า', 'ขอวันลา / สวัสดิการ', 'VPN ต่อไม่ได้', 'ปิดงบประจำเดือน']
 
 const chipClass = (on) => cn('h-8 shrink-0 rounded-full border px-3 text-[13px] transition', on ? 'border-brand-400 bg-brand-50 font-medium text-brand-700' : 'border-slate-200 bg-white text-slate-600 hover:border-brand-300')
@@ -105,7 +105,7 @@ function CreateFromSearch({ q }) {
 }
 
 /**
- * The ผู้ช่วย AI page: find an Agent for a job, or build one with "＋ สร้างผู้ช่วย".
+ * The AI Agent page: find an Agent for a job, or build one with "＋ สร้างผู้ช่วย".
  * Skills have no tab here (spec story 40); `?skill=<id>` opens one Skill's detail over the page.
  */
 export default function AgentLibrary() {
@@ -156,8 +156,8 @@ export default function AgentLibrary() {
         <Button variant={showPicks ? 'secondary' : 'primary'} icon={Plus} to="/agents/new" data-tour="agents-create">สร้างผู้ช่วย</Button>
       </div>
       <section className="text-center">
-        <h1 className="mt-3 text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">หาผู้ช่วย AI ที่เหมาะกับงาน</h1>
-        <p className="mt-1 text-sm text-slate-500">บอกงานมา เราจะแนะนำผู้ช่วย AI ที่เหมาะที่สุดให้ หรือเลือกเองจากรายการด้านล่าง</p>
+        <h1 className="mt-3 text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">หาAI Agent ที่เหมาะกับงาน</h1>
+        <p className="mt-1 text-sm text-slate-500">บอกงานมา เราจะแนะนำAI Agent ที่เหมาะที่สุดให้ หรือเลือกเองจากรายการด้านล่าง</p>
         <div className="relative mx-auto mt-5 max-w-xl">
           <input
             value={q} onChange={(e) => { setQ(e.target.value); setNeed(null) }} aria-label="ค้นหาผู้ช่วยจากงานที่อยากให้ช่วย"
@@ -167,12 +167,14 @@ export default function AgentLibrary() {
           />
           {hinting && <TypewriterHint phrases={HINTS} className="px-5 text-left text-[15px] leading-[48px]" />}
         </div>
-        <ShareFilterChips className="mt-3">
-          {NEEDS.filter((n) => n.pinned).map((n) => (
-            <button key={n.label} type="button" aria-pressed={need === n} onClick={() => pickNeed(n)} className={chipClass(need === n)}>{n.label}</button>
-          ))}
-          <NeedMenu needs={NEEDS.filter((n) => !n.pinned)} need={need} onPick={pickNeed} />
-        </ShareFilterChips>
+        {variant !== 'B' && (
+          <ShareFilterChips className="mt-3">
+            {NEEDS.filter((n) => n.pinned).map((n) => (
+              <button key={n.label} type="button" aria-pressed={need === n} onClick={() => pickNeed(n)} className={chipClass(need === n)}>{n.label}</button>
+            ))}
+            <NeedMenu needs={NEEDS.filter((n) => !n.pinned)} need={need} onPick={pickNeed} />
+          </ShareFilterChips>
+        )}
       </section>
 
       {/* With a share filter on, the filtered list is the answer, so it moves up in place of the recommendations. */}

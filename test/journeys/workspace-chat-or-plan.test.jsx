@@ -15,7 +15,7 @@ describe('Workspace: chat or Plan, decided by the system', () => {
     await app.letRunsFinish()
 
     expect(screen.queryByRole('button', { name: 'เริ่มเลย' })).toBeNull()
-    expect(screen.getByText(/ICN Assistant ผู้ช่วย AI ของบริษัท/)).toBeVisible()
+    expect(screen.getByText(/ICN Assistant AI Agent ของบริษัท/)).toBeVisible()
     expectWithinBudget(app, 1)
   })
 

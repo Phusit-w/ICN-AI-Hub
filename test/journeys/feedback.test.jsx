@@ -86,7 +86,7 @@ describe("An Agent's Feedback summary", () => {
     await app.letRunsFinish()
 
     await app.click(notHelpful())
-    await app.click(within(mainMenu()).getByRole('link', { name: 'ผู้ช่วย AI' }))
+    await app.click(within(mainMenu()).getByRole('link', { name: 'AI Agent' }))
     await app.click(screen.getAllByRole('link', { name: 'Sales Proposal Agent' })[0])
 
     expect(screen.getByText('มีประโยชน์ 89% จาก 38 ครั้ง')).toBeVisible()
@@ -99,7 +99,7 @@ describe("An Agent's Feedback summary", () => {
     await app.letRunsFinish()
 
     await app.click(helpful())
-    await app.click(within(mainMenu()).getByRole('link', { name: 'ผู้ช่วย AI' }))
+    await app.click(within(mainMenu()).getByRole('link', { name: 'AI Agent' }))
     await app.click(screen.getAllByRole('link', { name: 'Market Research Report' })[0])
     expect(screen.getByText('มีประโยชน์ 100% จาก 1 ครั้ง')).toBeVisible()
 

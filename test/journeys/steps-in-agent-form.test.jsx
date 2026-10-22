@@ -53,7 +53,7 @@ describe('The "ขั้นตอน" section of the Agent form', () => {
     await app.click(screen.getByRole('button', { name: 'เอา Image Agent ออก' }))
     expect(stepNames()).toEqual(['Research Agent', 'Document Agent'])
     await app.click(screen.getByRole('button', { name: 'สร้างผู้ช่วย' }))
-    await app.click(within(mainMenu()).getByRole('link', { name: /ผู้ช่วย AI/ }))
+    await app.click(within(mainMenu()).getByRole('link', { name: /AI Agent/ }))
 
     expect(screen.getAllByRole('link', { name: NAME })[0].closest('li')).toHaveTextContent('2 ขั้นตอน')
   })

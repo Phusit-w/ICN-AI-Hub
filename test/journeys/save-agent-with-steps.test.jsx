@@ -40,11 +40,11 @@ describe('Save for reuse after a multi-Agent Run', () => {
     expect(within(reuseRow()).getByRole('button', { name: new RegExp(`${SAVED_NAME.source}.*4 ขั้นตอน`) })).toBeVisible()
   })
 
-  it('the new Agent with Steps carries its Step badge on the ผู้ช่วย AI page', async () => {
+  it('the new Agent with Steps carries its Step badge on the AI Agent page', async () => {
     const app = await finishedPlanRun()
 
     await saveForReuse(app)
-    await app.click(within(mainMenu()).getByRole('link', { name: /ผู้ช่วย AI/ }))
+    await app.click(within(mainMenu()).getByRole('link', { name: /AI Agent/ }))
 
     const card = screen.getAllByRole('link', { name: SAVED_NAME })[0].closest('li')
     expect(card).toHaveTextContent('4 ขั้นตอน')

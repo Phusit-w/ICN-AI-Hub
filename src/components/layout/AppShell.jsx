@@ -22,7 +22,7 @@ import logoClear from '../../assets/icn-logo-clear.png' // PROTOTYPE variant B: 
 
 const NAV = [
   { section: 'งานของฉัน', items: [
-    { to: '/agents', label: 'ผู้ช่วย AI', icon: Bot },
+    { to: '/agents', label: 'AI Agent', icon: Bot },
   ] },
   { section: 'องค์กร', adminOnly: true, items: [
     { to: '/governance', label: 'ภาพรวมและการกำกับดูแล', icon: ShieldCheck },

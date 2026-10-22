@@ -30,7 +30,7 @@ export const ACTIVITIES = {
   chat: ['ทำความเข้าใจคำถาม', 'เรียบเรียงคำตอบ'],
 }
 
-const CHAT_REPLY = `สวัสดี ฉันคือ ICN Assistant ผู้ช่วย AI ของบริษัท
+const CHAT_REPLY = `สวัสดี ฉันคือ ICN Assistant AI Agent ของบริษัท
 
 ช่วยได้ตั้งแต่คำถามสั้น ๆ ไปจนถึงงานใหญ่ที่ต้องใช้ผู้ช่วยหลายตัวทำงานร่วมกัน เช่น
 • ทำ Proposal ให้ลูกค้า

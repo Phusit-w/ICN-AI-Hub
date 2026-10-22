@@ -23,7 +23,7 @@ describe('Run-finished toast', () => {
     const app = await startLongRun()
     const threadUrl = app.url()
 
-    await app.click(within(mainMenu()).getByRole('link', { name: 'ผู้ช่วย AI' }))
+    await app.click(within(mainMenu()).getByRole('link', { name: 'AI Agent' }))
     await app.letRunsFinish()
 
     expect(finishedToast()).toBeInTheDocument()
@@ -59,7 +59,7 @@ describe('Run-finished toast', () => {
     await app.type(app.box('ข้อความ'), CHAT)
     await app.click(screen.getByRole('button', { name: 'ส่ง' }))
 
-    await app.click(within(mainMenu()).getByRole('link', { name: 'ผู้ช่วย AI' }))
+    await app.click(within(mainMenu()).getByRole('link', { name: 'AI Agent' }))
     await app.letRunsFinish()
 
     expect(finishedToast(CHAT)).toBeNull()

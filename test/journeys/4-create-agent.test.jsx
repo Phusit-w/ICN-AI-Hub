@@ -6,10 +6,10 @@ import { expectWithinBudget, mainMenu, startJourney } from '../journey'
 // The builder (spec .scratch/agents-only-redesign stories 29–34, 36–37, 39): chat with an AI on one side, the Agent
 // form it fills in on the other. Messages are sent with Enter, as in any chat, so typing them is not a click.
 describe('Journey 4: create an Agent', () => {
-  it('from the ผู้ช่วย AI page, an employee chats once, the AI fills the form, and the Agent is created within 3 clicks', async () => {
+  it('from the AI Agent page, an employee chats once, the AI fills the form, and the Agent is created within 3 clicks', async () => {
     const app = startJourney()
 
-    await app.click(within(mainMenu()).getByRole('link', { name: /ผู้ช่วย AI/ }))
+    await app.click(within(mainMenu()).getByRole('link', { name: /AI Agent/ }))
     await app.click(screen.getByRole('link', { name: 'สร้างผู้ช่วย' }))
     expect(screen.getByText(/อยากได้ผู้ช่วยแบบไหน/, { selector: 'p' })).toBeVisible()
     await app.type(app.box('ข้อความถึง AI'), 'ช่วยร่างอีเมลตอบลูกค้าที่ร้องเรียนเรื่องส่งของช้า{Enter}')
