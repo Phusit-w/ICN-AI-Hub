@@ -12,6 +12,8 @@ import { Select } from '../components/ui/Form'
 import { ItemCard } from '../components/agents/AgentCard'
 import { stepsLabel } from '../lib/steps'
 import SkillDialog from '../components/skills/SkillDialog'
+import TypewriterHint from '../components/ui/TypewriterHint'
+import { useVariant } from './workspace-prototype/PrototypeSwitcher'
 
 // Shortcuts for people who don't know what to type yet. The `pinned` ones sit in the chip row; the rest are under "ตามงาน".
 const NEEDS = [
@@ -24,6 +26,9 @@ const NEEDS = [
   { label: 'แจ้งปัญหา IT', dept: 'it' },
   { label: 'งานบัญชี / ปิดงบ', dept: 'accounting', pinned: true },
 ]
+
+// PROTOTYPE variant B: example searches typed out over the empty search box.
+const HINTS = ['ทำ proposal ให้ลูกค้า', 'ขอวันลา / สวัสดิการ', 'VPN ต่อไม่ได้', 'ปิดงบประจำเดือน']
 
 const chipClass = (on) => cn('h-8 shrink-0 rounded-full border px-3 text-[13px] transition', on ? 'border-brand-400 bg-brand-50 font-medium text-brand-700' : 'border-slate-200 bg-white text-slate-600 hover:border-brand-300')
 
@@ -107,6 +112,8 @@ export default function AgentLibrary() {
   const { state } = useStore()
   const me = userById(state.userId)
   const [q, setQ] = useState('')
+  const [variant] = useVariant()
+  const [focused, setFocused] = useState(false)
   const [need, setNeed] = useState(null)
   const [showFilters, setShowFilters] = useState(false)
   // Choosing by model is the Admin's concern; in the User view the system picks where each Agent runs.
@@ -118,6 +125,7 @@ export default function AgentLibrary() {
   const [params] = useSearchParams()
   const filter = shareFilterFrom(params)
 
+  const hinting = variant === 'B' && !q && !focused
   const pickNeed = (n) => { setNeed(need === n ? null : n); setQ('') }
   const term = q.trim() || need?.q || ''
   // Recommendations answer "which one should I use for this?", so they show once the user says what the job is.
@@ -150,11 +158,15 @@ export default function AgentLibrary() {
       <section className="text-center">
         <h1 className="mt-3 text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">หาผู้ช่วย AI ที่เหมาะกับงาน</h1>
         <p className="mt-1 text-sm text-slate-500">บอกงานมา เราจะแนะนำผู้ช่วย AI ที่เหมาะที่สุดให้ หรือเลือกเองจากรายการด้านล่าง</p>
-        <input
-          value={q} onChange={(e) => { setQ(e.target.value); setNeed(null) }} aria-label="ค้นหาผู้ช่วยจากงานที่อยากให้ช่วย"
-          placeholder="เช่น ทำ proposal ให้ลูกค้า, วันลา, VPN"
-          className="mx-auto mt-5 block h-12 w-full max-w-xl rounded-2xl border border-slate-200 bg-white px-5 text-[15px] shadow-sm focus:border-brand-400 focus:ring-4 focus:ring-brand-100 focus:outline-none"
-        />
+        <div className="relative mx-auto mt-5 max-w-xl">
+          <input
+            value={q} onChange={(e) => { setQ(e.target.value); setNeed(null) }} aria-label="ค้นหาผู้ช่วยจากงานที่อยากให้ช่วย"
+            onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
+            placeholder={hinting ? '' : 'เช่น ทำ proposal ให้ลูกค้า, วันลา, VPN'}
+            className="block h-12 w-full rounded-2xl border border-slate-200 bg-white px-5 text-[15px] shadow-sm focus:border-brand-400 focus:ring-4 focus:ring-brand-100 focus:outline-none"
+          />
+          {hinting && <TypewriterHint phrases={HINTS} className="px-5 text-left text-[15px] leading-[48px]" />}
+        </div>
         <ShareFilterChips className="mt-3">
           {NEEDS.filter((n) => n.pinned).map((n) => (
             <button key={n.label} type="button" aria-pressed={need === n} onClick={() => pickNeed(n)} className={chipClass(need === n)}>{n.label}</button>
