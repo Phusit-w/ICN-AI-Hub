@@ -126,36 +126,75 @@ const SHAPES = {
    they belong to the eyes (see the draw loop), so they are not
    in this table. Kept to flat pale shapes with a dark edge so
    they read on a body of any colour. */
-const ink = { fill: "#f8fafc", stroke: "#334155", strokeWidth: 2, strokeLinejoin: "round", strokeLinecap: "round" };
-const line = { fill: "none", stroke: "#334155", strokeWidth: 2, strokeLinecap: "round" };
+const ink = { fill: "#f8fafc", stroke: "#334155", strokeWidth: 2.6, strokeLinejoin: "round", strokeLinecap: "round" };
+const line = { fill: "none", stroke: "#334155", strokeWidth: 2.6, strokeLinecap: "round" };
+/* a held thing is drawn at its natural size, then grown about its own middle so it is large enough to read on a small card */
+const held = (cx, cy, children) => (
+  <g transform={`translate(${cx} ${cy}) scale(1.3) translate(${-cx} ${-cy})`}>{children}</g>
+);
 const ACCESSORIES = {
   none: null,
   glasses: null,
-  document: (
+  badge: held(82, 72, (
+    <g>
+      <path d="M78 54 V59 M86 54 V59" {...line} />
+      <rect x="70" y="58" width="24" height="30" rx="3" {...ink} />
+      <circle cx="82" cy="70" r="4.5" fill="#334155" />
+      <path d="M74 84 Q82 74 90 84" {...line} />
+    </g>
+  )),
+  stamp: held(82, 72, (
+    <g>
+      <rect x="77" y="56" width="10" height="14" rx="4" {...ink} />
+      <rect x="70" y="70" width="24" height="8" rx="2" {...ink} />
+      <rect x="68" y="80" width="28" height="7" rx="2" {...ink} />
+    </g>
+  )),
+  translate: held(82, 72, (
+    <g>
+      <rect x="66" y="56" width="22" height="17" rx="5" {...ink} />
+      <rect x="76" y="70" width="22" height="17" rx="5" {...ink} />
+      <text x="77" y="68.5" fontSize="11" fontWeight="700" fill="#334155" textAnchor="middle">A</text>
+      <text x="87" y="83" fontSize="11" fontWeight="700" fill="#334155" textAnchor="middle">ก</text>
+    </g>
+  )),
+  camera: held(82, 74, (
+    <g>
+      <rect x="74" y="60" width="12" height="6" rx="2" {...ink} />
+      <rect x="66" y="64" width="32" height="22" rx="5" {...ink} />
+      <circle cx="82" cy="75" r="6.5" fill="#cbd5e1" stroke="#334155" strokeWidth="2.6" />
+    </g>
+  )),
+  tie: (
+    <g>
+      <path d="M44 66 H56 L54 73 L58 92 L50 98 L42 92 L46 73 Z" {...ink} />
+    </g>
+  ),
+  document: held(81, 73, (
     <g>
       <rect x="68" y="56" width="26" height="34" rx="3" {...ink} />
       <path d="M73 66 H89 M73 73 H89 M73 80 H82" {...line} />
     </g>
-  ),
-  briefcase: (
+  )),
+  briefcase: held(83, 75, (
     <g>
       <path d="M76 66 V62 Q76 59 79 59 H87 Q90 59 90 62 V66" {...line} />
       <rect x="68" y="66" width="30" height="22" rx="4" {...ink} />
       <path d="M68 76 H98" {...line} />
     </g>
-  ),
-  magnifier: (
+  )),
+  magnifier: held(84, 74, (
     <g>
       <path d="M86 76 L97 88" {...line} strokeWidth="4" />
       <circle cx="79" cy="69" r="11" {...ink} />
     </g>
-  ),
-  chart: (
+  )),
+  chart: held(83, 73, (
     <g>
       <rect x="68" y="58" width="30" height="30" rx="3" {...ink} />
       <path d="M75 83 V75 M83 83 V68 M91 83 V72" {...line} strokeWidth="4" />
     </g>
-  ),
+  )),
   headset: (
     <g>
       <path d="M13 50 A37 37 0 0 1 87 50" {...line} strokeWidth="3" />
@@ -172,13 +211,13 @@ const ACCESSORIES = {
       <path d="M50 -1 V13" {...line} />
     </g>
   ),
-  calculator: (
+  calculator: held(82, 73, (
     <g>
       <rect x="69" y="56" width="26" height="34" rx="4" {...ink} />
       <rect x="73" y="60" width="18" height="8" rx="2" fill="#cbd5e1" />
       <path d="M75 76 H75.1 M82 76 H82.1 M89 76 H89.1 M75 83 H75.1 M82 83 H82.1 M89 83 H89.1" {...line} strokeWidth="3.5" />
     </g>
-  ),
+  )),
 };
 
 /* ── morphing between shapes ────────────────────────────────
@@ -266,6 +305,10 @@ export default function EyeTracker({
   accessory = "none",
   /* at work: whatever it holds jiggles */
   busy = false,
+  /* for a list of many: no glancing about, a slow blink now and then, and it
+     only wakes to follow the pointer while the pointer is over its card (the
+     nearest <li>) */
+  calm = false,
   idle = false,
 } = {}) {
   const still = stillness();
@@ -277,7 +320,7 @@ export default function EyeTracker({
   const lastLine = useRef(-1);
   useEffect(() => () => { turn.current++; }, []);
   const poke = async () => {
-    if (idle) return;
+    if (idle || calm) return;
     const mine = ++turn.current;
     const pool = LINES.map((_, i) => i).filter((i) => i !== lastLine.current);
     const i = pool[Math.floor(Math.random() * pool.length)];
@@ -326,7 +369,7 @@ export default function EyeTracker({
       let lid = 1;
       if (now > nextBlink) {
         blink = now;
-        nextBlink = now + (idle ? 2000 : 2600 + Math.random() * 3200);
+        nextBlink = now + (idle ? 2000 : calm ? 5000 + Math.random() * 4000 : 2600 + Math.random() * 3200);
       }
       const since = now - blink;
       if (since < 160) lid = 1 - 0.9 * Math.sin((since / 160) * Math.PI);
@@ -436,7 +479,7 @@ export default function EyeTracker({
        as you arrive at its edge. */
     /* In this project the card is whatever ancestor carries
        `data-eyt-frame`; without one it is the toy's own box. */
-    const frame = el.closest("[data-eyt-frame]") ?? el;
+    const frame = calm ? (el.closest("li") ?? el) : (el.closest("[data-eyt-frame]") ?? el);
     const aim = (e) => {
       if (knobs.current.gaze) return;
       const f = frame.getBoundingClientRect();
@@ -485,7 +528,7 @@ export default function EyeTracker({
       window.removeEventListener("pointermove", aim);
       document.documentElement.removeEventListener("pointerleave", rest);
     };
-  }, [still, idle]);
+  }, [still, idle, calm]);
 
   const s = clamp(size, 16, 180);
   const body = SHAPES[shape] ?? SHAPES.Ball;
@@ -541,7 +584,7 @@ export default function EyeTracker({
       <svg
         className="eyt-ball"
         viewBox="0 0 100 100"
-        data-poke={idle ? undefined : true}
+        data-poke={idle || calm ? undefined : true}
         onClick={poke}
       >
         <defs>
@@ -567,7 +610,7 @@ export default function EyeTracker({
         </g>
         <g className="eyt-acc" data-busy={busy || undefined}>{ACCESSORIES[accessory]}</g>
       </svg>
-      {idle && message == null ? null : (
+      {(idle || calm) && message == null ? null : (
         <span
           className="eyt-say"
           data-on={message != null || talking ? true : undefined}

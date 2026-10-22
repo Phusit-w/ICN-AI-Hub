@@ -15,6 +15,7 @@ import SkillDialog from '../components/skills/SkillDialog'
 import TypewriterHint from '../components/ui/TypewriterHint'
 import EyeTracker from '../components/ui/EyeTracker'
 import AgentCube from '../components/agents/AgentCube'
+import { ROLE_LABELS } from '../lib/cube'
 import { useCube, useVariant } from './workspace-prototype/PrototypeSwitcher'
 
 // Shortcuts for people who don't know what to type yet. The `pinned` ones sit in the chip row; the rest are under "ตามงาน".
@@ -93,7 +94,12 @@ function AgentCard({ agent, best = false, ...props }) {
   const [cube] = useCube()
   return (
   <ItemCard
-    lead={variant === 'B' && cube ? <AgentCube agent={agent} size={48} idle /> : undefined}
+    lead={variant === 'B' && cube ? (
+      <span className="flex flex-col items-start gap-0.5">
+        <AgentCube agent={agent} size={48} calm />
+        <span className="text-[11px] text-slate-400">{ROLE_LABELS[agent.kind]}</span>
+      </span>
+    ) : undefined}
     icon={agent.kind} name={agent.name} description={agent.description} favoriteId={agent.id} badge={stepsLabel(agent)}
     to={`/agents/${agent.id}`} useTo={`/workspace?agent=${agent.id}`} primary={best}
     className={best ? 'border-brand-400' : undefined} {...props}
