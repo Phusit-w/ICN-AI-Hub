@@ -206,7 +206,7 @@ function AssistantMessage({ run, latest, onShowSteps }) {
         )}
 
         {!chat && run.status !== 'completed' && (
-          <PlanCard run={run} onRemove={(stepId) => actions.removeStep(run.id, stepId)} onStart={() => actions.startRun(run.id)} onShowSteps={onShowSteps} />
+          <PlanCard collapsible run={run} onRemove={(stepId) => actions.removeStep(run.id, stepId)} onStart={() => actions.startRun(run.id)} onShowSteps={onShowSteps} />
         )}
         {!chat && run.status === 'completed' && (
           <>

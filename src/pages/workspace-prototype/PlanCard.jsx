@@ -1,6 +1,7 @@
 // PROTOTYPE (branch prototype/workspace-layout): the Plan and its progress as one module, so confirming the Plan
 // turns the same card into progress instead of swapping in an unrelated block.
-import { CircleCheck, CircleDashed, ListChecks, LoaderCircle, Play, Undo2, X } from 'lucide-react'
+import { useState } from 'react'
+import { ChevronDown, ChevronUp, CircleCheck, CircleDashed, ListChecks, LoaderCircle, Play, Undo2, X } from 'lucide-react'
 import { cn, truncate } from '../../lib/utils'
 import { useStore } from '../../store/AppStore'
 import AgentCube from '../../components/agents/AgentCube'
@@ -48,17 +49,35 @@ function CubeTeam({ run }) {
   )
 }
 
-/** `bare` drops the border and padding when the card already sits on a surface of its own. */
-export default function PlanCard({ run, onRemove, onStart, onShowSteps, bare }) {
+/**
+ * `bare` drops the border and padding when the card already sits on a surface of its own.
+ * `collapsible`: while the Run is under way, show one line (the step now being done, and a bar of all of them)
+ * with a button to expand the full list.
+ */
+export default function PlanCard({ run, onRemove, onStart, onShowSteps, bare, collapsible }) {
+  const [open, setOpen] = useState(false)
   const [variant] = useVariant()
   const [cubeOn] = useCube()
   const planned = run.status === 'planned'
   const canRemove = planned && run.steps.length > 1 && onRemove
+  const compact = collapsible && run.status === 'running' && !open
+  const now = run.steps[Math.min(run.current, run.steps.length - 1)]
   return (
     <section aria-label="แผนงาน" className={cn(!bare && 'rounded-xl border border-slate-200 bg-white p-4')}>
       {variant === 'B' && cubeOn && !planned && <CubeTeam run={run} />}
       <h3 className="text-sm font-semibold text-slate-900" aria-live="polite">{heading(run)}</h3>
-      <ol className="mt-3 space-y-2">
+      {compact && now && (
+        <div className="mt-3">
+          <p className="flex items-center gap-2 text-sm text-slate-700">
+            <LoaderCircle className="size-[18px] shrink-0 animate-spin text-brand-500" aria-hidden />
+            <span className="min-w-0 truncate"><span className="font-medium text-slate-800">{now.task}</span> <span className="text-slate-400">· {now.name.replace(' Agent', '')}</span></span>
+          </p>
+          <div className="mt-2.5 flex gap-1" aria-hidden>
+            {run.steps.map((s) => <span key={s.id} className={cn('h-1.5 flex-1 rounded-full', s.status === 'completed' ? 'bg-emerald-400' : s.status === 'processing' ? 'bg-brand-400' : 'bg-slate-200')} />)}
+          </div>
+        </div>
+      )}
+      {!compact && <ol className="mt-3 space-y-2">
         {run.steps.map((s, i) => {
           const { Icon, tone, text } = STATUS[s.status] ?? STATUS.waiting
           return (
@@ -76,8 +95,13 @@ export default function PlanCard({ run, onRemove, onStart, onShowSteps, bare }) 
             </li>
           )
         })}
-      </ol>
-      {(planned || (run.status === 'running' && onShowSteps)) && (
+      </ol>}
+      {collapsible && run.status === 'running' && (
+        <button type="button" onClick={() => setOpen(!open)} aria-expanded={open} className="mt-3 inline-flex items-center gap-1 text-[13px] text-slate-500 hover:text-brand-700">
+          {open ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}{open ? 'ย่อ' : 'ดูขั้นตอนทั้งหมด'}
+        </button>
+      )}
+      {(planned || (run.status === 'running' && onShowSteps && !compact)) && (
         <div className="mt-4 flex flex-wrap gap-2">
           {planned && <Button variant="primary" icon={Play} onClick={onStart}>เริ่มทำงาน</Button>}
           {onShowSteps && <Button variant={planned ? 'secondary' : 'ghost'} size={planned ? 'md' : 'sm'} icon={ListChecks} onClick={onShowSteps}>ดูขั้นตอน</Button>}
