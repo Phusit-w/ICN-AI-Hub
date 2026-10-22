@@ -67,7 +67,7 @@ describe('Agents with Steps', () => {
     const card = cardOf(agentList(), 'IT Incident Triage')
     expect(within(card).getByRole('link', { name: 'IT Incident Triage' })).toBeInTheDocument()
     expect(within(card).getByRole('link', { name: 'ใช้งาน' })).toBeInTheDocument()
-    expect(within(card).getByText('1 ขั้นตอน')).toBeInTheDocument()
+    expect(within(card).getByText('ทีม 1 ขั้นตอน')).toBeInTheDocument()
     expect(card.textContent).not.toMatch(NUMBERS)
   })
 

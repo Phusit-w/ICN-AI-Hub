@@ -8,6 +8,7 @@ An enterprise AI workspace where employees hand work to AI assistants in plain l
 
 **Agent** (AI Agent):
 An AI assistant with its own instruction, skills and knowledge, built for one kind of job; it may carry Steps when the job takes several stages. The only kind of thing a User builds, uses and shares.
+An Agent that carries Steps is called a team (ทีม) in the interface, so it reads apart from a single-purpose Agent at a glance.
 _Avoid_: Bot, assistant profile, Workflow, สายงาน (there is no separate Workflow: a multi-stage job is an Agent with Steps)
 
 **Step** (ขั้นตอน):

@@ -73,7 +73,7 @@ describe('Navigation: new chat plus a two-item menu', () => {
   it('an Agent with Steps has a card like any Agent, with a badge saying how many Steps it has', () => {
     startJourney('/agents')
     const name = screen.getAllByRole('link', { name: 'Sales Proposal Pipeline' })[0]
-    expect(within(name.closest('li')).getByText('5 ขั้นตอน')).toBeVisible()
+    expect(within(name.closest('li')).getByText('ทีม 5 ขั้นตอน')).toBeVisible()
     expect(within(name.closest('li')).getByRole('link', { name: 'ใช้งาน' })).toHaveAttribute('href', '/workspace?agent=agent-proposal-pipeline')
   })
 })

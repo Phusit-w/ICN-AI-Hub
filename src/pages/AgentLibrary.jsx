@@ -10,7 +10,8 @@ import ShareFilterChips from '../components/ui/ShareFilterChips'
 import Button from '../components/ui/Button'
 import { Select } from '../components/ui/Form'
 import { ItemCard } from '../components/agents/AgentCard'
-import { stepsLabel } from '../lib/steps'
+import EntityIcon from '../components/agents/EntityIcon'
+import { hasSteps, stepAgents, stepsLabel } from '../lib/steps'
 import SkillDialog from '../components/skills/SkillDialog'
 import TypewriterHint from '../components/ui/TypewriterHint'
 import EyeTracker from '../components/ui/EyeTracker'
@@ -89,18 +90,44 @@ const SORTS = {
 }
 
 /** An Agent in the clean card shape. `best` marks the top recommendation for a typed need: its "ใช้งาน" is the page's one primary. */
+/** The card's lead: an Agent with Steps is drawn as a small stack (a team), a single Agent as one tile or Cube. */
+function CardLead({ agent, variant, cube }) {
+  const { state } = useStore()
+  const team = hasSteps(agent)
+  if (variant === 'B' && cube) {
+    const [first, second] = stepAgents(agent, state.agents)
+    return (
+      <span className="flex flex-col items-start gap-0.5">
+        {team ? (
+          <span className="relative block h-12 w-[72px]">
+            {second && <span className="absolute top-1 left-10 opacity-70"><AgentCube agent={second} size={36} calm /></span>}
+            {first && <span className="absolute top-0.5 left-5 opacity-85"><AgentCube agent={first} size={40} calm /></span>}
+            <span className="absolute top-0 left-0"><AgentCube agent={agent} size={48} calm /></span>
+          </span>
+        ) : <AgentCube agent={agent} size={48} calm />}
+        <span className="text-[11px] text-slate-400">{team ? `ทีม · ${agent.steps.length} ขั้นตอน` : ROLE_LABELS[agent.kind]}</span>
+      </span>
+    )
+  }
+  if (!team) return undefined
+  return (
+    <span className="relative mr-2.5 mb-2.5 inline-flex">
+      <span className="absolute top-2.5 left-2.5 size-9 rounded-lg bg-brand-50 ring-1 ring-inset ring-brand-100" aria-hidden />
+      <span className="absolute top-1.5 left-1.5 size-9 rounded-lg bg-brand-100 ring-1 ring-inset ring-brand-200" aria-hidden />
+      <EntityIcon icon={agent.kind} className="relative" />
+    </span>
+  )
+}
+
 function AgentCard({ agent, best = false, ...props }) {
   const [variant] = useVariant()
   const [cube] = useCube()
+  const team = hasSteps(agent)
   return (
   <ItemCard
-    lead={variant === 'B' && cube ? (
-      <span className="flex flex-col items-start gap-0.5">
-        <AgentCube agent={agent} size={48} calm />
-        <span className="text-[11px] text-slate-400">{ROLE_LABELS[agent.kind]}</span>
-      </span>
-    ) : undefined}
-    icon={agent.kind} name={agent.name} description={agent.description} favoriteId={agent.id} badge={stepsLabel(agent)}
+    lead={<CardLead agent={agent} variant={variant} cube={cube} />}
+    icon={agent.kind} name={agent.name} description={agent.description} favoriteId={agent.id}
+    badge={variant === 'B' && cube ? undefined : team ? `ทีม ${stepsLabel(agent)}` : undefined}
     to={`/agents/${agent.id}`} useTo={`/workspace?agent=${agent.id}`} primary={best}
     className={best ? 'border-brand-400' : undefined} {...props}
   />
@@ -135,6 +162,7 @@ export default function AgentLibrary() {
   const showModelFilter = isAdminView(state)
   const location = showModelFilter ? pickedLocation : 'all'
   const [share, setShare] = useState('all')
+  const [team, setTeam] = useState('all') // all | single | team: Agents with Steps are told apart from single ones
   const [sort, setSort] = useState('popular')
   const [params] = useSearchParams()
   const filter = shareFilterFrom(params)
@@ -158,7 +186,8 @@ export default function AgentLibrary() {
     .filter((a) => !need?.dept || a.dept === need.dept)
     .filter((a) => location === 'all' || modelById(a.model).location === location)
     .filter((a) => share === 'all' || a.share === share)
-    .sort(SORTS[sort]), filter, me), [state.agents, listTerm, need, location, share, sort, filter, me])
+    .filter((a) => team === 'all' || (team === 'team') === hasSteps(a))
+    .sort(SORTS[sort]), filter, me), [state.agents, listTerm, need, location, share, team, sort, filter, me])
 
   const typedNoMatch = q.trim() && top.length === 0
   // Recommendations bring their own primary ("ใช้งาน" on the best pick, or "สร้างผู้ช่วยสำหรับ …"), so creating steps back.
@@ -221,6 +250,9 @@ export default function AgentLibrary() {
             )}
             <Select value={share} onChange={(e) => setShare(e.target.value)} className="w-auto" aria-label="การแชร์">
               <option value="all">ทุกระดับการแชร์</option><option value="company">ทั้งบริษัท</option><option value="department">ในแผนก</option><option value="private">เฉพาะฉัน</option>
+            </Select>
+            <Select value={team} onChange={(e) => setTeam(e.target.value)} className="w-auto" aria-label="ชนิด">
+              <option value="all">ทุกชนิด</option><option value="single">Agent เดี่ยว</option><option value="team">ทีมหลายขั้นตอน</option>
             </Select>
             <Select value={sort} onChange={(e) => setSort(e.target.value)} className="w-auto" aria-label="เรียงตาม">
               <option value="popular">ใช้บ่อยที่สุด</option><option value="newest">อัปเดตล่าสุด</option>
