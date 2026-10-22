@@ -3,17 +3,17 @@ import { Shuffle } from 'lucide-react'
 import { cn } from '../../lib/utils'
 import Button from '../ui/Button'
 import AgentCube from './AgentCube'
-import { CUBE_COLORS, CUBE_EYES, CUBE_SHAPES, cubeOf } from '../../lib/cube'
+import { ACCESSORY_LABELS, CUBE_ACCESSORIES, CUBE_COLORS, CUBE_EYES, CUBE_SHAPES, cubeOf } from '../../lib/cube'
 
 const choice = (on) => cn('h-8 rounded-lg border px-3 text-[13px] transition', on ? 'border-brand-400 bg-brand-50 font-medium text-brand-700' : 'border-slate-200 bg-white text-slate-600 hover:border-brand-300')
 
-/** `value` is the chosen look, or null while nothing is chosen (the Agent then gets one worked out from its id). */
-export default function CubeField({ value, onChange }) {
-  const current = value ?? cubeOf({ id: 'draft' })
+/** `value` is the chosen look, or null while nothing is chosen (the Agent then gets one worked out from its id and `kind`). */
+export default function CubeField({ value, onChange, kind }) {
+  const current = value ?? cubeOf({ id: 'draft', kind })
   const set = (patch) => onChange({ ...current, ...patch })
   const random = () => {
     const pick = (list) => list[Math.floor(Math.random() * list.length)]
-    onChange({ shape: pick(CUBE_SHAPES), eyes: pick(CUBE_EYES), color: pick(CUBE_COLORS) })
+    onChange({ shape: pick(CUBE_SHAPES), eyes: pick(CUBE_EYES), color: pick(CUBE_COLORS), accessory: pick(CUBE_ACCESSORIES) })
   }
   return (
     <fieldset className="space-y-3">
@@ -26,6 +26,9 @@ export default function CubeField({ value, onChange }) {
           </div>
           <div className="flex flex-wrap gap-1.5" role="group" aria-label="สไตล์ตา">
             {CUBE_EYES.map((s) => <button key={s} type="button" aria-pressed={current.eyes === s} onClick={() => set({ eyes: s })} className={choice(current.eyes === s)}>{s}</button>)}
+          </div>
+          <div className="flex flex-wrap gap-1.5" role="group" aria-label="ของที่ใส่หรือถือ">
+            {CUBE_ACCESSORIES.map((s) => <button key={s} type="button" aria-pressed={current.accessory === s} onClick={() => set({ accessory: s })} className={choice(current.accessory === s)}>{ACCESSORY_LABELS[s]}</button>)}
           </div>
           <div className="flex flex-wrap items-center gap-2" role="group" aria-label="สี">
             {CUBE_COLORS.map((c) => (

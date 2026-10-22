@@ -32,7 +32,7 @@ function CubeTeam({ run }) {
   return (
     <div className="mb-4 flex items-start gap-3 pb-7" aria-hidden>
       {run.steps.map((s, i) => {
-        const agent = state.agents.find((a) => a.id === s.agentId) ?? { id: s.agentId ?? s.kind }
+        const agent = state.agents.find((a) => a.id === s.agentId) ?? { id: s.agentId ?? s.kind, kind: s.kind }
         const working = s.status === 'processing'
         const next = run.steps[i + 1]
         return (

@@ -24,6 +24,7 @@ export default function AgentCube({ agent, cube, size = 40, idle, thinking, mood
     <span className="eyt-fit inline-flex">
       <EyeTracker
         size={size} idle={idle} shape={c.shape} eyes={c.eyes} color={c.color} eyeScale={size < 60 ? 1.3 : 1}
+        accessory={size >= 48 ? c.accessory : 'none'} busy={thinking}
         mood={mood} gaze={thinking && !still() ? GLANCES[i] : gaze} message={message}
       />
     </span>

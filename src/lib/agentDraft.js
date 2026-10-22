@@ -47,7 +47,7 @@ export function agentFromForm(form, { owner, note, forkedFrom }) {
   const today = new Date().toISOString().slice(0, 10)
   const id = uid('agent')
   return {
-    id, cube: form.cube ?? cubeOf({ id }), name: form.name.trim(), description: form.description.trim(), dept: form.dept, kind: form.kind,
+    id, cube: form.cube ?? cubeOf({ id, kind: form.kind }), name: form.name.trim(), description: form.description.trim(), dept: form.dept, kind: form.kind,
     instruction: form.instruction, model: form.model, classification: form.classification,
     knowledge: form.knowledge, uploads: form.uploads, skills: form.skills, tools: form.tools,
     output: { format: form.format, language: form.language, template: form.template || 'Default' },

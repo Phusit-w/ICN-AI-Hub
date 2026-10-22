@@ -119,6 +119,68 @@ const SHAPES = {
   "Hex flat": "M91.50 59.53 L79.00 81.18 Q73.50 90.70 62.50 90.70 L37.50 90.70 Q26.50 90.70 21.00 81.18 L8.50 59.53 Q3.00 50.00 8.50 40.47 L21.00 18.82 Q26.50 9.30 37.50 9.30 L62.50 9.30 Q73.50 9.30 79.00 18.82 L91.50 40.47 Q97.00 50.00 91.50 59.53 Z",
 };
 
+/* ── what it holds, wears ─────────────────────────────────────
+   Drawn in the same 100-unit box as the body but outside the
+   clip, so a held thing can hang over the edge as if it were in
+   a hand and a hat can sit on top. Glasses are the exception:
+   they belong to the eyes (see the draw loop), so they are not
+   in this table. Kept to flat pale shapes with a dark edge so
+   they read on a body of any colour. */
+const ink = { fill: "#f8fafc", stroke: "#334155", strokeWidth: 2, strokeLinejoin: "round", strokeLinecap: "round" };
+const line = { fill: "none", stroke: "#334155", strokeWidth: 2, strokeLinecap: "round" };
+const ACCESSORIES = {
+  none: null,
+  glasses: null,
+  document: (
+    <g>
+      <rect x="68" y="56" width="26" height="34" rx="3" {...ink} />
+      <path d="M73 66 H89 M73 73 H89 M73 80 H82" {...line} />
+    </g>
+  ),
+  briefcase: (
+    <g>
+      <path d="M76 66 V62 Q76 59 79 59 H87 Q90 59 90 62 V66" {...line} />
+      <rect x="68" y="66" width="30" height="22" rx="4" {...ink} />
+      <path d="M68 76 H98" {...line} />
+    </g>
+  ),
+  magnifier: (
+    <g>
+      <path d="M86 76 L97 88" {...line} strokeWidth="4" />
+      <circle cx="79" cy="69" r="11" {...ink} />
+    </g>
+  ),
+  chart: (
+    <g>
+      <rect x="68" y="58" width="30" height="30" rx="3" {...ink} />
+      <path d="M75 83 V75 M83 83 V68 M91 83 V72" {...line} strokeWidth="4" />
+    </g>
+  ),
+  headset: (
+    <g>
+      <path d="M13 50 A37 37 0 0 1 87 50" {...line} strokeWidth="3" />
+      <rect x="7" y="44" width="9" height="18" rx="4" {...ink} />
+      <rect x="84" y="44" width="9" height="18" rx="4" {...ink} />
+      <path d="M11 62 Q11 76 26 77" {...line} />
+      <circle cx="28" cy="77" r="3.5" {...ink} />
+    </g>
+  ),
+  hardhat: (
+    <g>
+      <path d="M24 16 C24 -6 76 -6 76 16 Z" {...ink} />
+      <rect x="17" y="14" width="66" height="7" rx="3.5" {...ink} />
+      <path d="M50 -1 V13" {...line} />
+    </g>
+  ),
+  calculator: (
+    <g>
+      <rect x="69" y="56" width="26" height="34" rx="4" {...ink} />
+      <rect x="73" y="60" width="18" height="8" rx="2" fill="#cbd5e1" />
+      <path d="M75 76 H75.1 M82 76 H82.1 M89 76 H89.1 M75 83 H75.1 M82 83 H82.1 M89 83 H89.1" {...line} strokeWidth="3.5" />
+    </g>
+  ),
+};
+
 /* ── morphing between shapes ────────────────────────────────
    The shapes are written as different kinds of path — arcs for
    the ball and the pill, lines and curves for the hexagon — so
@@ -200,6 +262,10 @@ export default function EyeTracker({
   gaze,
   /* text kept in the bubble, in place of a poke's one-liners */
   message,
+  /* what it wears or holds: one of ACCESSORIES below, or none */
+  accessory = "none",
+  /* at work: whatever it holds jiggles */
+  busy = false,
   idle = false,
 } = {}) {
   const still = stillness();
@@ -232,7 +298,7 @@ export default function EyeTracker({
   };
   const eyes = useRef([]);
   const knobs = useRef({ follow, bounce, eyeScale });
-  knobs.current = { follow, bounce, eyeScale, mood, gaze };
+  knobs.current = { follow, bounce, eyeScale, mood, gaze, accessory };
   const base = STYLES[look] ?? STYLES.Slant;
   const eye = {
     w: base.w * eyeScale * eyeWidth,
@@ -312,6 +378,18 @@ export default function EyeTracker({
           rect.setAttribute("width", w.toFixed(2));
           rect.setAttribute("height", h.toFixed(2));
           rect.setAttribute("rx", Math.min(e0.r, w / 2, h / 2).toFixed(2));
+        }
+        /* glasses ring each eye and ride its turn; the ring keeps its
+           size through a blink, only the eye inside closes */
+        const glass = g.children[1];
+        if (glass && knobs.current.accessory === "glasses") {
+          const gw = w + 6;
+          const gh = e0.h * k + 6;
+          glass.setAttribute("x", (-gw / 2).toFixed(2));
+          glass.setAttribute("y", (-gh / 2).toFixed(2));
+          glass.setAttribute("width", gw.toFixed(2));
+          glass.setAttribute("height", gh.toFixed(2));
+          glass.setAttribute("rx", Math.min(e0.r + 3, gw / 2, gh / 2).toFixed(2));
         }
         g.setAttribute(
           "transform",
@@ -483,9 +561,11 @@ export default function EyeTracker({
               height={eye.h}
               rx={eye.r}
             />
+            <rect className="eyt-glass" display={accessory === "glasses" ? undefined : "none"} />
           </g>
         ))}
         </g>
+        <g className="eyt-acc" data-busy={busy || undefined}>{ACCESSORIES[accessory]}</g>
       </svg>
       {idle && message == null ? null : (
         <span
