@@ -268,7 +268,7 @@ function DeskNote({ run, selected, onOpen, onClose }) {
 }
 
 /** Variant B's work area: the strongest object on the page, whichever stage the Run is at. */
-function Desk({ run }) {
+function Desk({ run, onClose }) {
   const { actions } = useStore()
   const final = run.status === 'completed' ? finalStep(run) : null
   const loops = run.steps.reduce((n, s) => n + (s.kind === 'review' ? s.loops : 0), 0)
@@ -277,12 +277,18 @@ function Desk({ run }) {
       {/* a finished file fills the area: its header and actions stay put and only the body below scrolls */}
       {final ? (
         <header className="shrink-0 space-y-2.5 border-b border-slate-100 px-5 py-3 lg:px-7">
-          <ArtifactHeader output={final.output} />
+          <div className="flex items-center gap-3">
+            <ArtifactHeader output={final.output} />
+            <Button variant="ghost" size="icon" icon={X} onClick={onClose} aria-label="ปิดพื้นที่ทำงาน" title="ปิด" />
+          </div>
           <ArtifactActions run={run} latest />
         </header>
       ) : (
         <header className="shrink-0 space-y-3 border-b border-slate-100 px-5 py-4 lg:px-7">
-          <h2 className="text-lg font-semibold tracking-tight text-slate-900">{run.title ?? run.prompt}</h2>
+          <div className="flex items-start gap-3">
+            <h2 className="min-w-0 flex-1 text-lg font-semibold tracking-tight text-slate-900">{run.title ?? run.prompt}</h2>
+            <Button variant="ghost" size="icon" icon={X} onClick={onClose} aria-label="ปิดพื้นที่ทำงาน" title="ปิด" />
+          </div>
           <StepGuide status={run.status} />
         </header>
       )}
@@ -457,6 +463,7 @@ export default function Workspace() {
   const [stepsRunId, setStepsRunId] = useState(null) // the Run whose steps are open in the side panel
   const [docRunId, setDocRunId] = useState(null) // A: the Run whose file is open as a document on the right
   const [deskOpen, setDeskOpen] = useState(false) // B: a running Run's work area is shown only once the user expands it
+  const [deskClosed, setDeskClosed] = useState(false) // B: the user closed the work area
   const [deskPick, setDeskPick] = useState(null) // B: the Run the user chose to look at in the work area
   const handled = useRef(null)
   const q = params.get('q')
@@ -481,7 +488,12 @@ export default function Workspace() {
   // B: the work area follows the newest multi-step Run unless the user picked an older one. A chat answer needs no work area.
   const deskRuns = thread.filter((r) => !isChatRun(r))
   const deskRun = deskRuns.find((r) => r.id === deskPick) ?? deskRuns.at(-1) ?? null
-  const split = variant === 'B' && deskRun !== null && (deskRun.status !== 'running' || deskOpen)
+  const split = variant === 'B' && deskRun !== null && !deskClosed && (deskRun.status !== 'running' || deskOpen)
+  const closeDesk = () => { setDeskOpen(false); setDeskClosed(true) }
+  useEffect(() => {
+    setDeskClosed(false) // a Run changing stage brings the work area back...
+    if (deskRun?.status === 'running') setDeskOpen(false) // ...except that starting one folds it away until asked for
+  }, [deskRun?.id, deskRun?.status])
   useEffect(() => { setDeskPick(null); setDeskOpen(false) }, [deskRuns.length]) // a new Run takes over the work area, closed
 
   useEffect(() => {
@@ -495,14 +507,14 @@ export default function Workspace() {
       <section className={cn('flex min-h-0 min-w-0 flex-1', split ? 'flex-col gap-4 lg:flex-row lg:gap-6' : 'flex-col')}>
         {run ? (
           <>
-            {split && <div className="order-first flex max-h-[45%] min-h-0 flex-col lg:order-last lg:max-h-none lg:flex-1"><Desk key={deskRun.id} run={deskRun} /></div>}
+            {split && <div className="order-first flex max-h-[45%] min-h-0 flex-col lg:order-last lg:max-h-none lg:flex-1"><Desk key={deskRun.id} run={deskRun} onClose={closeDesk} /></div>}
             <div className={cn('flex min-h-0 min-w-0 flex-1 flex-col', split && 'lg:w-[26rem] lg:flex-none')}>
               <div className="flex items-center gap-3 pb-3">
                 <Button size="sm" icon={Plus} onClick={() => setParams({ variant })} className="lg:hidden">แชตใหม่</Button>
                 <p className="hidden min-w-0 truncate text-sm font-medium text-slate-700 sm:block">{thread[0]?.title}</p>
               </div>
               <div className="min-h-0 flex-1 overflow-y-auto">
-                <ChatView thread={thread} onShowSteps={openSteps} variant={variant} deskRunId={split ? deskRun.id : null} onOpenDesk={(id) => { setDeskPick(id); setDeskOpen(true) }} onCloseDesk={() => setDeskOpen(false)} docRunId={docRun?.id ?? null} onOpenDoc={openDoc} />
+                <ChatView thread={thread} onShowSteps={openSteps} variant={variant} deskRunId={split ? deskRun.id : null} onOpenDesk={(id) => { setDeskPick(id); setDeskOpen(true); setDeskClosed(false) }} onCloseDesk={closeDesk} docRunId={docRun?.id ?? null} onOpenDoc={openDoc} />
               </div>
               <div className="pt-3">
                 <Composer pick={pick} onPickChange={setPick} onSend={(p, pk, files) => send(p, pk, run.threadId, files)} />
