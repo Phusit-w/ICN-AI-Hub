@@ -40,11 +40,11 @@ export const DEPT_USAGE = [
 export const ROLES = ['User', 'Admin']
 export const PERMISSIONS = [
   { name: 'ใช้ Agent ที่แชร์ให้', grants: [true, true] },
-  { name: 'สร้าง Agent / Skill / Workflow ของตัวเอง', grants: [true, true] },
+  { name: 'สร้าง Agent / Skill ของตัวเอง', grants: [true, true] },
   { name: 'แชร์ระดับแผนก', grants: [true, true] },
   { name: 'ขอแชร์ระดับบริษัท', grants: [true, true] },
   { name: 'อนุมัติการแชร์ระดับบริษัท', grants: [false, true] },
-  { name: 'สร้างแบบขั้นสูง (Workflow canvas, ฟอร์มทีละขั้น)', grants: [false, true] },
+  { name: 'สร้างแบบขั้นสูง (ฟอร์มตั้งค่าแบบละเอียด)', grants: [false, true] },
   { name: 'เชื่อมต่อระบบภายใน', grants: [false, true] },
   { name: 'ตั้งงบประมาณและนโยบายข้อมูล', grants: [false, true] },
 ]

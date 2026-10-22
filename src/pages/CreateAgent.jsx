@@ -201,7 +201,7 @@ export default function CreateAgent() {
                     ))}
                   </div>
                 </Field>
-                <Field label="Model" hint="Knowledge, Skill และ Workflow ไม่ผูกกับ Model — เปลี่ยนภายหลังได้ทุกเมื่อ">
+                <Field label="Model" hint="Knowledge, Skill และขั้นตอนไม่ผูกกับ Model — เปลี่ยนภายหลังได้ทุกเมื่อ">
                   <div className="grid gap-2 md:grid-cols-2">
                     {MODELS.map((m) => {
                       const blocked = confidential && m.location === 'cloud'

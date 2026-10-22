@@ -1,7 +1,7 @@
 import {
-  BookOpen, Briefcase, Calculator, ChartColumn, ClipboardCheck, FileText, FlagTriangleRight, GitBranch, Globe,
-  Image as ImageIcon, Languages, LifeBuoy, Puzzle, Search, ShieldCheck, SquareCheck, Target, Ticket, UserRound, Zap, Bot, Sparkles,
-  Workflow, HardHat, Wrench, FileSearch, Landmark,
+  BookOpen, Briefcase, Calculator, ChartColumn, ClipboardCheck, FileText, Globe,
+  Image as ImageIcon, Languages, LifeBuoy, Puzzle, Search, ShieldCheck, SquareCheck, Target, Ticket, UserRound, Bot, Sparkles,
+  Workflow as StepsIcon, HardHat, Wrench, FileSearch, Landmark,
 } from 'lucide-react'
 import { cn } from '../../lib/utils'
 
@@ -10,7 +10,7 @@ const ICONS = {
   research: Search, sales: Briefcase, document: FileText, image: ImageIcon, review: ClipboardCheck, data: ChartColumn,
   translate: Languages, hr: UserRound, it: LifeBuoy, accounting: Calculator,
   bid: FileSearch, project: HardHat, maintenance: Wrench, exec: Landmark,
-  skill: Puzzle, condition: GitBranch, trigger: Zap, output: FlagTriangleRight, agent: Bot, chat: Sparkles, workflow: Workflow,
+  skill: Puzzle, agent: Bot, chat: Sparkles, steps: StepsIcon,
   // skill icons
   globe: Globe, book: BookOpen, file: FileText, check: SquareCheck, chart: ChartColumn, shield: ShieldCheck, target: Target,
   calculator: Calculator, ticket: Ticket,

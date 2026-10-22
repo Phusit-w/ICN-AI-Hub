@@ -6,8 +6,8 @@ Spec: `.scratch/agents-only-redesign/spec.md` (Implementation Decisions: Wording
 
 **Blocked by:** 02, 05
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] ค้นในโค้ดแอปและเอกสารแล้วไม่พบ "สายงาน" หรือ "Workflow" ในข้อความที่แสดงผล (ยกเว้น ADR และ GLOSSARY ที่อธิบายว่าเลิกใช้)
-- [ ] Journey tour เดินครบทุกขั้นกับหน้าตาใหม่
-- [ ] `npm test` ผ่านทั้งหมด
+- [x] ค้นในโค้ดแอปและเอกสารแล้วไม่พบ "สายงาน" หรือ "Workflow" ในข้อความที่แสดงผล (ยกเว้น ADR และ GLOSSARY ที่อธิบายว่าเลิกใช้)
+- [x] Journey tour เดินครบทุกขั้นกับหน้าตาใหม่
+- [x] `npm test` ผ่านทั้งหมด
