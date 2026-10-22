@@ -74,7 +74,6 @@ function Composer({ onSend, pick, onPickChange, large, typing, ...props }) {
           </button>
         </div>
       </form>
-      <p className="mt-1.5 text-center text-xs text-slate-500">ประมวลผลตามนโยบายองค์กร</p>
     </div>
   )
 }

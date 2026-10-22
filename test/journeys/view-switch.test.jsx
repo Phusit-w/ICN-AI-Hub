@@ -103,7 +103,7 @@ describe('The User view', () => {
     expect(screen.queryByRole('combobox', { name: 'ประเภท Model' })).toBeNull()
 
     await app.click(screen.getAllByRole('link', { name: 'แชตใหม่' })[0])
-    expect(screen.getByText('ประมวลผลตามนโยบายองค์กร')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'ส่ง' })).toBeInTheDocument()
   })
 })
 

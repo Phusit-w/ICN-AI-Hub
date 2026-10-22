@@ -30,11 +30,11 @@ afterEach(() => {
 })
 
 describe('The new-chat composer', () => {
-  it('has named attach and send buttons and says data follows company policy', () => {
+  it('has named attach and send buttons', () => {
     startJourney()
     expect(screen.getByRole('button', { name: 'แนบไฟล์' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'ส่ง' })).toBeInTheDocument()
-    expect(screen.getByText('ประมวลผลตามนโยบายองค์กร')).toBeInTheDocument()
+    expect(screen.queryByText('ประมวลผลตามนโยบายองค์กร')).toBeNull()
   })
 
   it('hides the microphone when the browser cannot recognise speech', () => {
