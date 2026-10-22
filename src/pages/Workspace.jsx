@@ -53,7 +53,7 @@ function Composer({ onSend, pick, onPickChange, large, ...props }) {
             ref={ref} value={text} onChange={(e) => setText(e.target.value)} rows={1} aria-label="ข้อความ"
             onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() } }}
             placeholder="พิมพ์งานหรือคำถามที่ต้องการ…"
-            className={cn('block max-h-40 min-h-10 min-w-0 flex-1 resize-none self-center bg-transparent px-1 py-2 text-[15px] placeholder:text-slate-400 focus:outline-none [field-sizing:content]', large && 'min-h-14 py-3.5 text-lg')}
+            className={cn('block max-h-40 min-h-10 min-w-0 flex-1 resize-none self-center bg-transparent px-1 py-2 text-[15px] placeholder:text-slate-400 focus:outline-none [field-sizing:content]', large && 'min-h-14 pt-4 pb-3 text-lg!')}
           />
           <span className={cn('flex shrink-0 items-center gap-1 py-1', !large && 'self-end')}><ComposerPick pick={pick} onChange={onPickChange} chooseAgent /></span>
           <MicButton onText={(said) => setText((t) => (t.trim() ? `${t.trimEnd()} ${said}` : said))} />
