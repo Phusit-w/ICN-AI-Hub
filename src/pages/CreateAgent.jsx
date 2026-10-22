@@ -66,7 +66,7 @@ function AgentBuilder({ form, setForm, initialText, onCreate, onDetailed }) {
               disabled={!form.name.trim() && !form.description.trim()}
             >ให้ AI ช่วยเขียน</Button>
           </Field>
-          {variant === 'B' && <CubeField kind={form.kind} value={form.cube} onChange={(cube) => set({ cube })} />}
+          {variant === 'B' && cube && <CubeField kind={form.kind} value={form.cube} onChange={(cube) => set({ cube })} />}
           <SkillsField skills={form.skills} onChange={(skills) => set({ skills })} />
           <ShareChoice value={form.share} onChange={(share) => set({ share })} companyNeedsApproval={!isAdminView(state)} />
           <StepsField steps={form.steps} onChange={(steps) => set({ steps })} />

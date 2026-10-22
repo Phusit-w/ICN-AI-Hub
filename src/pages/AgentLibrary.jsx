@@ -5,7 +5,7 @@ import { isAdminView, useStore } from '../store/AppStore'
 import { modelById, userById } from '../data/catalog'
 import { cn, matchScore, rankByMatch } from '../lib/utils'
 import { agentSearchText } from '../lib/agentDraft'
-import { applyShareFilter, shareFilterFrom } from '../lib/sharing'
+import { applyShareFilter, SHARE_FILTERS, shareFilterFrom } from '../lib/sharing'
 import ShareFilterChips from '../components/ui/ShareFilterChips'
 import Button from '../components/ui/Button'
 import { Select } from '../components/ui/Form'
@@ -96,6 +96,7 @@ function CardLead({ agent, variant, cube }) {
   const team = hasSteps(agent)
   if (variant === 'B' && cube) {
     const [first, second] = stepAgents(agent, state.agents)
+    const label = team ? `ทีม ${stepsLabel(agent)}` : ROLE_LABELS[agent.kind]
     return (
       <span className="flex flex-col items-start gap-0.5">
         {team ? (
@@ -105,7 +106,7 @@ function CardLead({ agent, variant, cube }) {
             <span className="absolute top-0 left-0"><AgentCube agent={agent} size={48} calm /></span>
           </span>
         ) : <AgentCube agent={agent} size={48} calm />}
-        <span className="text-[11px] text-slate-400">{team ? `ทีม · ${agent.steps.length} ขั้นตอน` : ROLE_LABELS[agent.kind]}</span>
+        {label && <span className="text-[11px] text-slate-400">{label}</span>}
       </span>
     )
   }
@@ -164,7 +165,7 @@ export default function AgentLibrary() {
   const [share, setShare] = useState('all')
   const [team, setTeam] = useState('all') // all | single | team: Agents with Steps are told apart from single ones
   const [sort, setSort] = useState('popular')
-  const [params] = useSearchParams()
+  const [params, setParams] = useSearchParams()
   const filter = shareFilterFrom(params)
 
   const hinting = variant === 'B' && !q && !focused
@@ -211,6 +212,15 @@ export default function AgentLibrary() {
           />
           {hinting && <TypewriterHint phrases={HINTS} className="px-5 text-left text-[15px] leading-[48px]" />}
         </div>
+        {variant === 'B' && filter && (
+          <div className="mt-3 flex justify-center">
+            <button
+              type="button" aria-label={`ล้างตัวกรอง ${SHARE_FILTERS.find((f) => f.id === filter).label}`}
+              onClick={() => setParams((p) => { const next = new URLSearchParams(p); next.delete('filter'); return next })}
+              className={cn(chipClass(true), 'inline-flex items-center gap-1')}
+            >{SHARE_FILTERS.find((f) => f.id === filter).label}<X className="size-3.5" aria-hidden /></button>
+          </div>
+        )}
         {variant !== 'B' && (
           <ShareFilterChips className="mt-3">
             {NEEDS.filter((n) => n.pinned).map((n) => (
