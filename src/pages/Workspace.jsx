@@ -1,8 +1,8 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useSearchParams } from 'react-router-dom'
 import {
-  ArrowRight, ArrowUp, CircleCheck, CircleDashed, Copy, Download, ListChecks, LoaderCircle,
-  Play, Plus, Share2, ShieldCheck, Sparkles, Undo2, X,
+  ArrowRight, ArrowUp, CircleCheck, CircleDashed, Copy, Download, Eye, ListChecks, LoaderCircle,
+  Plus, Share2, ShieldCheck, Undo2, X,
 } from 'lucide-react'
 import { useStore } from '../store/AppStore'
 import { AttachButton, AttachmentList } from '../components/ui/Attachments'
@@ -19,22 +19,11 @@ import ArtifactView from '../components/run/ArtifactView'
 import SaveForReuse from '../components/run/SaveForReuse'
 import Feedback from '../components/run/Feedback'
 import ComposerPick, { pickFromParams, usePick } from '../components/run/ComposerPick'
-import ReuseRow from '../components/run/ReuseRow'
-import DepartmentAgents from '../components/agents/DepartmentAgents'
-import { WelcomeCard } from '../components/layout/Help'
 import { userById } from '../data/catalog'
-import { reuseAgents } from '../lib/reuse'
+import PlanCard from './workspace-prototype/PlanCard'
+import PrototypeSwitcher, { PROTOTYPE_ON, useVariant } from './workspace-prototype/PrototypeSwitcher'
+import { artifactMeta } from './workspace-prototype/artifactMeta'
 import logo from '../assets/icn-logo.png'
-
-// One-tap examples for a newcomer who doesn't know what to ask yet.
-const EXAMPLES = [
-  { label: 'ทำ Proposal ให้ลูกค้า', prompt: 'ทำ Proposal ระบบ Smart Warehouse ให้ลูกค้า Thai Retail Group' },
-  { label: 'ค้นข้อมูล สรุปรายงาน พร้อมภาพ', prompt: 'ช่วยค้นข้อมูลตลาด Solar Rooftop สรุปเป็นรายงาน และสร้างภาพประกอบ' },
-  { label: 'ถามระเบียบ / สวัสดิการ', prompt: 'นโยบายวันลาพักร้อนสะสมได้กี่วัน' },
-  { label: 'แจ้งปัญหา IT', prompt: 'VPN ต่อไม่ได้ตั้งแต่เช้า' },
-  { label: 'ทำรายงานปิดงบประจำเดือน', prompt: 'ทำรายงานปิดงบเดือนตุลาคม พร้อมกระทบยอด Invoice' },
-  { label: 'วิเคราะห์ยอดขายจาก Excel', prompt: 'วิเคราะห์ยอดขาย Q3 รายภาค และสรุปเป็นรายงาน' },
-]
 
 /** The deliverable to show first: the document if there is one, otherwise the last real output. */
 function finalStep(run) {
@@ -42,7 +31,7 @@ function finalStep(run) {
   return outputs.find((s) => s.output.type === 'doc') ?? outputs.filter((s) => s.output.type !== 'checklist').at(-1) ?? outputs.at(-1)
 }
 
-function Composer({ onSend, pick, onPickChange, ...props }) {
+function Composer({ onSend, pick, onPickChange, large, ...props }) {
   const [text, setText] = useState('')
   const [files, setFiles] = useState([])
   const ref = useRef(null)
@@ -56,7 +45,7 @@ function Composer({ onSend, pick, onPickChange, ...props }) {
   return (
     <div className="mx-auto w-full max-w-3xl">
       {/* Capsule (spec .scratch/agents-only-redesign stories 44–48): ＋ attach · text · Agent · microphone · send. The radius keeps one line fully round. */}
-      <form {...props} onSubmit={(e) => { e.preventDefault(); send() }} className="rounded-[28px] border border-slate-300 bg-white p-2 text-left shadow-xs focus-within:border-brand-400 focus-within:ring-4 focus-within:ring-brand-100">
+      <form {...props} onSubmit={(e) => { e.preventDefault(); send() }} className={cn('rounded-[28px] border border-slate-300 bg-white p-2 text-left shadow-xs focus-within:border-brand-400 focus-within:ring-4 focus-within:ring-brand-100', large && 'p-3 shadow-md')}>
         <AttachmentList files={files} onRemove={(id) => setFiles((fs) => fs.filter((f) => f.id !== id))} />
         <div className="flex items-end gap-1">
           <AttachButton onAdd={(added) => setFiles((fs) => [...fs, ...added])} />
@@ -64,7 +53,7 @@ function Composer({ onSend, pick, onPickChange, ...props }) {
             ref={ref} value={text} onChange={(e) => setText(e.target.value)} rows={1} aria-label="ข้อความ"
             onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() } }}
             placeholder="พิมพ์งานหรือคำถามที่ต้องการ…"
-            className="block max-h-40 min-h-10 min-w-0 flex-1 resize-none self-center bg-transparent px-1 py-2 text-[15px] placeholder:text-slate-400 focus:outline-none [field-sizing:content]"
+            className={cn('block max-h-40 min-h-10 min-w-0 flex-1 resize-none self-center bg-transparent px-1 py-2 text-[15px] placeholder:text-slate-400 focus:outline-none [field-sizing:content]', large && 'min-h-24 self-start text-base')}
           />
           <span className="flex shrink-0 items-center gap-1 self-end py-1"><ComposerPick pick={pick} onChange={onPickChange} chooseAgent /></span>
           <MicButton onText={(said) => setText((t) => (t.trim() ? `${t.trimEnd()} ${said}` : said))} />
@@ -119,17 +108,75 @@ function ArtifactActions({ run, latest, onShowSteps }) {
       <Menu items={[
         { label: 'คัดลอก', icon: Copy, onSelect: () => actions.toast('คัดลอกแล้ว') },
         { label: 'แชร์', icon: Share2, onSelect: () => actions.toast('คัดลอกลิงก์สำหรับแชร์แล้ว') },
-        { label: 'ดูขั้นตอน', icon: ListChecks, onSelect: onShowSteps },
+        ...(onShowSteps ? [{ label: 'ดูขั้นตอน', icon: ListChecks, onSelect: onShowSteps }] : []),
       ]} />
       <Feedback run={run} />
     </div>
   )
 }
 
+/** Icon, name and "type · count" of a finished output. */
+function ArtifactHeader({ output }) {
+  const m = artifactMeta(output)
+  return (
+    <div className="flex min-w-0 flex-1 items-center gap-3.5">
+      <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600"><m.Icon className="size-6" aria-hidden /></span>
+      <div className="min-w-0">
+        <p className="truncate text-[15px] font-semibold text-slate-900">{output.title}</p>
+        <p className="text-xs text-slate-500">{m.label}{m.count && ` · ${m.count}`}</p>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Variant A: a summary card in the Thread. "เปิดผลงาน" is its one primary action; once the preview is open
+ * the primary action becomes "ดาวน์โหลด" (inside ArtifactActions), so the two never compete.
+ */
+function ArtifactCard({ run, final, latest, onShowSteps }) {
+  const [open, setOpen] = useState(false)
+  const { actions } = useStore()
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-white shadow-xs">
+      <div className="flex items-center gap-3 p-4">
+        <ArtifactHeader output={final.output} />
+        {!open && (
+          <span className="flex shrink-0 items-center gap-1">
+            <Button variant={latest ? 'primary' : 'secondary'} icon={Eye} onClick={() => setOpen(true)}>เปิดผลงาน</Button>
+            <Menu items={[
+              { label: 'ดาวน์โหลด', icon: Download, onSelect: () => actions.toast('ดาวน์โหลดไฟล์เรียบร้อย (จำลอง)') },
+              { label: 'แชร์', icon: Share2, onSelect: () => actions.toast('คัดลอกลิงก์สำหรับแชร์แล้ว') },
+              { label: 'ดูขั้นตอน', icon: ListChecks, onSelect: onShowSteps },
+            ]} />
+          </span>
+        )}
+      </div>
+      {open && (
+        <div className="space-y-4 border-t border-slate-100 p-4">
+          <ArtifactView artifact={final.output} />
+          <ArtifactActions run={run} latest={latest} onShowSteps={onShowSteps} />
+        </div>
+      )}
+    </div>
+  )
+}
+
+function SensitiveNote() {
+  return <p className="flex items-center gap-1.5 text-xs text-emerald-700"><ShieldCheck className="size-3.5" /> พบข้อมูลลับ — ประมวลผลบน AI ภายในบริษัท ข้อมูลไม่ออกนอกองค์กร</p>
+}
+
+function Typing() {
+  return (
+    <span className="inline-flex gap-1 py-2" aria-label="กำลังพิมพ์">
+      {[0, 150, 300].map((d) => <span key={d} className="size-2 animate-bounce rounded-full bg-slate-300" style={{ animationDelay: `${d}ms` }} />)}
+    </span>
+  )
+}
+
+/** Variant A: the whole Run in the Thread: Plan card, then progress in the same card, then the result card. */
 function AssistantMessage({ run, latest, onShowSteps }) {
   const { actions } = useStore()
   const chat = isChatRun(run)
-  const current = run.steps[run.current]
   const final = run.status === 'completed' ? finalStep(run) : null
   const loops = run.steps.reduce((n, s) => n + (s.kind === 'review' ? s.loops : 0), 0)
 
@@ -137,63 +184,98 @@ function AssistantMessage({ run, latest, onShowSteps }) {
     <div className="flex gap-3">
       <img src={logo} alt="" className="size-8 shrink-0 rounded-full ring-1 ring-slate-200" />
       <div className="min-w-0 flex-1 space-y-3 pt-1">
-        {run.sensitive && (
-          <p className="flex items-center gap-1.5 text-xs text-emerald-700"><ShieldCheck className="size-3.5" /> พบข้อมูลลับ — ประมวลผลบน AI ภายในบริษัท ข้อมูลไม่ออกนอกองค์กร</p>
-        )}
+        {run.sensitive && <SensitiveNote />}
 
-        {run.status === 'planned' && (
-          <>
-            <p className="text-[15px] text-slate-700">แผนงาน: ให้ผู้ช่วย AI ทำ {run.steps.length} ขั้นตอน ตามลำดับนี้</p>
-            <StepChips steps={run.steps} onRemove={run.steps.length > 1 ? (stepId) => actions.removeStep(run.id, stepId) : undefined} />
-            <div className="flex flex-wrap gap-2">
-              <Button variant="primary" icon={Play} onClick={() => actions.startRun(run.id)}>เริ่มเลย</Button>
-              <Button variant="ghost" icon={ListChecks} onClick={onShowSteps}>ดูขั้นตอน</Button>
-            </div>
-          </>
-        )}
-
-        {run.status === 'running' && (chat ? (
-          <span className="inline-flex gap-1 py-2" aria-label="กำลังพิมพ์">
-            {[0, 150, 300].map((d) => <span key={d} className="size-2 animate-bounce rounded-full bg-slate-300" style={{ animationDelay: `${d}ms` }} />)}
-          </span>
-        ) : (
-          <>
-            <StepChips steps={run.steps} />
-            <p className="flex items-center gap-2 text-sm text-slate-600">
-              <LoaderCircle className="size-4 shrink-0 animate-spin text-brand-500" />
-              <span><b className="font-medium text-slate-800">{current?.name}</b> กำลังทำ: {current?.task}…</span>
-            </p>
-            <button type="button" onClick={onShowSteps} className="inline-flex items-center gap-1 text-xs font-medium text-brand-700 hover:underline">
-              ดูขั้นตอน <ArrowRight className="size-3" aria-hidden />
-            </button>
-          </>
-        ))}
-
-        {run.status === 'completed' && (chat ? (
+        {chat && run.status === 'running' && <Typing />}
+        {chat && run.status === 'completed' && (
           <>
             <ArtifactView artifact={run.steps[0].output} />
             <ArtifactActions run={run} latest={latest} onShowSteps={onShowSteps} />
           </>
-        ) : (
+        )}
+
+        {!chat && run.status !== 'completed' && (
+          <PlanCard run={run} onRemove={(stepId) => actions.removeStep(run.id, stepId)} onStart={() => actions.startRun(run.id)} onShowSteps={onShowSteps} />
+        )}
+        {!chat && run.status === 'completed' && (
           <>
             <p className="text-[15px] text-slate-700">
               เสร็จแล้ว — ผู้ช่วย {run.steps.length} ตัวช่วยกันทำ{loops > 0 && ` (ระหว่างทางตรวจพบข้อมูลไม่ครบ จึงส่งกลับไปแก้ ${loops} ครั้ง)`}
             </p>
-            {final && (
-              <div className="rounded-xl border border-slate-200 bg-white p-4">
-                <p className="mb-3 flex items-center gap-2 text-xs font-medium text-slate-500"><EntityIcon icon={final.kind} size="sm" className="!size-5" />{final.output.title}</p>
-                <ArtifactView artifact={final.output} />
-              </div>
-            )}
-            <ArtifactActions run={run} latest={latest} onShowSteps={onShowSteps} />
+            {final && <ArtifactCard run={run} final={final} latest={latest} onShowSteps={onShowSteps} />}
           </>
-        ))}
+        )}
       </div>
     </div>
   )
 }
 
-function ChatView({ thread, onShowSteps }) {
+/** Variant B: the Thread only talks; the Plan, progress and result live in the work area (Desk) beside it. */
+function DeskNote({ run, selected, onOpen }) {
+  const chat = isChatRun(run)
+  const final = run.status === 'completed' ? finalStep(run) : null
+  return (
+    <div className="flex gap-3">
+      <img src={logo} alt="" className="size-8 shrink-0 rounded-full ring-1 ring-slate-200" />
+      <div className="min-w-0 flex-1 space-y-2.5 pt-1">
+        {run.sensitive && <SensitiveNote />}
+        {chat ? (
+          run.status === 'completed' ? <ArtifactView artifact={run.steps[0].output} /> : <Typing />
+        ) : (
+          <>
+            <p className="text-[15px] text-slate-700">
+              {run.status === 'planned' && `ผมวางแผนไว้ ${run.steps.length} ขั้นตอน ดูแผนที่พื้นที่ทำงาน แล้วกด “เริ่มทำงาน” ได้เลย`}
+              {run.status === 'running' && `กำลังทำงาน · ขั้นตอน ${Math.min(run.current + 1, run.steps.length)} จาก ${run.steps.length}`}
+              {run.status === 'completed' && `เสร็จแล้ว — “${final?.output.title ?? 'ผลงาน'}” อยู่ที่พื้นที่ทำงาน`}
+            </p>
+            {!selected && <Button size="sm" variant="secondary" icon={Eye} onClick={onOpen}>{run.status === 'completed' ? 'เปิดดูผลงาน' : 'ดูแผนงาน'}</Button>}
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
+
+/** Variant B's work area: the strongest object on the page, whichever stage the Run is at. */
+function Desk({ run }) {
+  const { actions } = useStore()
+  const final = run.status === 'completed' ? finalStep(run) : null
+  const loops = run.steps.reduce((n, s) => n + (s.kind === 'review' ? s.loops : 0), 0)
+  return (
+    <section aria-label="พื้นที่ทำงาน" className="rise min-h-0 min-w-0 flex-1 overflow-y-auto rounded-2xl border border-slate-200 bg-white p-5 shadow-xs lg:p-7">
+      <header className="space-y-3">
+        <h2 className="text-lg font-semibold tracking-tight text-slate-900">{run.title ?? run.prompt}</h2>
+        <StepGuide status={run.status} />
+      </header>
+      <div className="mt-6 space-y-6">
+        {run.status !== 'completed' && (
+          <PlanCard bare run={run} onRemove={(stepId) => actions.removeStep(run.id, stepId)} onStart={() => actions.startRun(run.id)} />
+        )}
+        {run.status === 'running' && (
+          <>
+            <div className="flex items-center gap-3"><ProgressBar value={runProgress(run)} className="flex-1" /><span className="text-xs font-medium text-slate-500">{Math.round(runProgress(run) * 100)}%</span></div>
+            <LiveActivity run={run} />
+          </>
+        )}
+        {final && (
+          <>
+            <div className="flex items-center gap-3"><ArtifactHeader output={final.output} /></div>
+            <ArtifactView artifact={final.output} />
+            <ArtifactActions run={run} latest />
+            <details className="rounded-lg border border-slate-200 bg-slate-50/60 px-4 py-3">
+              <summary className="flex cursor-pointer items-center gap-1.5 text-sm font-medium text-slate-700">
+                <ListChecks className="size-4 text-slate-500" aria-hidden />ดูขั้นตอนที่ทำ{loops > 0 && ` · ส่งกลับไปแก้ ${loops} ครั้ง`}
+              </summary>
+              <div className="mt-3"><PlanCard bare run={run} /></div>
+            </details>
+          </>
+        )}
+      </div>
+    </section>
+  )
+}
+
+function ChatView({ thread, onShowSteps, variant, deskRunId, onOpenDesk }) {
   const bottom = useRef(null)
   const last = thread.at(-1)
   const progressKey = last ? `${last.id}:${last.status}:${last.current}` : ''
@@ -207,7 +289,9 @@ function ChatView({ thread, onShowSteps }) {
             <AttachmentList files={run.attachments} className="flex max-w-[85%] flex-wrap justify-end gap-1.5" />
             <p className="max-w-[85%] rounded-2xl rounded-br-md bg-slate-100 px-4 py-2.5 text-[15px] text-slate-800">{run.prompt}</p>
           </div>
-          <AssistantMessage run={run} latest={run === last} onShowSteps={() => onShowSteps(run.id)} />
+          {variant === 'B'
+            ? <DeskNote run={run} selected={run.id === deskRunId} onOpen={() => onOpenDesk(run.id)} />
+            : <AssistantMessage run={run} latest={run === last} onShowSteps={() => onShowSteps(run.id)} />}
         </div>
       ))}
       <div ref={bottom} />
@@ -312,35 +396,16 @@ function StepsPanel({ run, onClose }) {
 }
 
 /**
- * The screen the app opens on, as in ChatGPT, Claude or Gemini: a greeting, the composer, and the "ใช้ซ้ำ" row.
- * Past chats are in the sidebar's chat history. Examples show only until the user has a Run of their own.
+ * The screen the app opens on, as in Qwen or ChatGPT: a greeting and one large composer, centred. Nothing else.
+ * Past chats are in the sidebar's chat history.
  */
 function NewChat({ pick, onPickChange, onSend }) {
   const { state } = useStore()
   const me = userById(state.userId)
-  const hasRuns = state.runs.some((r) => r.owner === state.userId)
-  const reuse = reuseAgents(state)
   return (
-    <div className="min-h-0 flex-1 overflow-y-auto">
-      <div className="mx-auto max-w-3xl space-y-8 px-1 pt-2 pb-6 lg:pt-6">
-        <WelcomeCard />
-        <section className="text-center">
-          <h1 className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">สวัสดี คุณ{me.name.split(' ')[0]} วันนี้ให้ช่วยอะไรดี?</h1>
-          <p className="mt-2 mb-6 text-sm text-slate-500">พิมพ์งานที่ต้องการเป็นภาษาปกติ ระบบจะเลือกผู้ช่วย AI ที่เหมาะให้เอง</p>
-          <Composer data-tour="home-command" pick={pick} onPickChange={onPickChange} onSend={onSend} />
-          {!hasRuns && (
-            <ul aria-label="ตัวอย่างงาน" className="mt-4 flex flex-wrap justify-center gap-2">
-              {EXAMPLES.map((x) => (
-                <li key={x.label}>
-                  <button type="button" onClick={() => onSend(x.prompt, pick, [])} className="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-600 transition hover:bg-slate-200 hover:text-slate-900">{x.label}</button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-        <DepartmentAgents pick={pick} onPick={onPickChange} exclude={reuse.map((a) => a.id)} />
-        <ReuseRow agents={reuse} pick={pick} onPick={onPickChange} hasFavorites={state.favorites.length > 0} />
-      </div>
+    <div className="flex min-h-0 flex-1 flex-col items-center justify-center px-1 pb-16">
+      <h1 className="mb-8 text-center text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">สวัสดี คุณ{me.name.split(' ')[0]} วันนี้ให้ช่วยอะไรดี?</h1>
+      <Composer large data-tour="home-command" pick={pick} onPickChange={onPickChange} onSend={onSend} />
     </div>
   )
 }
@@ -349,7 +414,9 @@ export default function Workspace() {
   const { state, actions } = useStore()
   const [params, setParams] = useSearchParams()
   const location = useLocation()
+  const [variant, setVariant] = useVariant() // PROTOTYPE: A = one column, B = chat + work area
   const [stepsRunId, setStepsRunId] = useState(null) // the Run whose steps are open in the side panel
+  const [deskPick, setDeskPick] = useState(null) // B: the Run the user chose to look at in the work area
   const handled = useRef(null)
   const q = params.get('q')
 
@@ -363,9 +430,14 @@ export default function Workspace() {
     // Several Agents the system chose itself (even an Agent with Steps matched by keyword) wait at the Plan for "เริ่มเลย".
     const picked = Boolean(pick?.agentId)
     const id = actions.planRun(prompt, pick ?? {}, state, { threadId, attachments, autoStart: (plan) => picked || isChatRun(plan) })
-    setParams({ run: id })
+    setParams({ run: id, variant })
   }
-  const stepsRun = thread.find((r) => r.id === stepsRunId) // closes by itself when the user leaves the Thread
+  const stepsRun = variant === 'A' ? thread.find((r) => r.id === stepsRunId) : null // closes by itself when the user leaves the Thread
+  // B: the work area follows the newest multi-step Run unless the user picked an older one. A chat answer needs no work area.
+  const deskRuns = thread.filter((r) => !isChatRun(r))
+  const deskRun = deskRuns.find((r) => r.id === deskPick) ?? deskRuns.at(-1) ?? null
+  const split = variant === 'B' && deskRun !== null
+  useEffect(() => { setDeskPick(null) }, [deskRuns.length]) // a new Run takes over the work area
 
   useEffect(() => {
     if (!q || handled.current === q) return
@@ -375,18 +447,22 @@ export default function Workspace() {
 
   return (
     <div className="flex h-[calc(100dvh-5.5rem)] gap-6 lg:h-[calc(100dvh-6rem)]">
-      <section className="flex min-w-0 flex-1 flex-col">
+      {PROTOTYPE_ON && <PrototypeSwitcher current={variant} onChange={setVariant} />}
+      <section className={cn('flex min-h-0 min-w-0 flex-1', split ? 'flex-col gap-4 lg:flex-row lg:gap-6' : 'flex-col')}>
         {run ? (
           <>
-            <div className="flex items-center gap-3 pb-3">
-              <Button size="sm" icon={Plus} onClick={() => setParams({})} className="lg:hidden">แชตใหม่</Button>
-              <p className="hidden min-w-0 truncate text-sm font-medium text-slate-700 sm:block">{thread[0]?.title}</p>
-            </div>
-            <div className="min-h-0 flex-1 overflow-y-auto">
-              <ChatView thread={thread} onShowSteps={setStepsRunId} />
-            </div>
-            <div className="pt-3">
-              <Composer pick={pick} onPickChange={setPick} onSend={(p, pk, files) => send(p, pk, run.threadId, files)} />
+            {split && <div className="order-first max-h-[45%] min-h-0 overflow-y-auto lg:order-last lg:max-h-none lg:flex-1 lg:overflow-visible"><Desk key={deskRun.id} run={deskRun} /></div>}
+            <div className={cn('flex min-h-0 min-w-0 flex-1 flex-col', split && 'lg:w-[26rem] lg:flex-none')}>
+              <div className="flex items-center gap-3 pb-3">
+                <Button size="sm" icon={Plus} onClick={() => setParams({ variant })} className="lg:hidden">แชตใหม่</Button>
+                <p className="hidden min-w-0 truncate text-sm font-medium text-slate-700 sm:block">{thread[0]?.title}</p>
+              </div>
+              <div className="min-h-0 flex-1 overflow-y-auto">
+                <ChatView thread={thread} onShowSteps={setStepsRunId} variant={variant} deskRunId={split ? deskRun.id : null} onOpenDesk={setDeskPick} />
+              </div>
+              <div className="pt-3">
+                <Composer pick={pick} onPickChange={setPick} onSend={(p, pk, files) => send(p, pk, run.threadId, files)} />
+              </div>
             </div>
           </>
         ) : (
