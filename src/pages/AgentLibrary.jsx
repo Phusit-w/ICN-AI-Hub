@@ -156,8 +156,8 @@ export default function AgentLibrary() {
         <Button variant={showPicks ? 'secondary' : 'primary'} icon={Plus} to="/agents/new" data-tour="agents-create">สร้างผู้ช่วย</Button>
       </div>
       <section className="text-center">
-        <h1 className="mt-3 text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">หาAI Agent ที่เหมาะกับงาน</h1>
-        <p className="mt-1 text-sm text-slate-500">บอกงานมา เราจะแนะนำAI Agent ที่เหมาะที่สุดให้ หรือเลือกเองจากรายการด้านล่าง</p>
+        <h1 className="mt-3 text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">หา AI Agent ที่เหมาะกับงาน</h1>
+        <p className="mt-1 text-sm text-slate-500">บอกงานมา เราจะแนะนำ AI Agent ที่เหมาะที่สุดให้ หรือเลือกเองจากรายการด้านล่าง</p>
         <div className="relative mx-auto mt-5 max-w-xl">
           <input
             value={q} onChange={(e) => { setQ(e.target.value); setNeed(null) }} aria-label="ค้นหาผู้ช่วยจากงานที่อยากให้ช่วย"

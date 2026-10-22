@@ -59,7 +59,7 @@ export function WelcomeCard() {
   const { start } = useTour()
   if (hidden) return null
   const close = () => { writeSeen(); setHidden(true) }
-  const steps = ['พิมพ์งานที่ต้องการเป็นภาษาปกติ', 'ระบบเลือกAI Agent ที่เหมาะให้เอง', 'รอรับผลงาน ดูความคืบหน้าได้ตลอด']
+  const steps = ['พิมพ์งานที่ต้องการเป็นภาษาปกติ', 'ระบบเลือก AI Agent ที่เหมาะให้เอง', 'รอรับผลงาน ดูความคืบหน้าได้ตลอด']
   return (
     <div className="rise relative rounded-2xl border border-brand-100 bg-brand-50/50 p-5">
       <button type="button" onClick={close} className="absolute top-3 right-3 rounded-md p-1 text-slate-400 hover:bg-white hover:text-slate-600" aria-label="ปิดคำแนะนำ"><X className="size-4" /></button>
