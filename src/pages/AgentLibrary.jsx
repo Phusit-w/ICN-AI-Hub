@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { ArrowRight, Plus, SlidersHorizontal, Sparkles } from 'lucide-react'
+import { ArrowRight, ChevronDown, Plus, SlidersHorizontal, Sparkles, X } from 'lucide-react'
 import { isAdminView, useStore } from '../store/AppStore'
 import { modelById, userById } from '../data/catalog'
 import { cn, matchScore, rankByMatch } from '../lib/utils'
@@ -13,17 +13,67 @@ import { ItemCard } from '../components/agents/AgentCard'
 import { stepsLabel } from '../lib/steps'
 import SkillDialog from '../components/skills/SkillDialog'
 
-// One-tap shortcuts for people who don't know what to type yet.
+// Shortcuts for people who don't know what to type yet. The `pinned` ones sit in the chip row; the rest are under "ตามงาน".
 const NEEDS = [
-  { label: 'ทำเอกสารให้ลูกค้า', q: 'proposal ลูกค้า' },
+  { label: 'ทำเอกสารให้ลูกค้า', q: 'proposal ลูกค้า', pinned: true },
   { label: 'ตรวจ TOR / SOC', dept: 'bid' },
   { label: 'รายงานโครงการ / ส่งมอบงาน', dept: 'project' },
   { label: 'ซ่อมบำรุง / Incident', dept: 'maintenance' },
   { label: 'ค้นข้อมูล / สรุปรายงาน', q: 'ค้น สรุป รายงาน' },
   { label: 'ถามเรื่อง HR / สวัสดิการ', dept: 'hr' },
   { label: 'แจ้งปัญหา IT', dept: 'it' },
-  { label: 'งานบัญชี / ปิดงบ', dept: 'accounting' },
+  { label: 'งานบัญชี / ปิดงบ', dept: 'accounting', pinned: true },
 ]
+
+const chipClass = (on) => cn('h-8 shrink-0 rounded-full border px-3 text-[13px] transition', on ? 'border-brand-400 bg-brand-50 font-medium text-brand-700' : 'border-slate-200 bg-white text-slate-600 hover:border-brand-300')
+
+/**
+ * The "ตามงาน ▾" chip: a menu of the remaining need shortcuts. With one chosen it shows its name and a ✕, and a click clears it.
+ * The menu is fixed-positioned because the chip row scrolls sideways and would clip a dropdown.
+ */
+function NeedMenu({ needs, need, onPick }) {
+  const [at, setAt] = useState(null)
+  const ref = useRef(null)
+  useEffect(() => {
+    if (!at) return
+    const close = () => setAt(null)
+    const outside = (e) => { if (!ref.current?.contains(e.target)) close() }
+    const esc = (e) => { if (e.key === 'Escape') close() }
+    document.addEventListener('pointerdown', outside)
+    document.addEventListener('keydown', esc)
+    window.addEventListener('scroll', close, true)
+    window.addEventListener('resize', close)
+    return () => {
+      document.removeEventListener('pointerdown', outside)
+      document.removeEventListener('keydown', esc)
+      window.removeEventListener('scroll', close, true)
+      window.removeEventListener('resize', close)
+    }
+  }, [at])
+  const picked = needs.includes(need) ? need : null
+  const click = (e) => {
+    if (picked) return onPick(picked)
+    const r = e.currentTarget.getBoundingClientRect()
+    setAt(at ? null : { top: r.bottom + 4, left: r.left })
+  }
+  return (
+    <span ref={ref} className="shrink-0">
+      <button type="button" aria-haspopup="listbox" aria-expanded={!!at} aria-pressed={!!picked} onClick={click} className={cn(chipClass(!!picked), 'inline-flex items-center gap-1')}>
+        {picked ? picked.label : 'ตามงาน'}
+        {picked ? <X className="size-3.5" aria-label="ล้างงานที่เลือก" /> : <ChevronDown className="size-3.5" aria-hidden />}
+      </button>
+      {at && (
+        <ul role="listbox" aria-label="เลือกตามงาน" style={{ top: at.top, left: at.left }} className="rise fixed z-30 min-w-56 rounded-xl border border-slate-200 bg-white p-1 text-left shadow-lg">
+          {needs.map((n) => (
+            <li key={n.label} role="option" aria-selected={false}>
+              <button type="button" onClick={() => { setAt(null); onPick(n) }} className="block w-full rounded-lg px-3 py-2 text-left text-[13px] text-slate-700 hover:bg-brand-50 hover:text-brand-700">{n.label}</button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </span>
+  )
+}
 
 const SORTS = {
   popular: (a, b) => b.uses - a.uses,
@@ -68,6 +118,7 @@ export default function AgentLibrary() {
   const [params] = useSearchParams()
   const filter = shareFilterFrom(params)
 
+  const pickNeed = (n) => { setNeed(need === n ? null : n); setQ('') }
   const term = q.trim() || need?.q || ''
   // Recommendations answer "which one should I use for this?", so they show once the user says what the job is.
   // Before that the list below is the answer (Favourites are already one click away on the new-chat screen).
@@ -103,12 +154,10 @@ export default function AgentLibrary() {
           className="mx-auto mt-5 block h-12 w-full max-w-xl rounded-2xl border border-slate-200 bg-white px-5 text-[15px] shadow-sm focus:border-brand-400 focus:ring-4 focus:ring-brand-100 focus:outline-none"
         />
         <ShareFilterChips className="mt-3">
-          {NEEDS.map((n) => (
-            <button
-              key={n.label} type="button" aria-pressed={need === n} onClick={() => { setNeed(need === n ? null : n); setQ('') }}
-              className={cn('h-8 shrink-0 rounded-full border px-3 text-[13px] transition', need === n ? 'border-brand-400 bg-brand-50 text-brand-700' : 'border-slate-200 bg-white text-slate-600 hover:border-brand-300')}
-            >{n.label}</button>
+          {NEEDS.filter((n) => n.pinned).map((n) => (
+            <button key={n.label} type="button" aria-pressed={need === n} onClick={() => pickNeed(n)} className={chipClass(need === n)}>{n.label}</button>
           ))}
+          <NeedMenu needs={NEEDS.filter((n) => !n.pinned)} need={need} onPick={pickNeed} />
         </ShareFilterChips>
       </section>
 

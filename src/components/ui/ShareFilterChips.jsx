@@ -17,7 +17,7 @@ export default function ShareFilterChips({ className, children }) {
   }
   return (
     <div className={cn('overflow-x-auto', className)}>
-      <div className="mx-auto flex w-max items-center gap-2">
+      <div role="group" aria-label="กรองและทางลัด" className="mx-auto flex w-max items-center gap-2">
         {SHARE_FILTERS.map((f) => (
           <button
             key={f.id} type="button" aria-pressed={active === f.id} onClick={() => toggle(f.id)}
