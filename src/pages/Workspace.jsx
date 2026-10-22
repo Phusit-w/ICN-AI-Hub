@@ -7,6 +7,7 @@ import {
 import { useStore } from '../store/AppStore'
 import { AttachButton, AttachmentList } from '../components/ui/Attachments'
 import MicButton from '../components/ui/MicButton'
+import TypewriterHint from '../components/ui/TypewriterHint'
 import { ACTIVITIES } from '../lib/mockOutputs'
 import { isChatRun, runProgress, runsOfThread } from '../lib/runs'
 import { clockTime, cn } from '../lib/utils'
@@ -25,13 +26,21 @@ import PrototypeSwitcher, { PROTOTYPE_ON, useVariant } from './workspace-prototy
 import { artifactMeta } from './workspace-prototype/artifactMeta'
 import logo from '../assets/icn-logo.png'
 
+// Variant B types these out over the empty new-chat composer, so a newcomer sees what to ask. A module constant: the hint restarts if it changes.
+const HINTS = [
+  'ทำ Proposal ระบบ Smart Warehouse ให้ลูกค้า',
+  'สรุปรายงานตลาด Solar Rooftop พร้อมภาพประกอบ',
+  'วิเคราะห์ยอดขาย Q3 จากไฟล์ Excel',
+  'นโยบายวันลาพักร้อนสะสมได้กี่วัน',
+]
+
 /** The deliverable to show first: the document if there is one, otherwise the last real output. */
 function finalStep(run) {
   const outputs = run.steps.filter((s) => s.output)
   return outputs.find((s) => s.output.type === 'doc') ?? outputs.filter((s) => s.output.type !== 'checklist').at(-1) ?? outputs.at(-1)
 }
 
-function Composer({ onSend, pick, onPickChange, large, ...props }) {
+function Composer({ onSend, pick, onPickChange, large, typing, ...props }) {
   const [text, setText] = useState('')
   const [files, setFiles] = useState([])
   const ref = useRef(null)
@@ -49,13 +58,16 @@ function Composer({ onSend, pick, onPickChange, large, ...props }) {
         <AttachmentList files={files} onRemove={(id) => setFiles((fs) => fs.filter((f) => f.id !== id))} />
         <div className={cn('flex gap-1', large ? 'items-center' : 'items-end')}>
           <AttachButton onAdd={(added) => setFiles((fs) => [...fs, ...added])} />
+          <div className="relative flex min-w-0 flex-1">
           <textarea
             ref={ref} value={text} onChange={(e) => setText(e.target.value)} rows={1} aria-label="ข้อความ"
             onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() } }}
-            placeholder="พิมพ์งานหรือคำถามที่ต้องการ…"
+            placeholder={typing ? '' : 'พิมพ์งานหรือคำถามที่ต้องการ…'}
             className={cn('block max-h-40 min-h-10 min-w-0 flex-1 resize-none self-center bg-transparent px-1 py-2 text-[15px] placeholder:text-slate-400 focus:outline-none [field-sizing:content]', large && 'min-h-14 pt-4 pb-3 text-lg!')}
           />
-          <span className={cn('flex shrink-0 items-center gap-1 py-1', !large && 'self-end')}><ComposerPick pick={pick} onChange={onPickChange} chooseAgent /></span>
+          {typing && !text && <TypewriterHint phrases={HINTS} className="px-1 pt-4 pb-3 text-lg leading-7" />}
+          </div>
+          <span className={cn('flex shrink-0 items-center gap-1 py-1', !large && 'self-end')}><ComposerPick pick={pick} onChange={onPickChange} chooseAgent menuDir={large ? 'down' : undefined} /></span>
           <MicButton onText={(said) => setText((t) => (t.trim() ? `${t.trimEnd()} ${said}` : said))} />
           <button type="submit" disabled={!text.trim()} aria-label="ส่ง" className="flex size-10 shrink-0 items-center justify-center rounded-full bg-brand-600 text-white transition hover:bg-brand-700 disabled:bg-slate-200 disabled:text-slate-400">
             <ArrowUp className="size-5" />
@@ -399,7 +411,7 @@ function StepsPanel({ run, onClose }) {
  * The screen the app opens on, as in Qwen or ChatGPT: a greeting and one large composer, centred. Nothing else.
  * Past chats are in the sidebar's chat history.
  */
-function NewChat({ pick, onPickChange, onSend }) {
+function NewChat({ pick, onPickChange, onSend, variant }) {
   const { state } = useStore()
   const me = userById(state.userId)
   const given = me.name.split(/[ .]/)[0] // "somchai.a" → "Somchai", "Nok J." → "Nok"
@@ -407,7 +419,7 @@ function NewChat({ pick, onPickChange, onSend }) {
   return (
     <div className="flex min-h-0 flex-1 flex-col items-center justify-center px-1 pb-16">
       <h1 className="mb-8 text-center text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">สวัสดี คุณ {greetingName} วันนี้ให้ช่วยอะไรดี?</h1>
-      <Composer large data-tour="home-command" pick={pick} onPickChange={onPickChange} onSend={onSend} />
+      <Composer large typing={variant === 'B'} data-tour="home-command" pick={pick} onPickChange={onPickChange} onSend={onSend} />
     </div>
   )
 }
@@ -468,7 +480,7 @@ export default function Workspace() {
             </div>
           </>
         ) : (
-          <NewChat pick={pick} onPickChange={setPick} onSend={(p, pk, files) => send(p, pk, undefined, files)} />
+          <NewChat variant={variant} pick={pick} onPickChange={setPick} onSend={(p, pk, files) => send(p, pk, undefined, files)} />
         )}
       </section>
       {stepsRun && <StepsPanel key={stepsRun.id} run={stepsRun} onClose={() => setStepsRunId(null)} />}

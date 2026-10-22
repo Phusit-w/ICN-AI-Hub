@@ -37,7 +37,7 @@ const EDGE = 12 // the panel keeps this far from the window's edge
  * Keys: ↑/↓ open it; inside, ↑/↓ move (stopping at the ends), Home/End jump, Enter or Space picks, Escape closes
  * and returns focus, Tab closes.
  */
-function AgentPicker({ value, label, groups, onChange }) {
+function AgentPicker({ value, label, groups, onChange, menuDir }) {
   const [open, setOpen] = useState(false)
   const [sink, setSink] = useState(false)
   const [active, setActive] = useState(0)
@@ -82,7 +82,7 @@ function AgentPicker({ value, label, groups, onChange }) {
     const full = Math.min(352, window.innerHeight * 0.6)
     const above = bar.top - GAP - EDGE
     const below = window.innerHeight - bar.bottom - GAP - EDGE
-    const dir = below >= Math.min(full, 260) || below >= above ? 'down' : 'up' // below first: on the new-chat screen above is the greeting
+    const dir = menuDir ?? (below >= Math.min(full, 260) || below >= above ? 'down' : 'up') // below first: on the new-chat screen above is the greeting
     const h = Math.max(120, Math.min(full, dir === 'up' ? above : below))
     setPlace({ dir, h, offset: dir === 'up' ? pill.bottom - bar.top + GAP : bar.bottom - pill.top + GAP })
   }
@@ -170,9 +170,9 @@ function AgentPicker({ value, label, groups, onChange }) {
 
 /**
  * Shows the picked Agent inside a composer, with a one-click clear.
- * `chooseAgent` adds a quiet "อัตโนมัติ" dropdown for picking any Agent when nothing is picked.
+ * `chooseAgent` adds a quiet "อัตโนมัติ" dropdown for picking any Agent when nothing is picked; `menuDir` ('up' | 'down') pins which way it opens.
  */
-export default function ComposerPick({ pick, onChange, chooseAgent = false }) {
+export default function ComposerPick({ pick, onChange, chooseAgent = false, menuDir }) {
   const { state } = useStore()
   const agent = pick.agentId && state.agents.find((a) => a.id === pick.agentId)
   const clear = () => onChange({})
@@ -196,7 +196,7 @@ export default function ComposerPick({ pick, onChange, chooseAgent = false }) {
     .filter((g) => g.list.length > 0)
   return (
     <span className={cn('flex min-w-0 items-center rounded-full', agent && 'bg-brand-50 pr-1')}>
-      <AgentPicker value={pick.agentId ?? ''} label={agent ? agent.name : 'อัตโนมัติ'} groups={groups} onChange={(v) => onChange(toPick(v))} />
+      <AgentPicker value={pick.agentId ?? ''} label={agent ? agent.name : 'อัตโนมัติ'} groups={groups} menuDir={menuDir} onChange={(v) => onChange(toPick(v))} />
       {clearAgent}
     </span>
   )
