@@ -6,6 +6,7 @@ import {
 } from 'lucide-react'
 import { useStore } from '../store/AppStore'
 import { AttachButton, AttachmentList } from '../components/ui/Attachments'
+import MicButton from '../components/ui/MicButton'
 import { ACTIVITIES } from '../lib/mockOutputs'
 import { isChatRun, runProgress, runsOfThread } from '../lib/runs'
 import { clockTime, cn } from '../lib/utils'
@@ -54,25 +55,25 @@ function Composer({ onSend, pick, onPickChange, ...props }) {
   }
   return (
     <div className="mx-auto w-full max-w-3xl">
-      <form {...props} onSubmit={(e) => { e.preventDefault(); send() }} className="rounded-2xl border border-slate-200 bg-white p-2 text-left shadow-sm focus-within:border-brand-400 focus-within:ring-4 focus-within:ring-brand-100">
-        <textarea
-          ref={ref} value={text} onChange={(e) => setText(e.target.value)} rows={1} aria-label="ข้อความ"
-          onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() } }}
-          placeholder={pick.workflowId ? `พิมพ์ข้อมูลสำหรับสายงานนี้ เช่น ชื่อลูกค้า หรือรายละเอียดงาน…` : 'พิมพ์งานหรือคำถามที่ต้องการ…'}
-          className="block max-h-40 min-h-11 w-full resize-none bg-transparent px-3 py-2.5 text-[15px] placeholder:text-slate-400 focus:outline-none [field-sizing:content]"
-        />
+      {/* Capsule (spec .scratch/agents-only-redesign stories 44–48): ＋ attach · text · Agent · microphone · send. The radius keeps one line fully round. */}
+      <form {...props} onSubmit={(e) => { e.preventDefault(); send() }} className="rounded-[28px] border border-slate-300 bg-white p-2 text-left shadow-xs focus-within:border-brand-400 focus-within:ring-4 focus-within:ring-brand-100">
         <AttachmentList files={files} onRemove={(id) => setFiles((fs) => fs.filter((f) => f.id !== id))} />
-        <div className="flex items-center gap-1 px-1">
+        <div className="flex items-end gap-1">
           <AttachButton onAdd={(added) => setFiles((fs) => [...fs, ...added])} />
-          <ComposerPick pick={pick} onChange={onPickChange} chooseAgent />
-          <button type="submit" disabled={!text.trim()} aria-label="ส่ง" className="ml-auto flex size-9 items-center justify-center rounded-full bg-brand-600 text-white transition hover:bg-brand-700 disabled:bg-slate-200 disabled:text-slate-400">
+          <textarea
+            ref={ref} value={text} onChange={(e) => setText(e.target.value)} rows={1} aria-label="ข้อความ"
+            onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() } }}
+            placeholder={pick.workflowId ? `พิมพ์ข้อมูลสำหรับสายงานนี้ เช่น ชื่อลูกค้า หรือรายละเอียดงาน…` : 'พิมพ์งานหรือคำถามที่ต้องการ…'}
+            className="block max-h-40 min-h-10 min-w-0 flex-1 resize-none self-center bg-transparent px-1 py-2 text-[15px] placeholder:text-slate-400 focus:outline-none [field-sizing:content]"
+          />
+          <span className="flex shrink-0 items-center gap-1 self-end py-1"><ComposerPick pick={pick} onChange={onPickChange} chooseAgent /></span>
+          <MicButton onText={(said) => setText((t) => (t.trim() ? `${t.trimEnd()} ${said}` : said))} />
+          <button type="submit" disabled={!text.trim()} aria-label="ส่ง" className="flex size-10 shrink-0 items-center justify-center rounded-full bg-brand-600 text-white transition hover:bg-brand-700 disabled:bg-slate-200 disabled:text-slate-400">
             <ArrowUp className="size-5" />
           </button>
         </div>
       </form>
-      <p className="mt-1.5 text-center text-[11px] text-slate-400">
-        Enter เพื่อส่ง · Shift+Enter ขึ้นบรรทัดใหม่ · ข้อมูลลับประมวลผลบน AI ภายในบริษัท
-      </p>
+      <p className="mt-1.5 text-center text-xs text-slate-500">ประมวลผลตามนโยบายองค์กร</p>
     </div>
   )
 }

@@ -118,14 +118,14 @@ describe('The User view', () => {
     expect(screen.getByRole('button', { name: 'สร้างผู้ช่วย' })).toBeInTheDocument()
   })
 
-  it('has no model picker, and still says confidential data stays on internal AI', async () => {
+  it('has no model picker, and the composer still says data follows company policy', async () => {
     const app = startJourney('/agents')
     await app.click(screen.getByRole('button', { name: /ตัวกรอง/ }))
     expect(screen.getByRole('combobox', { name: 'เรียงตาม' })).toBeInTheDocument()
     expect(screen.queryByRole('combobox', { name: 'ประเภท Model' })).toBeNull()
 
     await app.click(screen.getAllByRole('link', { name: 'แชตใหม่' })[0])
-    expect(screen.getByText(/ข้อมูลลับประมวลผลบน AI ภายในบริษัท/)).toBeInTheDocument()
+    expect(screen.getByText('ประมวลผลตามนโยบายองค์กร')).toBeInTheDocument()
   })
 })
 

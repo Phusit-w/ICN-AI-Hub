@@ -140,12 +140,12 @@ Tests: `test/journeys/` — whole-app journey tests (Vitest + Testing Library) �
 
 | Token | Value | Use |
 |---|---|---|
-| Brand | Indigo `brand-50…900` (`#4F46E5` = 600) | Primary action, active Agent, selection — **สีเด่นสีเดียว** |
+| Brand | Navy `brand-50…900` (`#1E3A5F` = 600); แดง ICN ใช้ที่โลโก้เท่านั้น | Primary action, active Agent, selection — **สีเด่นสีเดียว** |
 | Neutral | Slate; canvas `#F6F7F9`; card white + `slate-200` border | 90% ของหน้าจอ |
 | Status | Brand = Processing · Emerald = Completed/Local · Amber = Sent back/Condition · Slate = Waiting/Cloud · Rose = Danger only | ใช้สีเฉพาะเมื่อสื่อความหมาย |
 | Department | จุดสีเล็ก 6px (Core indigo, Sales sky, HR rose, IT teal, Accounting amber) | ไม่ใช้เป็นพื้นหลัง เพื่อไม่ให้หน้าจอรก |
 | Type | Inter + IBM Plex Sans Thai; H1 24/600, section 15/600, body 14, meta 12, micro 11 | |
-| Radius | 8px control · 12px card · 16px modal | |
+| Radius | 8px control · 12px card · 16px modal · ช่องพิมพ์ทรงแคปซูล ปุ่มกลมในช่องพิมพ์ | |
 | Elevation | border เป็นหลัก, shadow เฉพาะ hover/popover/modal | ดู enterprise ไม่ฟุ้ง |
 | Motion | flow-dash บนเส้นเชื่อมที่กำลังส่งงาน, pulse ring บน Agent ที่ทำงาน, rise 250ms · ข้อยกเว้น: ตัวอย่างพิมพ์ทีละตัวอักษรในช่องพิมพ์ที่ยังว่าง (สอนว่าพิมพ์อะไรได้ หยุดทันทีเมื่อผู้ใช้พิมพ์ และปิดเมื่อตั้ง reduce motion) | การเคลื่อนไหว = สถานะ ไม่ใช่ตกแต่ง |
 | Icon | lucide, 16–18px; Agent icon tile สี brand, Skill tile สีเทา | แยก Agent/Skill ได้ทันที |

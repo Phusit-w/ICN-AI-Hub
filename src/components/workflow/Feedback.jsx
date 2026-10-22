@@ -25,7 +25,7 @@ export default function Feedback({ run }) {
       <button type="button" aria-label="มีประโยชน์" aria-pressed={given?.verdict === 'up'} onClick={up} className={cn(thumb, given?.verdict === 'up' && 'bg-emerald-50 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700')}>
         <ThumbsUp className="size-4" aria-hidden />
       </button>
-      <button type="button" aria-label="ไม่มีประโยชน์" aria-pressed={given?.verdict === 'down'} onClick={down} className={cn(thumb, given?.verdict === 'down' && 'bg-rose-50 text-rose-600 hover:bg-rose-50 hover:text-rose-700')}>
+      <button type="button" aria-label="ไม่มีประโยชน์" aria-pressed={given?.verdict === 'down'} onClick={down} className={cn(thumb, given?.verdict === 'down' && 'bg-slate-200 text-slate-700 hover:bg-slate-200 hover:text-slate-800')}>
         <ThumbsDown className="size-4" aria-hidden />
       </button>
       {asking ? (
