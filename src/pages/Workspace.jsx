@@ -47,17 +47,15 @@ function Composer({ onSend, pick, onPickChange, large, ...props }) {
       {/* Capsule (spec .scratch/agents-only-redesign stories 44–48): ＋ attach · text · Agent · microphone · send. The radius keeps one line fully round. */}
       <form {...props} onSubmit={(e) => { e.preventDefault(); send() }} className={cn('rounded-[28px] border border-slate-300 bg-white p-2 text-left shadow-xs focus-within:border-brand-400 focus-within:ring-4 focus-within:ring-brand-100', large && 'p-3 shadow-md')}>
         <AttachmentList files={files} onRemove={(id) => setFiles((fs) => fs.filter((f) => f.id !== id))} />
-        {/* `large` (the new-chat screen): the text gets its own full-width row on top and the buttons sit in a row below it. */}
-        <div className={cn('flex items-end gap-1', large && 'flex-wrap')}>
+        <div className={cn('flex gap-1', large ? 'items-center' : 'items-end')}>
           <AttachButton onAdd={(added) => setFiles((fs) => [...fs, ...added])} />
-          {large && <span className="flex-1" aria-hidden />}
           <textarea
             ref={ref} value={text} onChange={(e) => setText(e.target.value)} rows={1} aria-label="ข้อความ"
             onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() } }}
             placeholder="พิมพ์งานหรือคำถามที่ต้องการ…"
-            className={cn('block max-h-40 min-h-10 min-w-0 flex-1 resize-none self-center bg-transparent px-1 py-2 text-[15px] placeholder:text-slate-400 focus:outline-none [field-sizing:content]', large && 'order-first min-h-20 basis-full self-start px-3 text-base')}
+            className={cn('block max-h-40 min-h-10 min-w-0 flex-1 resize-none self-center bg-transparent px-1 py-2 text-[15px] placeholder:text-slate-400 focus:outline-none [field-sizing:content]', large && 'min-h-14 py-3.5 text-lg')}
           />
-          <span className="flex shrink-0 items-center gap-1 self-end py-1"><ComposerPick pick={pick} onChange={onPickChange} chooseAgent /></span>
+          <span className={cn('flex shrink-0 items-center gap-1 py-1', !large && 'self-end')}><ComposerPick pick={pick} onChange={onPickChange} chooseAgent /></span>
           <MicButton onText={(said) => setText((t) => (t.trim() ? `${t.trimEnd()} ${said}` : said))} />
           <button type="submit" disabled={!text.trim()} aria-label="ส่ง" className="flex size-10 shrink-0 items-center justify-center rounded-full bg-brand-600 text-white transition hover:bg-brand-700 disabled:bg-slate-200 disabled:text-slate-400">
             <ArrowUp className="size-5" />
