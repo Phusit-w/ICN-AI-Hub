@@ -14,6 +14,7 @@ import { stepsLabel } from '../lib/steps'
 import SkillDialog from '../components/skills/SkillDialog'
 import TypewriterHint from '../components/ui/TypewriterHint'
 import EyeTracker from '../components/ui/EyeTracker'
+import AgentCube from '../components/agents/AgentCube'
 import { useCube, useVariant } from './workspace-prototype/PrototypeSwitcher'
 
 // Shortcuts for people who don't know what to type yet. The `pinned` ones sit in the chip row; the rest are under "ตามงาน".
@@ -87,13 +88,18 @@ const SORTS = {
 }
 
 /** An Agent in the clean card shape. `best` marks the top recommendation for a typed need: its "ใช้งาน" is the page's one primary. */
-const AgentCard = ({ agent, best = false, ...props }) => (
+function AgentCard({ agent, best = false, ...props }) {
+  const [variant] = useVariant()
+  const [cube] = useCube()
+  return (
   <ItemCard
+    lead={variant === 'B' && cube ? <AgentCube agent={agent} size={36} idle /> : undefined}
     icon={agent.kind} name={agent.name} description={agent.description} favoriteId={agent.id} badge={stepsLabel(agent)}
     to={`/agents/${agent.id}`} useTo={`/workspace?agent=${agent.id}`} primary={best}
     className={best ? 'border-brand-400' : undefined} {...props}
   />
-)
+  )
+}
 
 function CreateFromSearch({ q }) {
   return (

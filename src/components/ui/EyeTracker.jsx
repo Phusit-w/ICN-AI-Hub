@@ -192,6 +192,14 @@ export default function EyeTracker({
   eyeWidth = 1,
   eyeRound = 1,
   eyeHeight = 1,
+  /* the body colour, set per toy; unset it takes the Fill's slab */
+  color,
+  /* 'sleep' (lids nearly shut) or 'done' (a content squint) */
+  mood,
+  /* [x, y] in -0.85..0.85 to hold the face at, in place of the pointer */
+  gaze,
+  /* text kept in the bubble, in place of a poke's one-liners */
+  message,
   idle = false,
 } = {}) {
   const still = stillness();
@@ -224,7 +232,7 @@ export default function EyeTracker({
   };
   const eyes = useRef([]);
   const knobs = useRef({ follow, bounce, eyeScale });
-  knobs.current = { follow, bounce, eyeScale };
+  knobs.current = { follow, bounce, eyeScale, mood, gaze };
   const base = STYLES[look] ?? STYLES.Slant;
   const eye = {
     w: base.w * eyeScale * eyeWidth,
@@ -244,6 +252,7 @@ export default function EyeTracker({
     let raf = 0;
     let prev = 0;
     let blink = 0;
+    let hadGaze = false;
     let nextBlink = performance.now() + 2200;
 
     const draw = (now) => {
@@ -255,6 +264,8 @@ export default function EyeTracker({
       }
       const since = now - blink;
       if (since < 160) lid = 1 - 0.9 * Math.sin((since / 160) * Math.PI);
+      const moodLid = { sleep: 0.14, done: 0.38 }[knobs.current.mood];
+      if (moodLid) lid = Math.min(lid, moodLid);
 
       /* the turn that brings the front of the ball to the face's
          spot: yaw about the vertical, pitch about the horizontal */
@@ -313,6 +324,9 @@ export default function EyeTracker({
     const tick = (now) => {
       const dt = prev ? Math.min(2.5, (now - prev) / 16.67) : 1;
       prev = now;
+      const gz = knobs.current.gaze;
+      if (gz) { t.tx = gz[0]; t.ty = gz[1]; hadGaze = true; }
+      else if (hadGaze) { t.tx = 0; t.ty = 0; hadGaze = false; }
       if (still) {
         t.x = t.tx;
         t.y = t.ty;
@@ -346,6 +360,7 @@ export default function EyeTracker({
        `data-eyt-frame`; without one it is the toy's own box. */
     const frame = el.closest("[data-eyt-frame]") ?? el;
     const aim = (e) => {
+      if (knobs.current.gaze) return;
       const f = frame.getBoundingClientRect();
       if (e.clientX < f.left || e.clientX > f.right || e.clientY < f.top || e.clientY > f.bottom) {
         t.tx = 0;
@@ -441,7 +456,7 @@ export default function EyeTracker({
     <div
       className="eyt"
       ref={box}
-      style={{ "--eyt-size": `${s}px` }}
+      style={{ "--eyt-size": `${s}px`, ...(color ? { "--fill-slab": color } : null) }}
       role="img"
       aria-label="A ball with two eyes that follows the cursor"
     >
@@ -472,14 +487,14 @@ export default function EyeTracker({
         ))}
         </g>
       </svg>
-      {idle ? null : (
+      {idle && message == null ? null : (
         <span
           className="eyt-say"
-          data-on={talking || undefined}
+          data-on={message != null || talking ? true : undefined}
           aria-live="polite"
           style={{ "--tint": tint }}
         >
-          <span>{typed}</span>
+          <span>{message ?? typed}</span>
           <span className="eyt-caret" />
         </span>
       )}

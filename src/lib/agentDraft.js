@@ -2,6 +2,7 @@
 // (from scratch, from an existing agent, or from a plain-language description) and turn it into an Agent.
 
 import { KNOWLEDGE } from '../data/catalog'
+import { cubeOf } from './cube'
 import { rankByMatch, truncate, uid } from './utils'
 
 export const INSTRUCTION_STARTERS = {
@@ -15,14 +16,14 @@ export const INSTRUCTION_STARTERS = {
 /** What an agent is searched and matched by. */
 export const agentSearchText = (a) => `${a.name} ${a.description} ${a.examples.join(' ')}`
 
-export const BLANK_FORM = { name: '', description: '', dept: 'sales', kind: 'sales', instruction: '', model: 'auto', classification: 'internal', knowledge: [], uploads: [], skills: [], tools: [], format: 'Word document', language: 'TH', template: '', share: 'private', editors: 'me', steps: [] }
+export const BLANK_FORM = { name: '', description: '', dept: 'sales', kind: 'sales', instruction: '', model: 'auto', classification: 'internal', knowledge: [], uploads: [], skills: [], tools: [], format: 'Word document', language: 'TH', template: '', cube: null, share: 'private', editors: 'me', steps: [] }
 
 /** Every setting of `src`, its Steps included, ready to adjust. Sharing resets to private. */
 export function formFromAgent(src) {
   return {
     ...BLANK_FORM, name: src.name, description: src.description, dept: src.dept, kind: src.kind, instruction: src.instruction,
     model: src.model, classification: src.classification, knowledge: src.knowledge, skills: src.skills, tools: src.tools,
-    format: src.output.format, language: src.output.language, template: src.output.template, steps: src.steps,
+    format: src.output.format, language: src.output.language, template: src.output.template, steps: src.steps, cube: src.cube ?? null,
   }
 }
 
@@ -44,8 +45,9 @@ export function draftForm(text, agents) {
 
 export function agentFromForm(form, { owner, note, forkedFrom }) {
   const today = new Date().toISOString().slice(0, 10)
+  const id = uid('agent')
   return {
-    id: uid('agent'), name: form.name.trim(), description: form.description.trim(), dept: form.dept, kind: form.kind,
+    id, cube: form.cube ?? cubeOf({ id }), name: form.name.trim(), description: form.description.trim(), dept: form.dept, kind: form.kind,
     instruction: form.instruction, model: form.model, classification: form.classification,
     knowledge: form.knowledge, uploads: form.uploads, skills: form.skills, tools: form.tools,
     output: { format: form.format, language: form.language, template: form.template || 'Default' },

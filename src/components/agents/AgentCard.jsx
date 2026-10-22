@@ -24,13 +24,14 @@ export function FavoriteButton({ id, reveal = false, className }) {
  * The one card shape for Agents: icon, name, one line of description and "ใช้งาน", plus an optional `badge`
  * such as "3 ขั้นตอน".
  * The name's link stretches over the whole card, so clicking anywhere but the controls opens the details.
+ * `lead` replaces the icon tile (variant B shows the Agent's Cube there).
  * Pass `favoriteId` for an Agent to get its Favourite star. `primary` makes "ใช้งาน" the page's one brand button.
  */
-export function ItemCard({ icon, tone, name, description, badge, to, useTo, favoriteId, primary = false, className, ...props }) {
+export function ItemCard({ icon, lead, tone, name, description, badge, to, useTo, favoriteId, primary = false, className, ...props }) {
   return (
     <li className={cn('group relative flex flex-col rounded-xl border border-slate-200 bg-white p-4 transition hover:border-brand-300 hover:shadow-sm', className)} {...props}>
       <div className="flex items-start justify-between gap-2">
-        <EntityIcon icon={icon} tone={tone} />
+        {lead ?? <EntityIcon icon={icon} tone={tone} />}
         {favoriteId && <FavoriteButton id={favoriteId} reveal className="relative z-10 -mt-1 -mr-1" />}
       </div>
       <Link

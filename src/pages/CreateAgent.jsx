@@ -14,6 +14,7 @@ import StepsField from '../components/agents/StepsField'
 import SkillsField from '../components/agents/SkillsField'
 import BuilderChat from '../components/agents/BuilderChat'
 import EyeTracker from '../components/ui/EyeTracker'
+import CubeField from '../components/agents/CubeField'
 import { useCube, useVariant } from './workspace-prototype/PrototypeSwitcher'
 
 const WIZARD_PAGES = ['ข้อมูลพื้นฐาน', 'คำสั่งการทำงาน', 'Model & ข้อมูล', 'Knowledge & Skills', 'Tools & Output', 'การแชร์ & ขั้นตอน']
@@ -65,6 +66,7 @@ function AgentBuilder({ form, setForm, initialText, onCreate, onDetailed }) {
               disabled={!form.name.trim() && !form.description.trim()}
             >ให้ AI ช่วยเขียน</Button>
           </Field>
+          {variant === 'B' && <CubeField value={form.cube} onChange={(cube) => set({ cube })} />}
           <SkillsField skills={form.skills} onChange={(skills) => set({ skills })} />
           <ShareChoice value={form.share} onChange={(share) => set({ share })} companyNeedsApproval={!isAdminView(state)} />
           <StepsField steps={form.steps} onChange={(steps) => set({ steps })} />

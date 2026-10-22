@@ -10,6 +10,8 @@ import { Card, CardHeader, EmptyState } from '../components/ui/Card'
 import Button from '../components/ui/Button'
 import Badge, { DeptBadge, ModelBadge, ShareBadge } from '../components/ui/Badge'
 import EntityIcon from '../components/agents/EntityIcon'
+import AgentCube from '../components/agents/AgentCube'
+import { useCube, useVariant } from './workspace-prototype/PrototypeSwitcher'
 import { FavoriteButton } from '../components/agents/AgentCard'
 import { Avatar } from '../components/ui/Overlay'
 
@@ -23,6 +25,8 @@ function Section({ title, icon, children, action }) {
 }
 
 export default function AgentDetail() {
+  const [variant] = useVariant() // PROTOTYPE: B shows the Agent as its Cube
+  const [cubeOn] = useCube()
   const { id } = useParams()
   const { state } = useStore()
   const agent = state.agents.find((a) => a.id === id)
@@ -38,12 +42,12 @@ export default function AgentDetail() {
   const classification = DATA_CLASSES.find((c) => c.id === agent.classification)
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-eyt-frame>
       <Link to="/agents" className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-800"><ArrowLeft className="size-4" /> คลัง AI Agent</Link>
 
       <Card className="p-6">
         <div className="flex flex-col gap-5 md:flex-row md:items-start">
-          <EntityIcon icon={agent.kind} size="lg" />
+          {variant === 'B' && cubeOn ? <AgentCube agent={agent} size={72} /> : <EntityIcon icon={agent.kind} size="lg" />}
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
               <h1 className="text-2xl font-semibold tracking-tight text-slate-900">{agent.name}</h1>
