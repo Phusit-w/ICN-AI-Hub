@@ -14,20 +14,20 @@ export const INSTRUCTION_STARTERS = {
 /** What an agent is searched and matched by. */
 export const agentSearchText = (a) => `${a.name} ${a.description} ${a.examples.join(' ')}`
 
-export const BLANK_FORM = { name: '', description: '', dept: 'sales', kind: 'sales', instruction: '', model: 'auto', classification: 'internal', knowledge: [], uploads: [], skills: [], tools: [], format: 'Word document', language: 'TH', template: '', share: 'private', editors: 'me' }
+export const BLANK_FORM = { name: '', description: '', dept: 'sales', kind: 'sales', instruction: '', model: 'auto', classification: 'internal', knowledge: [], uploads: [], skills: [], tools: [], format: 'Word document', language: 'TH', template: '', share: 'private', editors: 'me', steps: [] }
 
-/** Every setting of `src`, ready to adjust. Sharing resets to private. */
+/** Every setting of `src`, its Steps included, ready to adjust. Sharing resets to private. */
 export function formFromAgent(src) {
   return {
     ...BLANK_FORM, name: src.name, description: src.description, dept: src.dept, kind: src.kind, instruction: src.instruction,
     model: src.model, classification: src.classification, knowledge: src.knowledge, skills: src.skills, tools: src.tools,
-    format: src.output.format, language: src.output.language, template: src.output.template,
+    format: src.output.format, language: src.output.language, template: src.output.template, steps: src.steps,
   }
 }
 
 /**
  * Mock "AI fill": starts from the existing agent closest to the description (or a core agent),
- * and turns the description into the name, summary and main instruction.
+ * and turns the description into the name, summary and main instruction. Steps start empty: the user adds them.
  */
 export function draftForm(text, agents) {
   const base = rankByMatch(agents, agentSearchText, text)[0] ?? agents.find((a) => a.id === 'agent-document') ?? agents[0]
@@ -36,6 +36,7 @@ export function draftForm(text, agents) {
     name: `ผู้ช่วย${truncate(text.trim().replace(/\s+/g, ' '), 36)}`,
     description: text.trim(),
     instruction: `${INSTRUCTION_STARTERS[base.dept] ?? INSTRUCTION_STARTERS.core}\n- งานหลัก: ${text.trim()}`,
+    steps: [],
     based: base.name,
   }
 }
@@ -48,7 +49,7 @@ export function agentFromForm(form, { owner, note, forkedFrom }) {
     knowledge: form.knowledge, uploads: form.uploads, skills: form.skills, tools: form.tools,
     output: { format: form.format, language: form.language, template: form.template || 'Default' },
     share: form.share, owner, uses: 0, version: '1.0', updated: today,
-    examples: [], versions: [{ v: '1.0', date: today, by: owner, note }], steps: [],
+    examples: [], versions: [{ v: '1.0', date: today, by: owner, note }], steps: form.steps,
     forkedFrom,
   }
 }

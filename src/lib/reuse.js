@@ -31,7 +31,7 @@ function reuseBase(run, agents) {
   const done = workers(run)
   if (done.length > 1) {
     return {
-      form: { ...CHAT_BASE.form, kind: run.steps[0].kind }, steps: run.steps.map((s) => s.agentId),
+      form: { ...CHAT_BASE.form, kind: run.steps[0].kind, steps: run.steps.map((s) => s.agentId) },
       rules: ['ทำตามขั้นตอน:', ...run.steps.map((s, i) => `${i + 1}. ${s.name}`)],
       note: `บันทึกจากแชต ทำตาม ${run.steps.length} ขั้นตอนของแผนงาน`,
     }
@@ -40,7 +40,7 @@ function reuseBase(run, agents) {
   const [baseName, form, rules] = agent
     ? [agent.name, formFromAgent(agent), agent.instruction]
     : [run.steps[0].name, CHAT_BASE.form, CHAT_BASE.instruction]
-  return { form, steps: [], rules: [`กฎการทำงาน (จาก ${baseName}):`, rules], note: `บันทึกจากแชต โดยใช้ ${baseName} เป็นต้นแบบ`, forkedFrom: agent?.name }
+  return { form, rules: [`กฎการทำงาน (จาก ${baseName}):`, rules], note: `บันทึกจากแชต โดยใช้ ${baseName} เป็นต้นแบบ`, forkedFrom: agent?.name }
 }
 
 /**
@@ -66,7 +66,7 @@ export function agentFromRun(run, thread, { name, owner, agents }) {
     share: 'private',
     ...(thread.some((r) => r.sensitive) && { classification: 'confidential' }),
   }
-  return { ...agentFromForm(form, { owner, note: base.note, forkedFrom: base.forkedFrom }), steps: base.steps }
+  return agentFromForm(form, { owner, note: base.note, forkedFrom: base.forkedFrom })
 }
 
 /**

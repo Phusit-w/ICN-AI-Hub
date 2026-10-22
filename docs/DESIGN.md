@@ -126,9 +126,9 @@ Object ทุกตัวมีชุด metadata เดียวกัน: Owne
 | `ui/Badge` | `Badge`, `StatusPill` (Waiting/Processing/Completed/Sent back/Ready/Running), `ModelBadge` (Local/Cloud/Auto), `DeptBadge`, `ShareBadge` |
 | `ui/Card` | `Card`, `CardHeader`, `PageHeader`, `StatCard`, `EmptyState`, `ProgressBar` |
 | `ui/Form` | `Field`, `Input`, `Textarea`, `Select`, `SearchInput`, `Toggle`, `Segmented`, `ChoiceCard` (single/multi) |
-| `ui/` (อื่นๆ) | `Tabs` (WAI-ARIA tabs: หน้าผู้ช่วย, Governance) · `Menu` ("⋯", หรือ trigger ที่กำหนดเอง เช่น เมนูโปรไฟล์) · `ShareFilterChips` (ยอดนิยม / แชร์ให้ฉัน) · `QuickCreate` (บอก → AI กรอก → สร้าง) · `Attachments` · `TypewriterHint` |
+| `ui/` (อื่นๆ) | `Tabs` (WAI-ARIA tabs: หน้าผู้ช่วย, Governance) · `Menu` ("⋯", หรือ trigger ที่กำหนดเอง เช่น เมนูโปรไฟล์ หรือ "＋ เพิ่มขั้นตอน"; รายการยาวเลื่อนได้) · `ShareFilterChips` (ยอดนิยม / แชร์ให้ฉัน) · `QuickCreate` (บอก → AI กรอก → สร้าง) · `Attachments` · `TypewriterHint` |
 | `ui/Overlay` | `Modal`, `Toaster`, `Avatar` |
-| `agents/` | `EntityIcon` (agent = brand tint, skill = neutral), `AgentCard` (`ItemCard`: การ์ดเดียวกันของ Agent และ Workflow — ไอคอน, ชื่อ, คำอธิบาย 1 บรรทัด, "ใช้งาน"; `FavoriteButton`) |
+| `agents/` | `EntityIcon` (agent = brand tint, skill = neutral), `AgentCard` (`ItemCard`: การ์ดเดียวกันของ Agent และ Workflow — ไอคอน, ชื่อ, คำอธิบาย 1 บรรทัด, "ใช้งาน"; `FavoriteButton`), `StepsField` (ส่วน "ขั้นตอน" ในฟอร์มสร้างผู้ช่วย: เพิ่ม เรียงลำดับ ลบ) |
 | `skills/` | `SkillCard` |
 | `workflow/` | `Pipeline` (panel ขั้นตอน), `ArtifactView` (bullets/table/doc/diagram/checklist), `ComposerPick` (Agent หรือ Workflow ที่เลือกในช่องสั่งงาน), `ReuseRow` (แถวใช้ซ้ำในแชตใหม่), `SaveForReuse`, `Feedback` (👍/👎 ใต้ Artifact), `WorkflowStats` (ใช้กี่ครั้ง, เวอร์ชัน — แสดงในหน้ารายละเอียด ไม่อยู่บนการ์ด) |
 

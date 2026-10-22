@@ -8,7 +8,7 @@ import Button from './Button'
  * One click opens it. From the keyboard: Enter, Space or ↓ opens on the first item, ↑ on the last;
  * ↑/↓ move (wrapping), Home/End jump, Enter runs an item, Escape closes and returns focus, Tab closes.
  * `items` are `{ label, icon, onSelect }`, plus `checked` for a pick-one choice (shown as a menuitemradio with a tick).
- * The menu opens upwards since it sits at the bottom of a message or of the sidebar.
+ * The menu opens upwards since it sits at the bottom of a message or of the sidebar, and scrolls when the list is long.
  * `children`, when given, replace the "⋯" icon inside the trigger, styled by `triggerClassName`.
  */
 export default function Menu({ items, label = 'ตัวเลือกเพิ่มเติม', className, children, triggerClassName }) {
@@ -61,7 +61,7 @@ export default function Menu({ items, label = 'ตัวเลือกเพิ
       {open && (
         <ul
           id={id} role="menu" aria-label={label} onKeyDown={onMenuKey}
-          className="rise absolute bottom-full left-0 z-30 mb-1 min-w-40 rounded-xl border border-slate-200 bg-white p-1 shadow-xl"
+          className="rise absolute bottom-full left-0 z-30 mb-1 max-h-72 min-w-40 overflow-y-auto rounded-xl border border-slate-200 bg-white p-1 shadow-xl"
         >
           {items.map((item, i) => {
             const Icon = item.icon

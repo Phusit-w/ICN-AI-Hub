@@ -10,9 +10,10 @@ import Button from '../components/ui/Button'
 import Badge, { ModelBadge, ShareBadge, DeptBadge } from '../components/ui/Badge'
 import { ChoiceCard, Field, Input, SearchInput, Select, ShareChoice, Textarea, Toggle } from '../components/ui/Form'
 import EntityIcon from '../components/agents/EntityIcon'
+import StepsField from '../components/agents/StepsField'
 import QuickCreate from '../components/ui/QuickCreate'
 
-const STEPS = ['ข้อมูลพื้นฐาน', 'คำสั่งการทำงาน', 'Model & ข้อมูล', 'Knowledge & Skills', 'Tools & Output', 'การแชร์']
+const WIZARD_PAGES = ['ข้อมูลพื้นฐาน', 'คำสั่งการทำงาน', 'Model & ข้อมูล', 'Knowledge & Skills', 'Tools & Output', 'การแชร์ & ขั้นตอน']
 const KINDS = ['research', 'document', 'sales', 'hr', 'it', 'accounting', 'data', 'image', 'review']
 
 /**
@@ -56,6 +57,7 @@ function QuickCreateAgent({ initial, initialForm, onCreate, onAdvanced }) {
             </div>
           </Field>
           <ShareChoice value={form.share} onChange={(share) => set({ share })} companyNeedsApproval={!isAdminView(state)} />
+          <StepsField steps={form.steps} onChange={(steps) => set({ steps })} />
         </>
       )}
     </QuickCreate>
@@ -112,7 +114,7 @@ export default function CreateAgent() {
       <div className="grid gap-6 xl:grid-cols-[220px_minmax(0,1fr)_320px]">
         <nav aria-label="ขั้นตอน" className="xl:sticky xl:top-24 xl:self-start">
           <ol className="flex gap-2 overflow-x-auto pb-1 xl:flex-col xl:gap-1">
-            {STEPS.map((label, i) => (
+            {WIZARD_PAGES.map((label, i) => (
               <li key={label} className="shrink-0">
                 <button
                   type="button" onClick={() => setStep(i)} aria-current={step === i ? 'step' : undefined}
@@ -129,7 +131,7 @@ export default function CreateAgent() {
         </nav>
 
         <Card className="p-6">
-          <h2 className="text-base font-semibold text-slate-900">{step + 1}. {STEPS[step]}</h2>
+          <h2 className="text-base font-semibold text-slate-900">{step + 1}. {WIZARD_PAGES[step]}</h2>
           <div className="mt-5 space-y-5">
             {step === 0 && (
               <>
@@ -265,13 +267,14 @@ export default function CreateAgent() {
                     <option value="me">เฉพาะฉัน</option><option value="admin">ฉัน + แอดมิน</option><option value="team">ทุกคนในแผนก</option>
                   </Select>
                 </Field>
+                <StepsField steps={form.steps} onChange={(steps) => set({ steps })} />
               </>
             )}
           </div>
 
           <div className="mt-8 flex items-center justify-between border-t border-slate-100 pt-5">
             <Button variant="ghost" icon={ArrowLeft} onClick={() => setStep(step - 1)} disabled={step === 0}>ย้อนกลับ</Button>
-            {step < STEPS.length - 1 ? (
+            {step < WIZARD_PAGES.length - 1 ? (
               <Button variant="primary" onClick={() => setStep(step + 1)} disabled={!valid[step]}>ถัดไป <ArrowRight className="size-4" /></Button>
             ) : (
               <Button variant="primary" icon={Rocket} onClick={() => create()} disabled={!canFinish}>{source ? 'สร้างสำเนา' : 'สร้างผู้ช่วย'}</Button>
@@ -292,7 +295,7 @@ export default function CreateAgent() {
             <p className="mt-3 text-[13px] leading-relaxed text-slate-600">{form.description || 'คำอธิบายจะแสดงที่นี่'}</p>
             <div className="mt-3 flex flex-wrap gap-1.5"><ModelBadge modelId={form.model} /><ShareBadge share={form.share} /></div>
             <dl className="mt-4 space-y-1.5 border-t border-slate-100 pt-3 text-xs">
-              {[['Skills', form.skills.length], ['Knowledge', form.knowledge.length + form.uploads.length], ['Tools', form.tools.length], ['Output', `${form.format} · ${form.language}`]].map(([k, v]) => (
+              {[['Skills', form.skills.length], ['Knowledge', form.knowledge.length + form.uploads.length], ['Tools', form.tools.length], ['ขั้นตอน', form.steps.length], ['Output', `${form.format} · ${form.language}`]].map(([k, v]) => (
                 <div key={k} className="flex justify-between"><dt className="text-slate-500">{k}</dt><dd className="font-medium text-slate-700">{v}</dd></div>
               ))}
             </dl>
