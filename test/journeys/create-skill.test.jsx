@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { screen, within } from '@testing-library/react'
-import { expectWithinBudget, startJourney } from '../journey'
+import { startJourney } from '../journey'
 
 /** The brand-filled (primary) buttons and links in the page content, not the menu. */
 const primaryButtons = () => {
@@ -15,20 +15,25 @@ const expectOnePrimary = (name) => {
   if (name) expect(primaries[0]).toHaveAccessibleName(name)
 }
 
-describe('Create a Skill the same way as an Agent', () => {
-  it('an Agent builder describes a Skill on the Skills tab, lets AI fill it, and creates it within 3 clicks', async () => {
-    const app = startJourney('/agents?tab=skills')
+describe('Create a Skill', () => {
+  it('an Agent builder creates a Skill from the Skill picker; AI fills it, and it is added to the draft Agent', async () => {
+    const app = startJourney('/agents/new')
+    await app.type(app.box('ข้อความถึง AI'), 'ช่วยตรวจสัญญาเช่าสำนักงาน{Enter}')
 
-    await app.click(screen.getByRole('link', { name: 'สร้างทักษะใหม่' }))
-    await app.type(app.box('อยากได้ทักษะแบบไหน'), 'สรุปสัญญาเช่าให้เหลือ 1 หน้า พร้อมจุดที่ต้องระวัง')
-    await app.click(screen.getByRole('button', { name: 'ให้ AI กรอกให้' }))
-    expect(app.box('ชื่อ')).not.toHaveValue('')
-    expect(app.box('ทำอะไร')).toHaveValue('สรุปสัญญาเช่าให้เหลือ 1 หน้า พร้อมจุดที่ต้องระวัง')
-    await app.click(screen.getByRole('button', { name: 'สร้างทักษะ' }))
+    await app.click(screen.getByRole('button', { name: 'เพิ่มทักษะ' }))
+    await app.click(screen.getByRole('menuitem', { name: /สร้างทักษะใหม่/ }))
+    const dialog = screen.getByRole('dialog', { name: 'สร้างทักษะใหม่' })
+    await app.type(within(dialog).getByRole('textbox', { name: 'อยากได้ทักษะแบบไหน' }), 'สรุปสัญญาเช่าให้เหลือ 1 หน้า พร้อมจุดที่ต้องระวัง')
+    await app.click(within(dialog).getByRole('button', { name: 'ให้ AI กรอกให้' }))
+    expect(within(dialog).getByRole('textbox', { name: 'ทำอะไร' })).toHaveValue('สรุปสัญญาเช่าให้เหลือ 1 หน้า พร้อมจุดที่ต้องระวัง')
+    const skillName = within(dialog).getByRole('textbox', { name: 'ชื่อ' }).value
+    await app.click(within(dialog).getByRole('button', { name: 'สร้างทักษะ' }))
 
-    expect(app.url()).toMatch(/^\/agents\?tab=skills&open=skill-/)
+    expect(screen.queryByRole('dialog')).toBeNull()
     expect(screen.getByText(/^สร้าง Skill .+ แล้ว/)).toBeVisible()
-    expectWithinBudget(app, 3)
+    expect(screen.getByRole('button', { name: `เอา ${skillName} ออก` })).toBeVisible()
+    expect(app.box('ข้อความถึง AI')).toBeInTheDocument() // still in the builder, draft kept
+    expect(app.box('คำอธิบาย')).toHaveValue('ช่วยตรวจสัญญาเช่าสำนักงาน')
   })
 
   it('extra Skill settings sit behind "ตั้งค่าขั้นสูง" and keep what AI filled in', async () => {
@@ -53,13 +58,12 @@ describe('Create a Skill the same way as an Agent', () => {
     expectOnePrimary()
   })
 
-  it('Create Agent also has exactly one primary button at each point', async () => {
+  it('the Agent builder has exactly one primary button, "สร้างผู้ช่วย"', async () => {
     const app = startJourney('/agents/new', { view: 'admin' })
-    expectOnePrimary('ให้ AI กรอกให้')
-    await app.type(app.box('อยากได้ผู้ช่วยแบบไหน'), 'ร่างอีเมลตอบลูกค้า')
-    await app.click(screen.getByRole('button', { name: 'ให้ AI กรอกให้' }))
     expectOnePrimary('สร้างผู้ช่วย')
-    await app.click(screen.getByRole('button', { name: 'ตั้งค่าขั้นสูง' }))
+    await app.type(app.box('ข้อความถึง AI'), 'ร่างอีเมลตอบลูกค้า{Enter}')
+    expectOnePrimary('สร้างผู้ช่วย')
+    await app.click(screen.getByRole('button', { name: 'ตั้งค่าแบบละเอียด' }))
     expectOnePrimary()
   })
 })

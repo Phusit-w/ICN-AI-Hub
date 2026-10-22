@@ -49,26 +49,26 @@ Model ──location──▶ Local | Cloud | Auto  (Auto = router picks by data
 
 ## 2. Sitemap
 
-แอปเปิดที่ **แชตใหม่** (แบบ ChatGPT / Claude / Gemini) — ไม่มีหน้าหลักแยก · เมนู 3 รายการ (มุมมอง Admin; มุมมอง User มี 2 — ไม่มีภาพรวมและการกำกับดูแล): ไม่มีหน้าชุมชน, ทักษะเป็นแท็บในหน้าผู้ช่วย, Workspace ไม่มีตัวสลับโหมด · สลับมุมมอง User / Admin ที่เมนูโปรไฟล์ด้านล่าง sidebar (เปิดมาเป็น User, จำไว้ข้าม reload) · รายการที่ทำเครื่องหมาย ★ เป็นของ Admin เท่านั้น: ใน User view ลิงก์ตรงจะพาไปหน้าที่ User เห็นได้
+แอปเปิดที่ **แชตใหม่** (แบบ ChatGPT / Claude / Gemini) — ไม่มีหน้าหลักแยก · เมนู 3 รายการ (มุมมอง Admin; มุมมอง User มี 2 — ไม่มีภาพรวมและการกำกับดูแล): ไม่มีหน้าชุมชน, ทักษะไม่มีหน้าหรือแท็บของตัวเอง (เลือกและสร้างในฟอร์มสร้างผู้ช่วย), Workspace ไม่มีตัวสลับโหมด · สลับมุมมอง User / Admin ที่เมนูโปรไฟล์ด้านล่าง sidebar (เปิดมาเป็น User, จำไว้ข้าม reload) · รายการที่ทำเครื่องหมาย ★ เป็นของ Admin เท่านั้น: ใน User view ลิงก์ตรงจะพาไปหน้าที่ User เห็นได้
 
 ```
 ICN AI Hub
 ├── แชตใหม่ / แชต (Workspace)         /workspace  (/ เปิดที่นี่; ?q= prompt, ?agent= / ?workflow= pick, ?run= view Run)
 ├── งานของฉัน
 │   ├── สายงาน (Workflows)             /workflows  (?id= simple editor, &advanced=1 detailed builder ★ → simple editor)
-│   └── ผู้ช่วย AI (Agents)            /agents     (?filter=popular|shared, ?tab=skills, &open= Skill detail)
+│   └── ผู้ช่วย AI (Agents)            /agents     (?filter=popular|shared, ?skill= Skill detail)
 │       ├── Agent Detail              /agents/:id
 │       ├── Create Agent              /agents/new  (?q= description, ?from= copy source, ?advanced=1 wizard ★ → quick create)
 │       └── Create Skill              /skills/new  (?q= description, ?advanced=1 full form)
 └── องค์กร
     └── ภาพรวมและการกำกับดูแล          /governance  ★ → แชตใหม่
 
-Old links: / → /workspace · /community → /agents?filter=popular · /skills(?open=id) → /agents?tab=skills(&open=id)
+Old links: / → /workspace · /community → /agents?filter=popular · /skills(?open=id) → /agents(?skill=id)
 ```
 
 ## 3. Information architecture
 
-- **Global (ทุกหน้า):** Sidebar แบบ ChatGPT / Claude / Gemini: ปุ่ม **แชตใหม่** และช่องค้นหา (Agent + Skill + Workflow; Skill เปิดในแท็บทักษะ) ด้านบน (แชตใหม่คือหน้าแรกของแอป), เมนู 3 รายการ (กลุ่ม "งานของฉัน" 2 รายการ + "องค์กร"), **ประวัติแชต** (งานที่กำลังทำมีจุดกระพริบ) (Thread ล่าสุดก่อน แบ่ง วันนี้ / ก่อนหน้านี้ กด 1 ครั้งเปิดได้), ผู้ใช้อยู่ล่างสุด; ย่อเป็นแถบไอคอนได้ (ซ่อนประวัติ, ปุ่มค้นหาขยายแล้วโฟกัสช่องค้นหา; ทัวร์เปิด sidebar ให้เองเมื่อขั้นนั้นอยู่ใน sidebar). Top bar โล่ง ไม่มีเส้นขอบ: ปุ่มเมนูบนมือถือ, ปุ่ม **วิธีใช้** (คำศัพท์ + ทัวร์ 5 ขั้น). หน้าแชตไม่มีแผงประวัติแยก
+- **Global (ทุกหน้า):** Sidebar แบบ ChatGPT / Claude / Gemini: ปุ่ม **แชตใหม่** และช่องค้นหา (Agent + Skill + Workflow; Skill เปิดรายละเอียดบนหน้าผู้ช่วย AI) ด้านบน (แชตใหม่คือหน้าแรกของแอป), เมนู 3 รายการ (กลุ่ม "งานของฉัน" 2 รายการ + "องค์กร"), **ประวัติแชต** (งานที่กำลังทำมีจุดกระพริบ) (Thread ล่าสุดก่อน แบ่ง วันนี้ / ก่อนหน้านี้ กด 1 ครั้งเปิดได้), ผู้ใช้อยู่ล่างสุด; ย่อเป็นแถบไอคอนได้ (ซ่อนประวัติ, ปุ่มค้นหาขยายแล้วโฟกัสช่องค้นหา; ทัวร์เปิด sidebar ให้เองเมื่อขั้นนั้นอยู่ใน sidebar). Top bar โล่ง ไม่มีเส้นขอบ: ปุ่มเมนูบนมือถือ, ปุ่ม **วิธีใช้** (คำศัพท์ + ทัวร์ 5 ขั้น). หน้าแชตไม่มีแผงประวัติแยก
 - **งานของฉัน** — สิ่งที่ผู้ใช้ทำทุกวัน: สั่งงาน, ใช้ซ้ำ, ติดตาม Run, หาและใช้ Agent / Workflow / Skill
 - **องค์กร** — สิ่งที่ผู้ดูแลควบคุม: ค่าใช้จ่าย, Model, สิทธิ์, นโยบาย, Audit log, Agent ที่มีประโยชน์ที่สุดเดือนนี้
 - **ของที่แชร์** ไม่มีหน้าแยก: อยู่ในแต่ละ library ผ่านชิป "ยอดนิยมในองค์กร" / "แชร์ให้ฉัน" และปุ่มหลักคือ **ใช้งาน** เสมอ (Workflow ที่แชร์ใช้ได้ทันทีโดยไม่ต้องคัดลอก)
@@ -91,11 +91,11 @@ Object ทุกตัวมีชุด metadata เดียวกัน: Owne
 
 **Flow C — เปิดผลงานเก่า (1 คลิก)**: sidebar → **ประวัติแชต** → กด Thread
 
-**Flow D — สร้าง Agent ของตัวเอง (≤ 3 คลิก)**: ผู้ช่วย AI → สร้างผู้ช่วย → บอกว่าอยากได้ผู้ช่วยแบบไหน → AI กรอกให้ในหน้าเดียว → ตรวจ → สร้าง (wizard เต็มอยู่หลัง "ตั้งค่าขั้นสูง"; คัดลอก Agent ที่มีอยู่ทำจากหน้ารายละเอียด)
+**Flow D — สร้าง Agent ของตัวเอง (≤ 3 คลิก)**: ผู้ช่วย AI → ＋ สร้างผู้ช่วย → หน้าสร้างผู้ช่วยแบบแชต (ซ้ายคุยกับ AI, ขวาฟอร์มที่ AI กรอกให้และแก้เองได้ทุกช่อง; "✨ ให้ AI ช่วยเขียน" ที่ช่องคำสั่ง; พิมพ์ @ เรียกผู้ช่วยที่มีอยู่มาช่วยเขียน) → สร้าง · แชตนี้ไม่เข้าประวัติแชต · wizard 6 หน้าอยู่หลัง "ตั้งค่าแบบละเอียด" (Admin) · คัดลอก Agent ที่มีอยู่ทำจากหน้ารายละเอียด
 
 **Flow E — ใช้ของที่คนอื่นแชร์ (≤ 2 คลิก)**: ผู้ช่วย AI หรือ สายงาน → ชิป "ยอดนิยมในองค์กร" / "แชร์ให้ฉัน" → **ใช้งาน** → ช่องสั่งงานใน Workspace ที่เลือกไว้แล้ว
 
-**Flow F — ทำ SOP เป็น Skill แล้วกระจายให้ทุก Agent**: ผู้ช่วย AI → แท็บ **ทักษะ** → สร้างทักษะ (บอก → AI กรอก → สร้าง) → เปิดรายละเอียด → *เพิ่มให้ผู้ช่วย* (เลือกหลายตัวพร้อมกัน)
+**Flow F — ทำ SOP เป็น Skill แล้วกระจายให้ทุก Agent**: หน้าสร้างผู้ช่วย → ทักษะ → ＋ เพิ่มทักษะ → สร้างทักษะใหม่ (บอก → AI กรอก → สร้าง ในหน้าต่างเล็ก ใส่ให้ผู้ช่วยที่กำลังสร้างทันที) · Skill ที่มีอยู่: เปิดรายละเอียดจากการค้นหาหรือหน้ารายละเอียด Agent → *เพิ่มให้ผู้ช่วย* (เลือกหลายตัวพร้อมกัน)
 
 **Flow G — ประกอบ Workflow**: สายงาน → เล่าขั้นตอนเป็นภาษาปกติ → AI ร่าง → editor แบบง่าย (เรียง Agent ขึ้น/ลง) → บันทึก / ลองรัน · เงื่อนไขและการวนกลับอยู่ในตัวสร้างแบบละเอียดหลังลิงก์ "ขั้นสูง"
 
@@ -107,9 +107,9 @@ Object ทุกตัวมีชุด metadata เดียวกัน: Owne
 |---|---|---|---|
 | 1 | **แชตใหม่** (หน้าแรก) | Welcome card (ครั้งแรกครั้งเดียว) · คำทักทาย · ช่องสั่งงาน · แถว **ใช้ซ้ำ** | ชิปตัวอย่างงาน (ส่งทันที) แสดงเฉพาะเมื่อยังไม่มี Run · ลิงก์เบา "ผู้ช่วยทั้งหมด" |
 | 2 | **แชต (Workspace)** | Thread + composer (ประวัติแชตอยู่ใน sidebar หลัก) (อัตโนมัติ / เลือก Agent / Workflow) · ขวา: panel ขั้นตอน (เปิดจาก "ดูขั้นตอน") | ระบบตัดสินใจเองว่าแชตหรือ Plan · Plan + "เริ่มเลย" · step chips · Sensitive-data notice · ใต้ Artifact: ดาวน์โหลด / บันทึกไว้ใช้ซ้ำ / ⋯ |
-| 3 | **ผู้ช่วย AI** | แท็บ ผู้ช่วย / ทักษะ · ช่องบอกงาน + ป้ายงาน → แนะนำ 3 อันดับ (แสดงเมื่อบอกงานแล้วเท่านั้น) · รายการทั้งหมด + ชิปแชร์ + ตัวกรอง (ซ่อนไว้) + สร้างผู้ช่วย | การ์ด: ไอคอน, ชื่อ, 1 บรรทัด, **ใช้งาน** · ทั้งการ์ดเปิดรายละเอียด · ดาวแสดงเมื่อ hover/focus |
-| 4 | **ทักษะ (แท็บ)** | ค้นหา + หมวด · Grid · สร้างทักษะ | รายละเอียด (Input → Output, ใช้ในผู้ช่วยตัวไหน, เวอร์ชัน) · **เพิ่มให้ผู้ช่วย** หลายตัวพร้อมกัน |
-| 5 | **Create Agent / Create Skill** | หน้าเดียว: บอก → AI กรอก → ตรวจ → สร้าง (ปุ่มหลักปุ่มเดียว) | Wizard / ฟอร์มเต็มหลัง "ตั้งค่าขั้นสูง" · Data classification ล็อก Cloud model · Run test ของ Skill |
+| 3 | **ผู้ช่วย AI** | ＋ สร้างผู้ช่วย (ปุ่มหลัก) · ช่องบอกงาน + ป้ายงาน → แนะนำ 3 อันดับ (แสดงเมื่อบอกงานแล้วเท่านั้น) · รายการทั้งหมด + ชิปแชร์ + ตัวกรอง (ซ่อนไว้) | การ์ด: ไอคอน, ชื่อ, 1 บรรทัด, **ใช้งาน** · ทั้งการ์ดเปิดรายละเอียด · ดาวแสดงเมื่อ hover/focus |
+| 4 | **ทักษะ (หน้าต่างรายละเอียด, `?skill=`)** | ไม่มีหน้าหรือแท็บ · เลือก/สร้างในฟอร์มสร้างผู้ช่วย | รายละเอียด (Input → Output, ใช้ในผู้ช่วยตัวไหน, เวอร์ชัน) · **เพิ่มให้ผู้ช่วย** หลายตัวพร้อมกัน |
+| 5 | **Create Agent / Create Skill** | Agent: แชตกับ AI + ฟอร์มที่ AI กรอก · Skill: บอก → AI กรอก → ตรวจ → สร้าง (ปุ่มหลักปุ่มเดียว) | Wizard หลัง "ตั้งค่าแบบละเอียด" / ฟอร์ม Skill เต็มหลัง "ตั้งค่าขั้นสูง" (Admin) · Data classification ล็อก Cloud model · Run test ของ Skill |
 | 6 | **สายงาน (Workflows)** | ช่องเล่าขั้นตอน → ร่าง · ชิปแชร์ · การ์ดสายงาน (ใช้งาน) · สายงานของฉัน | Editor แบบง่ายเป็นค่าเริ่มต้น · ตัวสร้างละเอียด (Palette · Canvas · Inspector, condition loop, Test run) หลัง "ขั้นสูง" |
 | 7 | **ภาพรวมและการกำกับดูแล** | 4 ตัวเลขหลัก · แท็บรายละเอียดด้านล่าง | ทุกกราฟแยกสี Local (เขียว) / Cloud (เทา) · ไม่มีอันดับตัวบุคคล: แท็บ Agent ที่มีประโยชน์ที่สุดเดือนนี้ บอกแผนกแทน |
 | 8 | **Agent Detail** | Hero (icon, name, meta, Feedback "มีประโยชน์ X% จาก N ครั้ง", **ใช้งาน**, คัดลอกไปปรับใช้ = รอง) · ทำอะไร + ตัวอย่างคำสั่ง, Skills, Workflows, Version history · Model, Output, Knowledge, Tools | ตัวเลข uses / Feedback / version อยู่ที่นี่ ไม่อยู่บนการ์ด |
@@ -126,13 +126,13 @@ Object ทุกตัวมีชุด metadata เดียวกัน: Owne
 | `ui/Badge` | `Badge`, `StatusPill` (Waiting/Processing/Completed/Sent back/Ready/Running), `ModelBadge` (Local/Cloud/Auto), `DeptBadge`, `ShareBadge` |
 | `ui/Card` | `Card`, `CardHeader`, `PageHeader`, `StatCard`, `EmptyState`, `ProgressBar` |
 | `ui/Form` | `Field`, `Input`, `Textarea`, `Select`, `SearchInput`, `Toggle`, `Segmented`, `ChoiceCard` (single/multi) |
-| `ui/` (อื่นๆ) | `Tabs` (WAI-ARIA tabs: หน้าผู้ช่วย, Governance) · `Menu` ("⋯", หรือ trigger ที่กำหนดเอง เช่น เมนูโปรไฟล์ หรือ "＋ เพิ่มขั้นตอน"; รายการยาวเลื่อนได้) · `ShareFilterChips` (ยอดนิยม / แชร์ให้ฉัน) · `QuickCreate` (บอก → AI กรอก → สร้าง) · `Attachments` · `TypewriterHint` |
+| `ui/` (อื่นๆ) | `Tabs` (WAI-ARIA tabs: Governance) · `Menu` ("⋯", หรือ trigger ที่กำหนดเอง เช่น เมนูโปรไฟล์ หรือ "＋ เพิ่มขั้นตอน"; รายการยาวเลื่อนได้) · `ShareFilterChips` (ยอดนิยม / แชร์ให้ฉัน) · `QuickCreate` (บอก → AI กรอก → สร้าง ของ Skill) · `Attachments` · `TypewriterHint` |
 | `ui/Overlay` | `Modal`, `Toaster`, `Avatar` |
-| `agents/` | `EntityIcon` (agent = brand tint, skill = neutral), `AgentCard` (`ItemCard`: การ์ดเดียวกันของ Agent และ Workflow — ไอคอน, ชื่อ, คำอธิบาย 1 บรรทัด, "ใช้งาน"; `FavoriteButton`), `StepsField` (ส่วน "ขั้นตอน" ในฟอร์มสร้างผู้ช่วย: เพิ่ม เรียงลำดับ ลบ) |
-| `skills/` | `SkillCard` |
+| `agents/` | `EntityIcon` (agent = brand tint, skill = neutral), `AgentCard` (`ItemCard`: การ์ดเดียวกันของ Agent และ Workflow — ไอคอน, ชื่อ, คำอธิบาย 1 บรรทัด, "ใช้งาน"; `FavoriteButton`), `StepsField` (ส่วน "ขั้นตอน" ในฟอร์มสร้างผู้ช่วย: เพิ่ม เรียงลำดับ ลบ), `SkillsField` (ส่วน "ทักษะ": เลือก + สร้างทักษะใหม่ในหน้าต่าง), `BuilderChat` (แชตของหน้าสร้างผู้ช่วย: @ เรียกผู้ช่วย, ไม่เข้าประวัติแชต) |
+| `skills/` | `QuickCreateSkill` (+ `useSaveSkill`), `SkillDialog` (รายละเอียด Skill + เพิ่มให้ผู้ช่วย, เปิดด้วย `?skill=`) |
 | `workflow/` | `Pipeline` (panel ขั้นตอน), `ArtifactView` (bullets/table/doc/diagram/checklist), `ComposerPick` (Agent หรือ Workflow ที่เลือกในช่องสั่งงาน), `ReuseRow` (แถวใช้ซ้ำในแชตใหม่), `SaveForReuse`, `Feedback` (👍/👎 ใต้ Artifact), `WorkflowStats` (ใช้กี่ครั้ง, เวอร์ชัน — แสดงในหน้ารายละเอียด ไม่อยู่บนการ์ด) |
 
-Logic: `store/AppStore.jsx` (reducer + one clock for all runs) · `lib/runs.js` (`threadsOf` สำหรับประวัติการคุย, planner: chat หรือ Plan, model router, step engine with loop-back) · `lib/reuse.js` (บันทึกไว้ใช้ซ้ำ) · `lib/sharing.js` (ตัวกรองยอดนิยม / แชร์ให้ฉัน) · `lib/routes.js` (ลิงก์ไปแท็บทักษะ) · `lib/agentDraft.js`, `lib/skillDraft.js` (AI กรอกฟอร์มสร้าง) · `lib/mockOutputs.js`
+Logic: `store/AppStore.jsx` (reducer + one clock for all runs) · `lib/runs.js` (`threadsOf` สำหรับประวัติการคุย, planner: chat หรือ Plan, model router, step engine with loop-back) · `lib/reuse.js` (บันทึกไว้ใช้ซ้ำ) · `lib/sharing.js` (ตัวกรองยอดนิยม / แชร์ให้ฉัน) · `lib/routes.js` (ลิงก์ไปรายละเอียด Skill) · `lib/agentDraft.js`, `lib/skillDraft.js` (AI กรอกฟอร์มสร้าง) · `lib/mockOutputs.js`
 
 Tests: `test/journeys/` — whole-app journey tests (Vitest + Testing Library) ที่ตรวจ click budget และเป้าหมายของทุกขั้นในทัวร์ · `test/mock-data.test.js` — ตรวจว่าข้อมูลจำลองเล่าเรื่องเดียวกัน (3 เดือนหลังเปิดใช้, ~25 User)
 
@@ -192,5 +192,5 @@ Tests: `test/journeys/` — whole-app journey tests (Vitest + Testing Library) �
 2. พิมพ์ "ทำ Proposal ให้ลูกค้า" → ระบบเสนอ **Plan** → **เริ่มเลย** → ชี้ step chips / "ดูขั้นตอน" → Condition ส่งกลับ Research → Proposal → ดาวน์โหลด · บันทึกไว้ใช้ซ้ำ
 3. กด แชตใหม่ → สายงานที่เพิ่งบันทึกอยู่ในแถวใช้ซ้ำ → กด 1 ครั้ง พิมพ์ ส่ง → เริ่มทันที
 4. ผู้ช่วย AI → สร้างผู้ช่วย → บอกเป็นภาษาปกติ → AI กรอกให้ → สร้าง (≤ 3 คลิก)
-5. แท็บทักษะ → เพิ่ม "Company Report Format" ให้ 3 Agents พร้อมกัน ("แก้ที่เดียว ทุก Agent ได้")
+5. รายละเอียด Skill (จากการค้นหา) → เพิ่ม "Company Report Format" ให้ 3 Agents พร้อมกัน ("แก้ที่เดียว ทุก Agent ได้")
 6. ภาพรวมและการกำกับดูแล → 63% Local, ข้อมูลเงินเดือนถูก block — "ปลอดภัยและไม่ผูกกับ Provider"

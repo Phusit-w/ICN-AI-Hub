@@ -65,7 +65,7 @@ export function TourProvider({ children }) {
   // Open the step's page, wait for its element, spotlight it; skip steps that never become visible.
   useEffect(() => {
     if (!step) return
-    // A step on a tab (e.g. '/agents?tab=skills') matches the query too; other steps match the path only.
+    // A step whose route has a query (e.g. '/agents?filter=popular') matches the query too; other steps match the path only.
     if ((step.route.includes('?') ? pathname + search : pathname) !== step.route) { navigate(step.route); return }
     let tries = 0
     let timer

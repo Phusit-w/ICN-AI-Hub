@@ -16,7 +16,7 @@ function AdminOnly({ children }) {
   return isAdminView(state) ? children : <Navigate to="/workspace" replace />
 }
 
-// Skills moved into a tab of the Agents page; old links (shared demo links too) keep their open Skill.
+// Skills have no page of their own; old links (shared demo links too) land on the Agents page with their Skill open.
 function OldSkillsLink() {
   const [params] = useSearchParams()
   return <Navigate to={skillLink(params.get('open'))} replace />

@@ -1,16 +1,13 @@
 import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { ArrowRight, Plus, Puzzle } from 'lucide-react'
-import { isAwaitingCompanyShare, useStore } from '../store/AppStore'
-import { SKILL_CATEGORIES } from '../data/skills'
-import { toolById, userById } from '../data/catalog'
-import { EmptyState } from '../components/ui/Card'
-import Button from '../components/ui/Button'
-import Badge, { ShareBadge } from '../components/ui/Badge'
-import { ChoiceCard, SearchInput, Segmented } from '../components/ui/Form'
-import { Modal } from '../components/ui/Overlay'
-import SkillCard from '../components/skills/SkillCard'
-import EntityIcon from '../components/agents/EntityIcon'
+import { ArrowRight, Plus } from 'lucide-react'
+import { isAwaitingCompanyShare, useStore } from '../../store/AppStore'
+import { toolById, userById } from '../../data/catalog'
+import Button from '../ui/Button'
+import Badge, { ShareBadge } from '../ui/Badge'
+import { ChoiceCard } from '../ui/Form'
+import { Modal } from '../ui/Overlay'
+import EntityIcon from '../agents/EntityIcon'
 
 function AttachModal({ skill, onClose }) {
   const { state, actions } = useStore()
@@ -90,51 +87,22 @@ function SkillDetail({ skill, onClose, onAttach }) {
   )
 }
 
-/** The "ทักษะ" tab of the Agents page. `?open=<skill id>` opens a Skill's detail, so it can be linked. */
-export default function SkillsTab() {
+/**
+ * A Skill's detail, opened over the Agents page by `?skill=<id>` so it can be linked (search results, Agent detail,
+ * old Skills links). "เพิ่มให้ผู้ช่วย" moves on to adding the Skill to several Agents. Closing drops the parameter.
+ */
+export default function SkillDialog() {
   const { state } = useStore()
   const [params, setParams] = useSearchParams()
-  const [q, setQ] = useState('')
-  const [cat, setCat] = useState('all')
   const [attachId, setAttachId] = useState(null)
-  const openId = params.get('open')
-  const openSkill = (id) => setParams(id ? { tab: 'skills', open: id } : { tab: 'skills' })
-
-  const term = q.trim().toLowerCase()
-  const list = state.skills
-    .filter((s) => cat === 'all' || s.category === cat)
-    .filter((s) => !term || `${s.name} ${s.purpose}`.toLowerCase().includes(term))
-  const usedBy = (id) => state.agents.filter((a) => a.skills.includes(id)).length
-  const open = state.skills.find((s) => s.id === openId)
+  const open = state.skills.find((s) => s.id === params.get('skill'))
   const attach = state.skills.find((s) => s.id === attachId)
+  const close = () => setParams((p) => { p.delete('skill'); return p })
 
   return (
-    <div>
-      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start">
-        <div className="min-w-0 flex-1">
-          <h1 className="text-xl font-semibold tracking-tight text-slate-900">คลังทักษะ</h1>
-          <p className="mt-1 text-sm text-slate-500">Skill คือความสามารถย่อยที่ใช้ซ้ำได้ เช่น รูปแบบรายงานบริษัท หรือการคำนวณราคา ใส่ให้หลายผู้ช่วยได้ ทั้งบริษัทจึงทำงานมาตรฐานเดียวกัน</p>
-        </div>
-        <Button variant="primary" icon={Plus} to="/skills/new" className="shrink-0 self-start">สร้างทักษะใหม่</Button>
-      </div>
-      <div className="mb-6 flex flex-col gap-3 lg:flex-row lg:items-center">
-        <SearchInput placeholder="ค้นหา Skill…" value={q} onChange={(e) => setQ(e.target.value)} className="lg:w-80" aria-label="ค้นหา Skill" />
-        <Segmented
-          value={cat} onChange={setCat} className="lg:ml-auto"
-          options={[{ value: 'all', label: 'ทั้งหมด', count: state.skills.length }, ...SKILL_CATEGORIES.map((c) => ({ value: c, label: c }))]}
-        />
-      </div>
-      {list.length ? (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {list.map((s) => (
-            <SkillCard key={s.id} skill={s} usedBy={usedBy(s.id)} awaiting={isAwaitingCompanyShare(state, 'skill', s.id)} onOpen={() => openSkill(s.id)} onAttach={() => setAttachId(s.id)} />
-          ))}
-        </div>
-      ) : (
-        <EmptyState icon={Puzzle} title="ไม่พบ Skill" action={<Button to="/skills/new" icon={Plus}>สร้าง Skill</Button>}>ลองค้นด้วยคำอื่น หรือสร้าง Skill ใหม่ให้ทีม</EmptyState>
-      )}
-      {open && <SkillDetail skill={open} onClose={() => openSkill(null)} onAttach={() => { openSkill(null); setAttachId(open.id) }} />}
+    <>
+      {open && <SkillDetail skill={open} onClose={close} onAttach={() => { close(); setAttachId(open.id) }} />}
       {attach && <AttachModal skill={attach} onClose={() => setAttachId(null)} />}
-    </div>
+    </>
   )
 }

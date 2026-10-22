@@ -72,12 +72,11 @@ describe('The User view', () => {
     expect(app.url()).toBe('/workspace')
   })
 
-  it('the step-by-step Agent link falls back to quick create, without "ตั้งค่าขั้นสูง"', async () => {
+  it('the step-by-step Agent link falls back to the builder, without "ตั้งค่าแบบละเอียด"', async () => {
     const app = startJourney('/agents/new?advanced=1')
-    await app.type(app.box('อยากได้ผู้ช่วยแบบไหน'), 'ร่างอีเมลตอบลูกค้า')
-    await app.click(screen.getByRole('button', { name: 'ให้ AI กรอกให้' }))
+    await app.type(app.box('ข้อความถึง AI'), 'ร่างอีเมลตอบลูกค้า{Enter}')
     expect(screen.getByRole('button', { name: 'สร้างผู้ช่วย' })).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'ตั้งค่าขั้นสูง' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'ตั้งค่าแบบละเอียด' })).toBeNull()
     expect(screen.queryByRole('navigation', { name: 'ขั้นตอน' })).toBeNull()
   })
 
@@ -90,7 +89,7 @@ describe('The User view', () => {
     expect(screen.queryByRole('textbox', { name: /^Instruction/ })).toBeNull()
   })
 
-  it('copying an Agent opens quick create filled in from it', () => {
+  it('copying an Agent opens the builder filled in from it', () => {
     startJourney('/agents/new?from=agent-it-support')
     expect(screen.queryByRole('navigation', { name: 'ขั้นตอน' })).toBeNull()
     expect(screen.getByRole('textbox', { name: 'ชื่อ' })).toHaveValue('IT Support Agent (Copy)')
@@ -115,11 +114,10 @@ describe('The Admin view', () => {
     expect(screen.getByRole('region', { name: 'ตัวเลขสำคัญ' })).toBeInTheDocument()
   })
 
-  it('sees "ตั้งค่าขั้นสูง" in quick create and opens the step-by-step Agent form', async () => {
+  it('sees "ตั้งค่าแบบละเอียด" in the builder and opens the step-by-step Agent form', async () => {
     const app = startJourney('/agents/new', { view: 'admin' })
-    await app.type(app.box('อยากได้ผู้ช่วยแบบไหน'), 'ร่างอีเมลตอบลูกค้า')
-    await app.click(screen.getByRole('button', { name: 'ให้ AI กรอกให้' }))
-    await app.click(screen.getByRole('button', { name: 'ตั้งค่าขั้นสูง' }))
+    await app.type(app.box('ข้อความถึง AI'), 'ร่างอีเมลตอบลูกค้า{Enter}')
+    await app.click(screen.getByRole('button', { name: 'ตั้งค่าแบบละเอียด' }))
     expect(screen.getByRole('navigation', { name: 'ขั้นตอน' })).toBeInTheDocument()
   })
 

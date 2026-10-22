@@ -88,7 +88,7 @@ export default function AgentDetail() {
             </details>
           </Section>
 
-          <Section title="ทักษะที่ใช้" icon={Puzzle} action={<Button size="sm" variant="ghost" to={skillLink()}>คลังทักษะ</Button>}>
+          <Section title="ทักษะที่ใช้" icon={Puzzle}>
             {skills.length ? (
               <div className="grid gap-2 sm:grid-cols-2">
                 {skills.map((s) => (

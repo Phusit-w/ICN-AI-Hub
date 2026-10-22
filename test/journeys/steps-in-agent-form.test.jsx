@@ -4,7 +4,7 @@ import { expectAgentPicked, expectArtifactShown, mainMenu, startJourney } from '
 
 // The "ขั้นตอน" section at the end of the Agent form (spec stories 13–16): empty by default, Steps are other Agents
 // picked from "＋ เพิ่มขั้นตอน", they can be reordered and removed, and only Agents without Steps are offered.
-// The User view's one-page form is the main path; the Admin's detailed form keeps the Steps chosen there.
+// The builder's form is the main path; the Admin's detailed form keeps the Steps chosen there.
 
 const NAME = 'ผู้ช่วยทำรายงานตลาดพร้อมภาพ'
 
@@ -13,8 +13,7 @@ const stepNames = () => within(screen.getByRole('list', { name: 'ขั้นต
   .map((li) => within(li).getByText(/Agent$/).textContent)
 
 async function draftAgent(app) {
-  await app.type(app.box('อยากได้ผู้ช่วยแบบไหน'), 'ค้นข้อมูลตลาด สรุปเป็นรายงาน และทำภาพประกอบ')
-  await app.click(screen.getByRole('button', { name: 'ให้ AI กรอกให้' }))
+  await app.type(app.box('ข้อความถึง AI'), 'ค้นข้อมูลตลาด สรุปเป็นรายงาน และทำภาพประกอบ{Enter}')
   const name = screen.getByRole('textbox', { name: 'ชื่อ' })
   await app.type(name, '{Control>}a{/Control}' + NAME)
 }
@@ -70,13 +69,13 @@ describe('The "ขั้นตอน" section of the Agent form', () => {
     for (const withSteps of ['Market Research Report', 'Sales Proposal Pipeline', 'IT Incident Triage']) expect(offered).not.toContain(withSteps)
   })
 
-  it('Steps chosen before "ตั้งค่าขั้นสูง" are still there in the Admin’s detailed form', async () => {
+  it('Steps chosen in the builder are still there in the Admin’s detailed form', async () => {
     const app = startJourney('/agents/new', { view: 'admin' })
     await draftAgent(app)
     await addStep(app, 'Research Agent')
     await addStep(app, 'Document Agent')
 
-    await app.click(screen.getByRole('button', { name: 'ตั้งค่าขั้นสูง' }))
+    await app.click(screen.getByRole('button', { name: 'ตั้งค่าแบบละเอียด' }))
     await app.click(screen.getByRole('button', { name: /การแชร์ & ขั้นตอน/ }))
 
     expect(stepNames()).toEqual(['Research Agent', 'Document Agent'])

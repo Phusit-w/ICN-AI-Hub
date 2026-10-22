@@ -5,53 +5,19 @@ import { isAdminView, useStore } from '../store/AppStore'
 import { SKILL_CATEGORIES } from '../data/skills'
 import { TOOLS } from '../data/catalog'
 import { skillLink } from '../lib/routes'
-import { BLANK_SKILL_FORM, draftSkillForm, skillFromForm } from '../lib/skillDraft'
+import { BLANK_SKILL_FORM } from '../lib/skillDraft'
 import { Card, CardHeader, PageHeader } from '../components/ui/Card'
 import Button from '../components/ui/Button'
 import Badge from '../components/ui/Badge'
 import { Field, Input, Select, ShareChoice, Textarea, Toggle } from '../components/ui/Form'
-import QuickCreate from '../components/ui/QuickCreate'
+import QuickCreateSkill, { useSaveSkill } from '../components/skills/QuickCreateSkill'
 import EntityIcon from '../components/agents/EntityIcon'
 
 const ICONS = ['file', 'globe', 'chart', 'check', 'shield', 'target', 'calculator', 'book', 'image', 'ticket']
 
-/**
- * Default way to create a skill, the same as an agent: describe it in one box, the AI fills it in,
- * the user checks name, purpose and sharing, then creates. Every other field lives in the advanced form.
- */
-function QuickCreateSkill({ initial, onCreate, onAdvanced }) {
-  const { state } = useStore()
-  const [form, setForm] = useState(() => (initial.trim() ? draftSkillForm(initial, state.skills) : null))
-  const set = (patch) => setForm((f) => ({ ...f, ...patch }))
-
-  return (
-    <QuickCreate
-      title="สร้างทักษะใหม่" subtitle="บอกว่าอยากให้ทักษะนี้ทำอะไร AI จะกรอกรายละเอียดให้ คุณแค่ตรวจแล้วกดสร้าง"
-      describeLabel="อยากได้ทักษะแบบไหน" placeholder="เช่น สรุปสัญญาเช่าให้เหลือ 1 หน้า พร้อมจุดที่ต้องระวัง"
-      initial={initial} drafted={!!form} onFill={(text) => setForm(draftSkillForm(text, state.skills))}
-      createLabel="สร้างทักษะ" canCreate={!!form?.name.trim() && !!form?.purpose.trim()}
-      onCreate={() => onCreate(form)} onAdvanced={onAdvanced && (() => onAdvanced(form))}
-    >
-      {form && (
-        <>
-          <div className="flex items-start gap-3">
-            <EntityIcon icon={form.icon} tone="skill" size="lg" />
-            <div className="min-w-0 flex-1 space-y-3">
-              <Field label="ชื่อ" htmlFor="q-name"><Input id="q-name" value={form.name} onChange={(e) => set({ name: e.target.value })} /></Field>
-              <Field label="ทำอะไร" htmlFor="q-purpose" hint={form.based && `เริ่มจาก ${form.based}${onAdvanced ? ' — ปรับขั้นตอนการทำงานได้ในตั้งค่าขั้นสูง' : ''}`}>
-                <Textarea id="q-purpose" rows={2} value={form.purpose} onChange={(e) => set({ purpose: e.target.value })} />
-              </Field>
-            </div>
-          </div>
-          <ShareChoice value={form.share} onChange={(share) => set({ share })} companyNeedsApproval={!isAdminView(state)} />
-        </>
-      )}
-    </QuickCreate>
-  )
-}
-
 export default function CreateSkill() {
-  const { state, actions } = useStore()
+  const { state } = useStore()
+  const saveSkill = useSaveSkill()
   const navigate = useNavigate()
   const [params] = useSearchParams()
   const [quick, setQuick] = useState(params.get('advanced') !== '1')
@@ -64,19 +30,14 @@ export default function CreateSkill() {
     setTest('running')
     setTimeout(() => setTest('done'), 1600)
   }
-  const create = (form = f) => {
-    const skill = skillFromForm(form, { owner: state.userId })
-    const saved = actions.addSkill(skill)
-    actions.toast(`สร้าง Skill “${skill.name}” แล้ว — ${saved.share !== skill.share ? 'ส่งคำขอแชร์ทั้งบริษัทให้แอดมินแล้ว ระหว่างนี้แชร์ในแผนกก่อน' : 'นำไปใส่ใน Agent ได้เลย'}`)
-    navigate(skillLink(skill.id))
-  }
+  const create = (form = f) => navigate(skillLink(saveSkill(form).id))
 
   // The full form is Admin-only; in the User view `?advanced=1` uses quick create, with no way into the full form.
   if (!isAdminView(state)) {
-    return <QuickCreateSkill initial={params.get('q') ?? ''} onCreate={create} />
+    return <QuickCreateSkill title="สร้างทักษะใหม่" initial={params.get('q') ?? ''} onCreate={create} />
   }
   if (quick) {
-    return <QuickCreateSkill initial={params.get('q') ?? ''} onCreate={create} onAdvanced={(form) => { setF(form); setQuick(false) }} />
+    return <QuickCreateSkill title="สร้างทักษะใหม่" initial={params.get('q') ?? ''} onCreate={create} onAdvanced={(form) => { setF(form); setQuick(false) }} />
   }
 
   return (

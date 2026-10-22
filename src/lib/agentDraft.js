@@ -1,6 +1,7 @@
 // Agent "forms" are the editable shape behind the Create Agent page; these helpers fill one in
 // (from scratch, from an existing agent, or from a plain-language description) and turn it into an Agent.
 
+import { KNOWLEDGE } from '../data/catalog'
 import { rankByMatch, truncate, uid } from './utils'
 
 export const INSTRUCTION_STARTERS = {
@@ -52,4 +53,61 @@ export function agentFromForm(form, { owner, note, forkedFrom }) {
     examples: [], versions: [{ v: '1.0', date: today, by: owner, note }], steps: form.steps,
     forkedFrom,
   }
+}
+
+/** The Agents written as `@Name` in a builder chat message. */
+const mentionedIn = (text, agents) => agents.filter((a) => text.includes(`@${a.name}`))
+
+const knowledgeNames = (ids) => ids.map((id) => KNOWLEDGE.find((k) => k.id === id)?.name ?? id).join(', ')
+
+/**
+ * Mock builder AI: takes one chat message and returns the next form and the AI's reply.
+ * The first message drafts the Agent, keeping whatever the user already set (name, instruction, Skills, sharing,
+ * Steps); later ones add to its instruction. An @-mentioned Agent lends its instruction and the knowledge it cites,
+ * written into the instruction where the user can see and edit them, and is never added as a Step.
+ */
+export function builderTurn(form, text, agents) {
+  const mentioned = mentionedIn(text, agents)
+  const said = mentioned.reduce((t, a) => t.replaceAll(`@${a.name}`, a.name), text).replace(/\s+/g, ' ').trim()
+  const first = !form.description.trim()
+  const draft = first && draftForm(said, agents)
+  let next = first
+    ? {
+      ...draft, share: form.share, steps: form.steps,
+      name: form.name.trim() ? form.name : draft.name,
+      instruction: form.instruction.trim() ? `${form.instruction.trimEnd()}\n- งานหลัก: ${said}` : draft.instruction,
+      skills: [...new Set([...form.skills, ...draft.skills])],
+    }
+    : { ...form, instruction: `${form.instruction.trimEnd()}\n- ${said}`.trim() }
+  for (const a of mentioned) {
+    const cites = a.knowledge.length > 0 ? ` (อ้างอิง ${knowledgeNames(a.knowledge)})` : ''
+    next = { ...next, instruction: `${next.instruction}\n- ตามแนวทางของ ${a.name}: ${a.instruction}${cites}` }
+  }
+  const reply = first
+    ? `ร่าง “${next.name}” ให้แล้ว${draft.based ? ` โดยเริ่มจาก ${draft.based}` : ''} ดูและแก้ได้ทางขวา อยากให้ทำอะไรเพิ่ม หรือมีอะไรที่ห้ามทำไหม`
+    : `เพิ่มในคำสั่งแล้ว: “${said}” มีอะไรอีกไหม หรือกด “สร้างผู้ช่วย” ได้เลย`
+  const helpedBy = mentioned.length > 0 ? ` — ใช้คำสั่งและความรู้ของ ${mentioned.map((a) => a.name).join(', ')} มาช่วยเขียนแล้ว (ไม่ได้ใส่เป็นขั้นตอน)` : ''
+  return { form: next, reply: reply + helpedBy }
+}
+
+const ANSWER_RULES = ['- ตอบเป็นภาษาไทยที่สุภาพและกระชับ', '- ถ้าข้อมูลไม่พอ ให้ถามกลับก่อนตอบ']
+/** Lines `writeInstruction` writes itself, so rewriting again doesn't repeat them as rules. */
+const OWN_LINE = /^(คุณคือ|หน้าที่:|สิ่งที่ต้องทำ:|รูปแบบคำตอบ:)/
+
+/**
+ * Mock "✨ ให้ AI ช่วยเขียน": rewrites the instruction into a clear role, duties and answer format.
+ * Every line the user already had is kept as a rule; only the role line is rewritten.
+ */
+export function writeInstruction(form) {
+  const starter = INSTRUCTION_STARTERS[form.dept] ?? INSTRUCTION_STARTERS.core
+  const rules = [...new Set([...starter.split('\n'), ...form.instruction.split('\n')]
+    .map((l) => l.trim())
+    .filter((l) => l && !OWN_LINE.test(l) && !ANSWER_RULES.includes(l))
+    .map((l) => (l.startsWith('-') ? l : `- ${l}`)))]
+  return [
+    `คุณคือ “${form.name.trim() || 'ผู้ช่วย'}” ของ ICN`,
+    ...(form.description.trim() ? [`หน้าที่: ${form.description.trim()}`] : []),
+    '', 'สิ่งที่ต้องทำ:', ...rules,
+    '', 'รูปแบบคำตอบ:', ...ANSWER_RULES,
+  ].join('\n')
 }

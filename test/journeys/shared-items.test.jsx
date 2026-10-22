@@ -14,7 +14,6 @@ describe('Shared items: filter chips and "ใช้งาน"', () => {
   it('the old community link lands on the Agents page with the "popular" filter on', () => {
     const app = startJourney('/community')
     expect(app.url()).toBe('/agents?filter=popular')
-    expect(screen.getByRole('tab', { name: /ผู้ช่วย/ })).toHaveAttribute('aria-selected', 'true')
     expect(chip(POPULAR)).toHaveAttribute('aria-pressed', 'true')
     expect(chip(SHARED)).toHaveAttribute('aria-pressed', 'false')
   })
@@ -55,7 +54,7 @@ describe('Shared items: filter chips and "ใช้งาน"', () => {
   })
 
   it('no page links to the community page any more', () => {
-    for (const route of ['/', '/workspace', '/agents', '/agents?tab=skills', '/agents/agent-it-support', '/agents/agent-it-incident', '/governance']) {
+    for (const route of ['/', '/workspace', '/agents', '/agents/new', '/agents/agent-it-support', '/agents/agent-it-incident', '/governance']) {
       startJourney(route, { view: route === '/governance' ? 'admin' : 'user' })
       const hrefs = [...document.querySelectorAll('a[href]')].map((a) => a.getAttribute('href'))
       expect(hrefs.filter((h) => h.includes('community')), route).toEqual([])

@@ -1,5 +1,4 @@
-// Skills live in the "ทักษะ" tab of the Agents page. Link there instead of the old /skills route.
-export const SKILLS_TAB = '/agents?tab=skills'
+// Skills have no page or tab of their own (spec story 40): a Skill's detail opens over the Agents page.
 
-/** The Skills tab with one Skill's detail open, or just the tab when no id is given. */
-export const skillLink = (id) => (id ? `${SKILLS_TAB}&open=${encodeURIComponent(id)}` : SKILLS_TAB)
+/** The Agents page with one Skill's detail open, or just the Agents page when no id is given. */
+export const skillLink = (id) => (id ? `/agents?skill=${encodeURIComponent(id)}` : '/agents')

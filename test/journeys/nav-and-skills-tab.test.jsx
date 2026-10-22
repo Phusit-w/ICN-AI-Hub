@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { screen, within } from '@testing-library/react'
+import { cleanup, screen, within } from '@testing-library/react'
 import { mainMenu, startJourney } from '../journey'
 
 // "แชตใหม่" sits above the menu and is the home screen, so the menu itself has 2 items in the Admin view.
@@ -78,80 +78,55 @@ describe('Navigation: new chat plus a two-item menu', () => {
   })
 })
 
-describe('Skills live in a tab of the Agents page', () => {
-  it('an old Skills link lands on the Skills tab of the Agents page', () => {
+describe('Skills have no page or tab of their own (spec story 40)', () => {
+  it('the ผู้ช่วย AI page has no tabs, and "＋ สร้างผู้ช่วย" is its main action', () => {
+    startJourney('/agents')
+    expect(screen.queryByRole('tab')).toBeNull()
+    expect(screen.getByRole('link', { name: 'สร้างผู้ช่วย' }).className).toContain('bg-brand-600')
+  })
+
+  it('an old Skills link lands on the ผู้ช่วย AI page', () => {
     const app = startJourney('/skills')
-    expect(app.url()).toBe('/agents?tab=skills')
-    expect(screen.getByRole('tab', { name: /ทักษะ/ })).toHaveAttribute('aria-selected', 'true')
-    expect(within(screen.getByRole('tabpanel')).getAllByText('Pricing Calculator').length).toBeGreaterThan(0)
+    expect(app.url()).toBe('/agents')
   })
 
-  it('an old link to a specific Skill lands on the Skills tab with that Skill open', () => {
-    const app = startJourney('/skills?open=skill-pricing')
-    expect(app.url()).toBe('/agents?tab=skills&open=skill-pricing')
-    expect(screen.getByRole('tab', { name: /ทักษะ/ })).toHaveAttribute('aria-selected', 'true')
+  it('an old link to a specific Skill, global search and Agent detail open that Skill on the ผู้ช่วย AI page', async () => {
+    let app = startJourney('/skills?open=skill-pricing')
+    expect(app.url()).toBe('/agents?skill=skill-pricing')
     expect(skillDialog('Pricing Calculator')).toBeInTheDocument()
-  })
+    cleanup()
 
-  it('global search results for Skills open in the Skills tab', async () => {
-    const app = startJourney()
+    app = startJourney()
     await app.type(screen.getByRole('searchbox', { name: 'ค้นหาทั้งระบบ' }), 'Pricing')
     await app.click(screen.getByRole('button', { name: /Pricing Calculator/ }))
-    expect(app.url()).toBe('/agents?tab=skills&open=skill-pricing')
+    expect(app.url()).toBe('/agents?skill=skill-pricing')
+    cleanup()
+
+    app = startJourney('/agents/agent-sales-proposal')
+    await app.click(screen.getByRole('link', { name: /Pricing Calculator/ }))
     expect(skillDialog('Pricing Calculator')).toBeInTheDocument()
-  })
-
-  it('the tab is reflected in the URL and the menu item stays active', async () => {
-    const app = startJourney('/agents')
-    expect(screen.getByRole('tab', { name: /ผู้ช่วย/ })).toHaveAttribute('aria-selected', 'true')
-    await app.click(screen.getByRole('tab', { name: /ทักษะ/ }))
-    expect(app.url()).toBe('/agents?tab=skills')
-    await app.click(screen.getByRole('tab', { name: /ผู้ช่วย/ }))
+    await app.click(within(skillDialog('Pricing Calculator')).getAllByRole('button', { name: 'ปิด' })[0])
     expect(app.url()).toBe('/agents')
   })
 
-  it('the tabs use proper roles and work from the keyboard', async () => {
-    const app = startJourney('/agents')
-    const agentsTab = screen.getByRole('tab', { name: /ผู้ช่วย/ })
-    const skillsTab = screen.getByRole('tab', { name: /ทักษะ/ })
-    expect(screen.getByRole('tablist')).toContainElement(agentsTab)
-    expect(agentsTab).toHaveAttribute('tabindex', '0')
-    expect(skillsTab).toHaveAttribute('tabindex', '-1')
-    expect(screen.getByRole('tabpanel')).toHaveAttribute('id', agentsTab.getAttribute('aria-controls'))
-    expect(screen.getByRole('tabpanel', { name: /ผู้ช่วย/ })).toBeInTheDocument()
-
-    await app.type(agentsTab, '{ArrowRight}')
-    expect(app.url()).toBe('/agents?tab=skills')
-    expect(screen.getByRole('tab', { name: /ทักษะ/ })).toHaveFocus()
-    expect(screen.getByRole('tabpanel', { name: /ทักษะ/ })).toBeInTheDocument()
-
-    await app.type(screen.getByRole('tab', { name: /ทักษะ/ }), '{Home}')
-    expect(app.url()).toBe('/agents')
-    expect(screen.getByRole('tab', { name: /ผู้ช่วย/ })).toHaveFocus()
-  })
-
-  it('adding a Skill to several Agents still works from the Skills tab', async () => {
-    const app = startJourney('/agents?tab=skills')
-    await app.click(screen.getByRole('button', { name: 'Pricing Calculator' }))
+  it('adding a Skill to several Agents still works from its detail', async () => {
+    const app = startJourney('/agents?skill=skill-pricing')
     await app.click(within(skillDialog('Pricing Calculator')).getByRole('button', { name: 'เพิ่มให้ผู้ช่วย' }))
     const attach = screen.getByRole('dialog', { name: /เพิ่ม .Pricing Calculator. ให้ Agent/ })
     await app.click(within(attach).getByRole('button', { name: /Research Agent/ }))
     await app.click(within(attach).getByRole('button', { name: /^Document Agent/ }))
     await app.click(within(attach).getByRole('button', { name: /เพิ่มให้ 2 Agents/ }))
     expect(screen.getByText('เพิ่ม Pricing Calculator ให้ 2 Agents แล้ว')).toBeInTheDocument()
-    expect(app.url()).toBe('/agents?tab=skills')
   })
 
-  it('creating a Skill starts from the Skills tab', async () => {
-    const app = startJourney('/agents?tab=skills')
-    await app.click(within(screen.getByRole('tabpanel')).getByRole('link', { name: /สร้างทักษะใหม่/ }))
-    expect(app.url()).toBe('/skills/new')
-  })
+  it('Skills are picked in the Agent form, and the new Agent has them', async () => {
+    const app = startJourney('/agents/new')
+    await app.type(app.box('ข้อความถึง AI'), 'ช่วยทำใบเสนอราคา{Enter}')
+    for (const name of [...within(screen.getByText(/^ทักษะ/).parentElement).queryAllByRole('button', { name: /^เอา .+ ออก$/ })]) await app.click(name)
+    await app.click(screen.getByRole('button', { name: 'เพิ่มทักษะ' }))
+    await app.click(screen.getByRole('menuitem', { name: 'Pricing Calculator' }))
+    await app.click(screen.getByRole('button', { name: 'สร้างผู้ช่วย' }))
 
-  it('Agent detail links to Skills point to the Skills tab', async () => {
-    const app = startJourney('/agents/agent-sales-proposal')
-    await app.click(screen.getByRole('link', { name: /Pricing Calculator/ }))
-    expect(app.url()).toBe('/agents?tab=skills&open=skill-pricing')
-    expect(skillDialog('Pricing Calculator')).toBeInTheDocument()
+    expect(screen.getAllByRole('link', { name: /Pricing Calculator/ })).toHaveLength(1)
   })
 })

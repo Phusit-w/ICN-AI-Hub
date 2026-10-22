@@ -118,10 +118,8 @@ describe('No star ratings left', () => {
     expect(screen.queryAllByText(RATING)).toEqual([])
   })
 
-  it('Skill cards and details have no ratings', async () => {
-    const app = startJourney('/agents?tab=skills')
-    expect(screen.queryAllByText(RATING)).toEqual([])
-    await app.click(screen.getAllByRole('button', { name: 'รายละเอียด' })[0])
+  it('Skill details have no ratings', async () => {
+    startJourney('/agents?skill=skill-pricing')
     expect(within(screen.getByRole('dialog')).queryAllByText(RATING)).toEqual([])
   })
 

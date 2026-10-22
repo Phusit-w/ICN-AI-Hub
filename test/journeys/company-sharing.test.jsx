@@ -7,8 +7,7 @@ describe('Company sharing request', () => {
   it('a User who shares an Agent with the whole company sees it waiting, shared with the department meanwhile', async () => {
     const app = startJourney('/agents/new')
 
-    await app.type(app.box('อยากได้ผู้ช่วยแบบไหน'), 'ช่วยร่างอีเมลตอบลูกค้าที่ร้องเรียนเรื่องส่งของช้า')
-    await app.click(screen.getByRole('button', { name: 'ให้ AI กรอกให้' }))
+    await app.type(app.box('ข้อความถึง AI'), 'ช่วยร่างอีเมลตอบลูกค้าที่ร้องเรียนเรื่องส่งของช้า{Enter}')
     await app.click(screen.getByRole('button', { name: /^Company/ }))
     await app.click(screen.getByRole('button', { name: 'สร้างผู้ช่วย' }))
 

@@ -1,66 +1,74 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { ArrowLeft, ArrowRight, Check, Copy, FileUp, Lock, Rocket, X } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Check, Copy, FileUp, Lock, Rocket, Settings2, Sparkles } from 'lucide-react'
 import { isAdminView, useStore } from '../store/AppStore'
 import { DATA_CLASSES, DEPARTMENTS, KNOWLEDGE, LOCAL_MODEL_ID, MODELS, OUTPUT_FORMATS, TOOLS } from '../data/catalog'
 import { cn } from '../lib/utils'
-import { agentFromForm, BLANK_FORM, draftForm, formFromAgent, INSTRUCTION_STARTERS } from '../lib/agentDraft'
+import { agentFromForm, BLANK_FORM, builderTurn, formFromAgent, INSTRUCTION_STARTERS, writeInstruction } from '../lib/agentDraft'
 import { Card, PageHeader } from '../components/ui/Card'
 import Button from '../components/ui/Button'
 import Badge, { ModelBadge, ShareBadge, DeptBadge } from '../components/ui/Badge'
 import { ChoiceCard, Field, Input, SearchInput, Select, ShareChoice, Textarea, Toggle } from '../components/ui/Form'
 import EntityIcon from '../components/agents/EntityIcon'
 import StepsField from '../components/agents/StepsField'
-import QuickCreate from '../components/ui/QuickCreate'
+import SkillsField from '../components/agents/SkillsField'
+import BuilderChat from '../components/agents/BuilderChat'
 
 const WIZARD_PAGES = ['ข้อมูลพื้นฐาน', 'คำสั่งการทำงาน', 'Model & ข้อมูล', 'Knowledge & Skills', 'Tools & Output', 'การแชร์ & ขั้นตอน']
 const KINDS = ['research', 'document', 'sales', 'hr', 'it', 'accounting', 'data', 'image', 'review']
 
+const GREETING = 'สวัสดีค่ะ อยากได้ผู้ช่วยแบบไหน เล่างานที่อยากให้ช่วยด้วยคำของคุณเองได้เลย แล้วฉันจะกรอกฟอร์มทางขวาให้\nพิมพ์ @ เพื่อเรียกผู้ช่วยที่มีอยู่มาช่วยเขียน เช่น @HR Policy Agent'
+
 /**
- * Default way to create an agent: describe it in one box, the AI fills everything in,
- * the user checks name, description, skills and sharing, then creates. Everything else lives in the wizard.
+ * Default way to create an Agent, like GPT Builder (spec stories 29–34, 36–37, 39): chat with a simulated AI on one
+ * side, the Agent form it fills in on the other. Every field stays editable. `onDetailed` (Admin only) opens the
+ * 6-page form with the same draft.
  */
-function QuickCreateAgent({ initial, initialForm, onCreate, onAdvanced }) {
+function AgentBuilder({ form, setForm, initialText, onCreate, onDetailed }) {
   const { state } = useStore()
-  const [form, setForm] = useState(() => initialForm ?? (initial.trim() ? draftForm(initial, state.agents) : null))
+  const [messages, setMessages] = useState([{ from: 'ai', text: GREETING }])
   const set = (patch) => setForm((f) => ({ ...f, ...patch }))
+  const send = (text) => {
+    const turn = builderTurn(form, text, state.agents)
+    setForm(turn.form)
+    setMessages((m) => [...m, { from: 'user', text }, { from: 'ai', text: turn.reply }])
+  }
 
   return (
-    <QuickCreate
-      title="สร้างผู้ช่วย AI ของคุณ" subtitle="บอกว่าอยากได้ผู้ช่วยแบบไหน AI จะกรอกรายละเอียดให้ คุณแค่ตรวจแล้วกดสร้าง"
-      describeLabel="อยากได้ผู้ช่วยแบบไหน" placeholder="เช่น ช่วยร่างอีเมลตอบลูกค้าที่ร้องเรียนเรื่องส่งของช้า ให้สุภาพและเสนอทางแก้"
-      initial={initial} drafted={!!form} onFill={(text) => setForm(draftForm(text, state.agents))}
-      createLabel="สร้างผู้ช่วย" canCreate={!!form?.name.trim() && !!form?.description.trim()}
-      onCreate={() => onCreate(form)} onAdvanced={onAdvanced && (() => onAdvanced(form))}
-    >
-      {form && (
-        <>
+    <div className="mx-auto max-w-6xl">
+      <div className="mb-5 flex flex-wrap items-start gap-3">
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-900">สร้างผู้ช่วย AI</h1>
+          <p className="mt-1 text-sm text-slate-500">คุยกับ AI ทางซ้าย ฟอร์มทางขวาจะถูกกรอกให้ แก้เองได้ทุกช่อง แล้วกดสร้าง</p>
+        </div>
+        {onDetailed && <Button variant="ghost" size="sm" icon={Settings2} onClick={onDetailed}>ตั้งค่าแบบละเอียด</Button>}
+      </div>
+      <div className="grid gap-6 lg:grid-cols-2">
+        <BuilderChat messages={messages} onSend={send} initialText={initialText} />
+        <Card className="space-y-5 p-5">
           <div className="flex items-start gap-3">
             <EntityIcon icon={form.kind} size="lg" />
             <div className="min-w-0 flex-1 space-y-3">
-              <Field label="ชื่อ" htmlFor="q-name"><Input id="q-name" value={form.name} onChange={(e) => set({ name: e.target.value })} /></Field>
-              <Field label="ทำอะไร" htmlFor="q-desc"><Textarea id="q-desc" rows={2} value={form.description} onChange={(e) => set({ description: e.target.value })} /></Field>
+              <Field label="ชื่อ" htmlFor="b-name"><Input id="b-name" value={form.name} onChange={(e) => set({ name: e.target.value })} placeholder="เช่น ผู้ช่วยตอบอีเมลลูกค้า" /></Field>
+              <Field label="คำอธิบาย" htmlFor="b-desc"><Textarea id="b-desc" rows={2} value={form.description} onChange={(e) => set({ description: e.target.value })} placeholder="ผู้ช่วยนี้ช่วยใคร ทำอะไร" /></Field>
             </div>
           </div>
-          <Field label={`ทักษะ (${form.skills.length})`} hint={`${form.based ? `เริ่มจาก ${form.based} — ` : ''}กด × เพื่อเอาทักษะที่ไม่ต้องการออก`}>
-            <div className="flex flex-wrap gap-1.5">
-              {form.skills.map((id) => {
-                const sk = state.skills.find((x) => x.id === id)
-                return (
-                  <span key={id} className="inline-flex items-center gap-1 rounded-full bg-slate-100 py-0.5 pr-1 pl-2.5 text-xs text-slate-700">
-                    {sk?.name ?? id}
-                    <button type="button" onClick={() => set({ skills: form.skills.filter((x) => x !== id) })} aria-label={`เอา ${sk?.name ?? id} ออก`} className="rounded-full p-0.5 text-slate-400 hover:bg-slate-200 hover:text-slate-700"><X className="size-3" /></button>
-                  </span>
-                )
-              })}
-              {form.skills.length === 0 && <span className="text-xs text-slate-400">{onAdvanced ? 'ไม่มี — เพิ่มได้ในตั้งค่าขั้นสูง' : 'ไม่มี'}</span>}
-            </div>
+          <Field label="คำสั่ง" htmlFor="b-ins" hint="เขียนเหมือนสอนงานพนักงานใหม่: ทำอะไร ต้องทำอะไรเสมอ และห้ามทำอะไร">
+            <Textarea id="b-ins" rows={7} value={form.instruction} onChange={(e) => set({ instruction: e.target.value })} className="font-mono text-[13px]" placeholder="คุณคือ…" />
+            <Button
+              size="sm" variant="subtle" icon={Sparkles} onClick={() => set({ instruction: writeInstruction(form) })}
+              disabled={!form.name.trim() && !form.description.trim()}
+            >ให้ AI ช่วยเขียน</Button>
           </Field>
+          <SkillsField skills={form.skills} onChange={(skills) => set({ skills })} />
           <ShareChoice value={form.share} onChange={(share) => set({ share })} companyNeedsApproval={!isAdminView(state)} />
           <StepsField steps={form.steps} onChange={(steps) => set({ steps })} />
-        </>
-      )}
-    </QuickCreate>
+          <div className="flex justify-end border-t border-slate-100 pt-4">
+            <Button variant="primary" icon={Rocket} onClick={() => onCreate(form)} disabled={!form.name.trim() || !form.description.trim()}>สร้างผู้ช่วย</Button>
+          </div>
+        </Card>
+      </div>
+    </div>
   )
 }
 
@@ -72,8 +80,8 @@ export default function CreateAgent() {
   const [params] = useSearchParams()
   const source = state.agents.find((a) => a.id === params.get('from'))
   const [form, setForm] = useState(() => (source ? { ...formFromAgent(source), name: `${source.name} (Copy)` } : BLANK_FORM))
-  // Copying an agent goes straight to the full wizard; a new agent starts from the one-page flow.
-  const [quick, setQuick] = useState(!source && params.get('advanced') !== '1')
+  // The 6-page form is Admin-only. The Admin goes straight to it for a copy or `?advanced=1`; everyone else uses the builder.
+  const [detailed, setDetailed] = useState(isAdminView(state) && (!!source || params.get('advanced') === '1'))
   const [step, setStep] = useState(0)
   const [skillQuery, setSkillQuery] = useState('')
   const set = (patch) => setForm((f) => ({ ...f, ...patch }))
@@ -90,12 +98,13 @@ export default function CreateAgent() {
     navigate(`/agents/${agent.id}`)
   }
 
-  // The step-by-step form is Admin-only; in the User view every way in (a copy, `?advanced=1`) uses quick create.
-  if (!isAdminView(state)) {
-    return <QuickCreateAgent initial={params.get('q') ?? ''} initialForm={source && form} onCreate={create} />
-  }
-  if (quick) {
-    return <QuickCreateAgent initial={params.get('q') ?? ''} onCreate={create} onAdvanced={(f) => { setForm(f); setQuick(false) }} />
+  if (!isAdminView(state) || !detailed) {
+    return (
+      <AgentBuilder
+        form={form} setForm={setForm} initialText={params.get('q') ?? ''} onCreate={create}
+        onDetailed={isAdminView(state) ? () => setDetailed(true) : undefined}
+      />
+    )
   }
 
   return (

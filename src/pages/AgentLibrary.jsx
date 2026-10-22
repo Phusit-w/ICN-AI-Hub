@@ -9,10 +9,9 @@ import { applyShareFilter, shareFilterFrom } from '../lib/sharing'
 import ShareFilterChips from '../components/ui/ShareFilterChips'
 import Button from '../components/ui/Button'
 import { Select } from '../components/ui/Form'
-import Tabs from '../components/ui/Tabs'
 import { ItemCard } from '../components/agents/AgentCard'
 import { stepsLabel } from '../lib/steps'
-import SkillsTab from './SkillsTab'
+import SkillDialog from '../components/skills/SkillDialog'
 
 // One-tap shortcuts for people who don't know what to type yet.
 const NEEDS = [
@@ -50,7 +49,11 @@ function CreateFromSearch({ q }) {
   )
 }
 
-function AgentsTab() {
+/**
+ * The ผู้ช่วย AI page: find an Agent for a job, or build one with "＋ สร้างผู้ช่วย".
+ * Skills have no tab here (spec story 40); `?skill=<id>` opens one Skill's detail over the page.
+ */
+export default function AgentLibrary() {
   const { state } = useStore()
   const me = userById(state.userId)
   const [q, setQ] = useState('')
@@ -83,9 +86,14 @@ function AgentsTab() {
     .sort(SORTS[sort]), filter, me), [state.agents, q, need, location, share, sort, filter, me])
 
   const typedNoMatch = q.trim() && top.length === 0
+  // Recommendations bring their own primary ("ใช้งาน" on the best pick, or "สร้างผู้ช่วยสำหรับ …"), so creating steps back.
+  const showPicks = !filter && (term || need)
 
   return (
-    <>
+    <div className="mx-auto max-w-5xl">
+      <div className="flex justify-end">
+        <Button variant={showPicks ? 'secondary' : 'primary'} icon={Plus} to="/agents/new" data-tour="agents-create">สร้างผู้ช่วย</Button>
+      </div>
       <section className="text-center">
         <h1 className="mt-3 text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">หาผู้ช่วย AI ที่เหมาะกับงาน</h1>
         <p className="mt-1 text-sm text-slate-500">บอกงานมา เราจะแนะนำผู้ช่วย AI ที่เหมาะที่สุดให้ หรือเลือกเองจากรายการด้านล่าง</p>
@@ -106,7 +114,7 @@ function AgentsTab() {
       </section>
 
       {/* With a share filter on, the filtered list is the answer, so it moves up in place of the recommendations. */}
-      {!filter && (term || need) && (
+      {showPicks && (
         <section className="mt-8">
           <h2 id="agent-picks" className="mb-3 text-sm font-medium text-slate-500">แนะนำสำหรับงานนี้</h2>
           {typedNoMatch ? <CreateFromSearch q={q.trim()} /> : (
@@ -124,7 +132,6 @@ function AgentsTab() {
             type="button" onClick={() => setShowFilters(!showFilters)} aria-pressed={showFilters}
             className={cn('ml-auto inline-flex h-8 items-center gap-1.5 rounded-lg border px-3 text-[13px]', showFilters ? 'border-brand-300 bg-brand-50 text-brand-700' : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300')}
           ><SlidersHorizontal className="size-3.5" /> ตัวกรอง</button>
-          <Button variant="secondary" size="sm" icon={Plus} to="/agents/new">สร้างผู้ช่วย</Button>
         </div>
         {showFilters && (
           <div className="rise mb-3 flex flex-wrap gap-2">
@@ -150,23 +157,7 @@ function AgentsTab() {
         )}
         <Link to="/agents/new" className="mt-4 inline-flex items-center gap-1 text-[13px] text-slate-500 hover:text-brand-700">ไม่เจอที่ต้องการ? สร้างผู้ช่วยของคุณเอง ไม่ต้องเขียนโค้ด <ArrowRight className="size-3.5" /></Link>
       </section>
-    </>
-  )
-}
-
-const TABS = [
-  { id: 'agents', label: 'ผู้ช่วย', content: <AgentsTab /> },
-  { id: 'skills', label: 'ทักษะ', content: <SkillsTab /> },
-]
-
-/** The Agents page: "ผู้ช่วย" and "ทักษะ" tabs. The tab lives in the URL (`?tab=skills`) so it can be linked. */
-export default function AgentLibrary() {
-  const [params, setParams] = useSearchParams()
-  const tab = params.get('tab') === 'skills' ? 'skills' : 'agents'
-  return (
-    <Tabs
-      label="คลังผู้ช่วย AI" tabs={TABS} value={tab} className="mx-auto max-w-5xl" listProps={{ 'data-tour': 'agents-tabs' }}
-      onChange={(t) => setParams(t === 'skills' ? { tab: t } : {})}
-    />
+      <SkillDialog />
+    </div>
   )
 }
