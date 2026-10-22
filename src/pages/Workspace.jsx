@@ -1,7 +1,7 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useSearchParams } from 'react-router-dom'
 import {
-  ArrowRight, ArrowUp, CircleCheck, CircleDashed, Copy, Download, Eye, ListChecks, LoaderCircle,
+  ArrowRight, ArrowUp, ChevronDown, ChevronUp, CircleCheck, CircleDashed, Copy, Download, Eye, ListChecks, LoaderCircle,
   Plus, Share2, ShieldCheck, Undo2, X,
 } from 'lucide-react'
 import { useStore } from '../store/AppStore'
@@ -10,7 +10,7 @@ import MicButton from '../components/ui/MicButton'
 import TypewriterHint from '../components/ui/TypewriterHint'
 import { ACTIVITIES } from '../lib/mockOutputs'
 import { isChatRun, runProgress, runsOfThread } from '../lib/runs'
-import { clockTime, cn } from '../lib/utils'
+import { clockTime, cn, truncate } from '../lib/utils'
 import { ProgressBar } from '../components/ui/Card'
 import Button from '../components/ui/Button'
 import Menu from '../components/ui/Menu'
@@ -231,7 +231,7 @@ function AssistantMessage({ run, latest, onShowSteps, docRunId, onOpenDoc }) {
 }
 
 /** Variant B: the Thread only talks; the Plan, progress and result live in the work area (Desk) beside it. */
-function DeskNote({ run, selected, onOpen }) {
+function DeskNote({ run, selected, onOpen, onClose }) {
   const { state } = useStore()
   const [cubeOn] = useCube()
   const chat = isChatRun(run)
@@ -252,10 +252,14 @@ function DeskNote({ run, selected, onOpen }) {
           <>
             <p className="text-[15px] text-slate-700">
               {run.status === 'planned' && `ผมวางแผนไว้ ${run.steps.length} ขั้นตอน ดูแผนที่พื้นที่ทำงาน แล้วกด “เริ่มทำงาน” ได้เลย`}
-              {run.status === 'running' && `กำลังทำงาน · ขั้นตอน ${Math.min(run.current + 1, run.steps.length)} จาก ${run.steps.length}`}
+              {run.status === 'running' && `กำลังทำงาน ขั้นตอน ${Math.min(run.current + 1, run.steps.length)} จาก ${run.steps.length} · ${truncate(step.task, 26)}`}
               {run.status === 'completed' && `เสร็จแล้ว — “${final?.output.title ?? 'ผลงาน'}” อยู่ที่พื้นที่ทำงาน`}
             </p>
-            {!selected && <Button size="sm" variant="secondary" icon={Eye} onClick={onOpen}>{run.status === 'completed' ? 'เปิดดูผลงาน' : 'ดูแผนงาน'}</Button>}
+            {run.status === 'running' ? (
+              <button type="button" onClick={selected ? onClose : onOpen} aria-expanded={selected} className="inline-flex items-center gap-1 text-[13px] text-slate-500 hover:text-brand-700">
+                {selected ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}{selected ? 'ย่อ' : 'ดูขั้นตอนทั้งหมด'}
+              </button>
+            ) : !selected && <Button size="sm" variant="secondary" icon={Eye} onClick={onOpen}>{run.status === 'completed' ? 'เปิดดูผลงาน' : 'ดูแผนงาน'}</Button>}
           </>
         )}
       </div>
@@ -266,7 +270,6 @@ function DeskNote({ run, selected, onOpen }) {
 /** Variant B's work area: the strongest object on the page, whichever stage the Run is at. */
 function Desk({ run }) {
   const { actions } = useStore()
-  const [open, setOpen] = useState(false) // while running: expand the full step list and the live activity
   const final = run.status === 'completed' ? finalStep(run) : null
   const loops = run.steps.reduce((n, s) => n + (s.kind === 'review' ? s.loops : 0), 0)
   return (
@@ -285,12 +288,12 @@ function Desk({ run }) {
       )}
       <div className="min-h-0 flex-1 space-y-6 overflow-y-auto p-5 lg:p-7">
         {run.status !== 'completed' && (
-          <PlanCard bare collapsible open={open} onOpenChange={setOpen} run={run} onRemove={(stepId) => actions.removeStep(run.id, stepId)} onStart={() => actions.startRun(run.id)} />
+          <PlanCard bare run={run} onRemove={(stepId) => actions.removeStep(run.id, stepId)} onStart={() => actions.startRun(run.id)} />
         )}
         {run.status === 'running' && (
           <>
             <div className="flex items-center gap-3"><ProgressBar value={runProgress(run)} className="flex-1" /><span className="text-xs font-medium text-slate-500">{Math.round(runProgress(run) * 100)}%</span></div>
-            {open && <LiveActivity run={run} />}
+            <LiveActivity run={run} />
           </>
         )}
         {final && (
@@ -309,7 +312,7 @@ function Desk({ run }) {
   )
 }
 
-function ChatView({ thread, onShowSteps, variant, deskRunId, onOpenDesk, docRunId, onOpenDoc }) {
+function ChatView({ thread, onShowSteps, variant, deskRunId, onOpenDesk, onCloseDesk, docRunId, onOpenDoc }) {
   const bottom = useRef(null)
   const last = thread.at(-1)
   const progressKey = last ? `${last.id}:${last.status}:${last.current}` : ''
@@ -324,7 +327,7 @@ function ChatView({ thread, onShowSteps, variant, deskRunId, onOpenDesk, docRunI
             <p className="max-w-[85%] rounded-2xl rounded-br-md bg-slate-100 px-4 py-2.5 text-[15px] text-slate-800">{run.prompt}</p>
           </div>
           {variant === 'B'
-            ? <DeskNote run={run} selected={run.id === deskRunId} onOpen={() => onOpenDesk(run.id)} />
+            ? <DeskNote run={run} selected={run.id === deskRunId} onOpen={() => onOpenDesk(run.id)} onClose={onCloseDesk} />
             : <AssistantMessage run={run} latest={run === last} onShowSteps={() => onShowSteps(run.id)} docRunId={docRunId} onOpenDoc={() => onOpenDoc(run.id)} />}
         </div>
       ))}
@@ -453,6 +456,7 @@ export default function Workspace() {
   const [variant] = useVariant() // PROTOTYPE: A = one column, B = chat + work area
   const [stepsRunId, setStepsRunId] = useState(null) // the Run whose steps are open in the side panel
   const [docRunId, setDocRunId] = useState(null) // A: the Run whose file is open as a document on the right
+  const [deskOpen, setDeskOpen] = useState(false) // B: a running Run's work area is shown only once the user expands it
   const [deskPick, setDeskPick] = useState(null) // B: the Run the user chose to look at in the work area
   const handled = useRef(null)
   const q = params.get('q')
@@ -477,8 +481,8 @@ export default function Workspace() {
   // B: the work area follows the newest multi-step Run unless the user picked an older one. A chat answer needs no work area.
   const deskRuns = thread.filter((r) => !isChatRun(r))
   const deskRun = deskRuns.find((r) => r.id === deskPick) ?? deskRuns.at(-1) ?? null
-  const split = variant === 'B' && deskRun !== null
-  useEffect(() => { setDeskPick(null) }, [deskRuns.length]) // a new Run takes over the work area
+  const split = variant === 'B' && deskRun !== null && (deskRun.status !== 'running' || deskOpen)
+  useEffect(() => { setDeskPick(null); setDeskOpen(false) }, [deskRuns.length]) // a new Run takes over the work area, closed
 
   useEffect(() => {
     if (!q || handled.current === q) return
@@ -498,7 +502,7 @@ export default function Workspace() {
                 <p className="hidden min-w-0 truncate text-sm font-medium text-slate-700 sm:block">{thread[0]?.title}</p>
               </div>
               <div className="min-h-0 flex-1 overflow-y-auto">
-                <ChatView thread={thread} onShowSteps={openSteps} variant={variant} deskRunId={split ? deskRun.id : null} onOpenDesk={setDeskPick} docRunId={docRun?.id ?? null} onOpenDoc={openDoc} />
+                <ChatView thread={thread} onShowSteps={openSteps} variant={variant} deskRunId={split ? deskRun.id : null} onOpenDesk={(id) => { setDeskPick(id); setDeskOpen(true) }} onCloseDesk={() => setDeskOpen(false)} docRunId={docRun?.id ?? null} onOpenDoc={openDoc} />
               </div>
               <div className="pt-3">
                 <Composer pick={pick} onPickChange={setPick} onSend={(p, pk, files) => send(p, pk, run.threadId, files)} />
