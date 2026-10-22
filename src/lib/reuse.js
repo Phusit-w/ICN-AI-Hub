@@ -1,7 +1,6 @@
 // "Save for reuse" (บันทึกไว้ใช้ซ้ำ): turning a finished Run into an Agent. See GLOSSARY.md.
 
 import { BLANK_FORM, INSTRUCTION_STARTERS, agentFromForm, formFromAgent } from './agentDraft'
-import { isChatRun } from './runs'
 import { hasSteps } from './steps'
 import { truncate } from './utils'
 
@@ -12,35 +11,51 @@ const workers = (run) => run.steps.filter((s) => s.agentId && s.kind !== 'review
 const CHAT_BASE = { form: { ...BLANK_FORM, dept: 'core', kind: 'document' }, instruction: INSTRUCTION_STARTERS.core }
 
 /**
- * Whether a finished Run can be saved as an Agent: when one Agent did the work (a chat answer counts: ICN Assistant
- * did it alone). A Run several Agents did isn't offered yet, and one already saved isn't offered again.
+ * Whether a finished Run can be saved as an Agent. Any finished Run can (a chat answer counts: ICN Assistant
+ * did it alone); one already saved isn't offered again.
  */
 export function canSaveForReuse(run) {
-  if (run.status !== 'completed' || run.savedAs) return false
-  return isChatRun(run) || workers(run).length === 1
+  return run.status === 'completed' && !run.savedAs
 }
 
 /** `thread` is every run of the conversation, oldest first; the first request names it. */
 export const defaultReuseName = (thread) => `ผู้ช่วย${truncate(thread[0].title, 40)}`
 
 /**
- * Copies the agent that did the work. The conversation's first request becomes its main job, later
- * messages become refinements, the base agent's own rules stay underneath, and every file attached
- * anywhere in the conversation becomes its knowledge. A chat answer has no library Agent behind it,
- * so its Agent starts from the general ICN Assistant's rules.
+ * What the saved Agent is built on. Several Agents did the work: it hands the work to every Agent in the Plan, in
+ * order, as Steps (Review too, so the reused Agent checks its work the same way; one level only, since a Plan's
+ * Agents never have Steps of their own), and takes its type from the first Step. One Agent did it: a copy of that
+ * Agent, its own rules underneath. A chat answer has no library Agent behind it, so it starts from ICN Assistant's rules.
+ */
+function reuseBase(run, agents) {
+  const done = workers(run)
+  if (done.length > 1) {
+    return {
+      form: { ...CHAT_BASE.form, kind: run.steps[0].kind }, steps: run.steps.map((s) => s.agentId),
+      rules: ['ทำตามขั้นตอน:', ...run.steps.map((s, i) => `${i + 1}. ${s.name}`)],
+      note: `บันทึกจากแชต ทำตาม ${run.steps.length} ขั้นตอนของแผนงาน`,
+    }
+  }
+  const agent = agents.find((a) => a.id === done[0]?.agentId)
+  const [baseName, form, rules] = agent
+    ? [agent.name, formFromAgent(agent), agent.instruction]
+    : [run.steps[0].name, CHAT_BASE.form, CHAT_BASE.instruction]
+  return { form, steps: [], rules: [`กฎการทำงาน (จาก ${baseName}):`, rules], note: `บันทึกจากแชต โดยใช้ ${baseName} เป็นต้นแบบ`, forkedFrom: agent?.name }
+}
+
+/**
+ * Turns a finished Run into an Agent (see `reuseBase` for what it starts from). The conversation's first request
+ * becomes its main job, later messages become refinements, and every file attached anywhere in the conversation
+ * becomes its knowledge. Work on confidential data stays confidential.
  */
 export function agentFromRun(run, thread, { name, owner, agents }) {
-  const agent = agents.find((a) => a.id === workers(run)[0]?.agentId)
-  const base = agent
-    ? { name: agent.name, form: formFromAgent(agent), instruction: agent.instruction }
-    : { name: run.steps[0].name, ...CHAT_BASE }
+  const base = reuseBase(run, agents)
   const [first, ...followUps] = thread
   const instruction = [
     `งานหลัก: ${first.prompt}`,
     ...followUps.map((r) => `- ปรับเพิ่มเติม: ${r.prompt}`),
     '',
-    `กฎการทำงาน (จาก ${base.name}):`,
-    base.instruction,
+    ...base.rules,
   ].join('\n')
   const form = {
     ...base.form,
@@ -49,8 +64,9 @@ export function agentFromRun(run, thread, { name, owner, agents }) {
     instruction,
     uploads: [...new Set(thread.flatMap((r) => (r.attachments ?? []).map((f) => f.name)))],
     share: 'private',
+    ...(thread.some((r) => r.sensitive) && { classification: 'confidential' }),
   }
-  return agentFromForm(form, { owner, note: `บันทึกจากแชต โดยใช้ ${base.name} เป็นต้นแบบ`, forkedFrom: agent?.name })
+  return { ...agentFromForm(form, { owner, note: base.note, forkedFrom: base.forkedFrom }), steps: base.steps }
 }
 
 /**
