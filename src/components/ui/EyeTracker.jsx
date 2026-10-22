@@ -320,7 +320,7 @@ export default function EyeTracker({
   const lastLine = useRef(-1);
   useEffect(() => () => { turn.current++; }, []);
   const poke = async () => {
-    if (idle || calm) return;
+    if (idle || calm || message != null) return;
     const mine = ++turn.current;
     const pool = LINES.map((_, i) => i).filter((i) => i !== lastLine.current);
     const i = pool[Math.floor(Math.random() * pool.length)];
@@ -584,7 +584,7 @@ export default function EyeTracker({
       <svg
         className="eyt-ball"
         viewBox="0 0 100 100"
-        data-poke={idle || calm ? undefined : true}
+        data-poke={idle || calm || message != null ? undefined : true}
         onClick={poke}
       >
         <defs>

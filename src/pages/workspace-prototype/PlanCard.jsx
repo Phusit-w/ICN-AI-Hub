@@ -31,17 +31,17 @@ function CubeTeam({ run }) {
   const { state } = useStore()
   const solo = run.steps.length === 1
   return (
-    <div className="mb-4 flex items-start gap-3 pb-7" aria-hidden>
+    <div className={cn('mb-4 flex items-start gap-3', solo && 'pb-7')} aria-hidden>
       {run.steps.map((s, i) => {
         const agent = state.agents.find((a) => a.id === s.agentId) ?? { id: s.agentId ?? s.kind, kind: s.kind }
         const working = s.status === 'processing'
         const next = run.steps[i + 1]
         return (
           <AgentCube
-            key={s.id} agent={agent} size={solo ? 72 : 48} thinking={working}
+            key={s.id} agent={agent} size={solo ? 72 : 48} thinking={working} calm
             mood={s.status === 'completed' ? 'done' : s.status === 'waiting' ? 'sleep' : undefined}
             gaze={s.status === 'completed' && next?.status === 'processing' ? [0.7, 0] : undefined}
-            message={working ? truncate(s.task, 28) : undefined}
+            message={solo && working ? truncate(s.task, 28) : undefined}
           />
         )
       })}
@@ -51,11 +51,14 @@ function CubeTeam({ run }) {
 
 /**
  * `bare` drops the border and padding when the card already sits on a surface of its own.
- * `collapsible`: while the Run is under way, show one line (the step now being done, and a bar of all of them)
- * with a button to expand the full list.
+ * `collapsible`: while the Run is under way, show one line of text ("กำลังทำงาน ขั้นตอน 2 จาก 3 · ตรวจทาน…")
+ * with a button to expand the full list. `open` / `onOpenChange` let the parent hold that state (variant B's work
+ * area also shows the live activity only while expanded).
  */
-export default function PlanCard({ run, onRemove, onStart, onShowSteps, bare, collapsible }) {
-  const [open, setOpen] = useState(false)
+export default function PlanCard({ run, onRemove, onStart, onShowSteps, bare, collapsible, open: openProp, onOpenChange }) {
+  const [openInner, setOpenInner] = useState(false)
+  const open = openProp ?? openInner
+  const setOpen = onOpenChange ?? setOpenInner
   const [variant] = useVariant()
   const [cubeOn] = useCube()
   const planned = run.status === 'planned'
@@ -65,18 +68,9 @@ export default function PlanCard({ run, onRemove, onStart, onShowSteps, bare, co
   return (
     <section aria-label="แผนงาน" className={cn(!bare && 'rounded-xl border border-slate-200 bg-white p-4')}>
       {variant === 'B' && cubeOn && !planned && <CubeTeam run={run} />}
-      <h3 className="text-sm font-semibold text-slate-900" aria-live="polite">{heading(run)}</h3>
-      {compact && now && (
-        <div className="mt-3">
-          <p className="flex items-center gap-2 text-sm text-slate-700">
-            <LoaderCircle className="size-[18px] shrink-0 animate-spin text-brand-500" aria-hidden />
-            <span className="min-w-0 truncate"><span className="font-medium text-slate-800">{now.task}</span> <span className="text-slate-400">· {now.name.replace(' Agent', '')}</span></span>
-          </p>
-          <div className="mt-2.5 flex gap-1" aria-hidden>
-            {run.steps.map((s) => <span key={s.id} className={cn('h-1.5 flex-1 rounded-full', s.status === 'completed' ? 'bg-emerald-400' : s.status === 'processing' ? 'bg-brand-400' : 'bg-slate-200')} />)}
-          </div>
-        </div>
-      )}
+      {compact && now
+        ? <p className="text-sm text-slate-700" aria-live="polite">{heading(run).replace(' · ', ' ')} · {truncate(now.task, 26)}</p>
+        : <h3 className="text-sm font-semibold text-slate-900" aria-live="polite">{heading(run)}</h3>}
       {!compact && <ol className="mt-3 space-y-2">
         {run.steps.map((s, i) => {
           const { Icon, tone, text } = STATUS[s.status] ?? STATUS.waiting

@@ -145,31 +145,40 @@ function ArtifactHeader({ output }) {
  * Variant A: a summary card in the Thread. "เปิดผลงาน" is its one primary action; once the preview is open
  * the primary action becomes "ดาวน์โหลด" (inside ArtifactActions), so the two never compete.
  */
-function ArtifactCard({ run, final, latest, onShowSteps }) {
-  const [open, setOpen] = useState(false)
+function ArtifactCard({ run, final, latest, onShowSteps, onOpen, opened }) {
   const { actions } = useStore()
   return (
     <div className="rounded-2xl border border-slate-200 bg-white shadow-xs">
       <div className="flex items-center gap-3 p-4">
         <ArtifactHeader output={final.output} />
-        {!open && (
-          <span className="flex shrink-0 items-center gap-1">
-            <Button variant={latest ? 'primary' : 'secondary'} icon={Eye} onClick={() => setOpen(true)}>เปิดผลงาน</Button>
-            <Menu items={[
-              { label: 'ดาวน์โหลด', icon: Download, onSelect: () => actions.toast('ดาวน์โหลดไฟล์เรียบร้อย (จำลอง)') },
-              { label: 'แชร์', icon: Share2, onSelect: () => actions.toast('คัดลอกลิงก์สำหรับแชร์แล้ว') },
-              { label: 'ดูขั้นตอน', icon: ListChecks, onSelect: onShowSteps },
-            ]} />
-          </span>
-        )}
+        <span className="flex shrink-0 items-center gap-1">
+          {opened
+            ? <span className="px-2 text-sm text-slate-500">เปิดอยู่ด้านขวา</span>
+            : <Button variant={latest ? 'primary' : 'secondary'} icon={Eye} onClick={onOpen}>เปิดผลงาน</Button>}
+          <Menu items={[
+            { label: 'ดาวน์โหลด', icon: Download, onSelect: () => actions.toast('ดาวน์โหลดไฟล์เรียบร้อย (จำลอง)') },
+            { label: 'แชร์', icon: Share2, onSelect: () => actions.toast('คัดลอกลิงก์สำหรับแชร์แล้ว') },
+            { label: 'ดูขั้นตอน', icon: ListChecks, onSelect: onShowSteps },
+          ]} />
+        </span>
       </div>
-      {open && (
-        <div className="space-y-4 border-t border-slate-100 p-4">
-          <ArtifactView artifact={final.output} />
-          <ArtifactActions run={run} latest={latest} onShowSteps={onShowSteps} />
-        </div>
-      )}
     </div>
+  )
+}
+
+/** Variant A: a finished file opens as a document down the right of the page; only this panel scrolls. */
+function DocPanel({ run, onClose }) {
+  const final = finalStep(run)
+  if (!final) return null
+  return (
+    <section aria-label="เอกสาร" className="rise fixed inset-0 z-40 flex flex-col bg-white lg:static lg:z-auto lg:w-[min(46rem,52%)] lg:shrink-0 lg:rounded-2xl lg:border lg:border-slate-200 lg:shadow-xs">
+      <header className="flex shrink-0 items-center gap-3 border-b border-slate-100 px-5 py-3 lg:px-7">
+        <ArtifactHeader output={final.output} />
+        <button type="button" onClick={onClose} aria-label="ปิดเอกสาร" className="rounded-full p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700"><X className="size-5" /></button>
+      </header>
+      <div className="shrink-0 border-b border-slate-100 px-5 py-2.5 lg:px-7"><ArtifactActions run={run} latest /></div>
+      <div className="min-h-0 flex-1 overflow-y-auto p-5 lg:p-7"><ArtifactView artifact={final.output} /></div>
+    </section>
   )
 }
 
@@ -186,7 +195,7 @@ function Typing() {
 }
 
 /** Variant A: the whole Run in the Thread: Plan card, then progress in the same card, then the result card. */
-function AssistantMessage({ run, latest, onShowSteps }) {
+function AssistantMessage({ run, latest, onShowSteps, docRunId, onOpenDoc }) {
   const { actions } = useStore()
   const chat = isChatRun(run)
   const final = run.status === 'completed' ? finalStep(run) : null
@@ -213,7 +222,7 @@ function AssistantMessage({ run, latest, onShowSteps }) {
             <p className="text-[15px] text-slate-700">
               เสร็จแล้ว — ผู้ช่วย {run.steps.length} ตัวช่วยกันทำ{loops > 0 && ` (ระหว่างทางตรวจพบข้อมูลไม่ครบ จึงส่งกลับไปแก้ ${loops} ครั้ง)`}
             </p>
-            {final && <ArtifactCard run={run} final={final} latest={latest} onShowSteps={onShowSteps} />}
+            {final && <ArtifactCard run={run} final={final} latest={latest} onShowSteps={onShowSteps} onOpen={onOpenDoc} opened={docRunId === run.id} />}
           </>
         )}
       </div>
@@ -257,29 +266,36 @@ function DeskNote({ run, selected, onOpen }) {
 /** Variant B's work area: the strongest object on the page, whichever stage the Run is at. */
 function Desk({ run }) {
   const { actions } = useStore()
+  const [open, setOpen] = useState(false) // while running: expand the full step list and the live activity
   const final = run.status === 'completed' ? finalStep(run) : null
   const loops = run.steps.reduce((n, s) => n + (s.kind === 'review' ? s.loops : 0), 0)
   return (
-    <section aria-label="พื้นที่ทำงาน" className="rise min-h-0 min-w-0 flex-1 overflow-y-auto rounded-2xl border border-slate-200 bg-white p-5 shadow-xs lg:p-7">
-      <header className="space-y-3">
-        <h2 className="text-lg font-semibold tracking-tight text-slate-900">{run.title ?? run.prompt}</h2>
-        <StepGuide status={run.status} />
-      </header>
-      <div className="mt-6 space-y-6">
+    <section aria-label="พื้นที่ทำงาน" className="rise flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs">
+      {/* a finished file fills the area: its header and actions stay put and only the body below scrolls */}
+      {final ? (
+        <header className="shrink-0 space-y-2.5 border-b border-slate-100 px-5 py-3 lg:px-7">
+          <ArtifactHeader output={final.output} />
+          <ArtifactActions run={run} latest />
+        </header>
+      ) : (
+        <header className="shrink-0 space-y-3 border-b border-slate-100 px-5 py-4 lg:px-7">
+          <h2 className="text-lg font-semibold tracking-tight text-slate-900">{run.title ?? run.prompt}</h2>
+          <StepGuide status={run.status} />
+        </header>
+      )}
+      <div className="min-h-0 flex-1 space-y-6 overflow-y-auto p-5 lg:p-7">
         {run.status !== 'completed' && (
-          <PlanCard bare run={run} onRemove={(stepId) => actions.removeStep(run.id, stepId)} onStart={() => actions.startRun(run.id)} />
+          <PlanCard bare collapsible open={open} onOpenChange={setOpen} run={run} onRemove={(stepId) => actions.removeStep(run.id, stepId)} onStart={() => actions.startRun(run.id)} />
         )}
         {run.status === 'running' && (
           <>
             <div className="flex items-center gap-3"><ProgressBar value={runProgress(run)} className="flex-1" /><span className="text-xs font-medium text-slate-500">{Math.round(runProgress(run) * 100)}%</span></div>
-            <LiveActivity run={run} />
+            {open && <LiveActivity run={run} />}
           </>
         )}
         {final && (
           <>
-            <div className="flex items-center gap-3"><ArtifactHeader output={final.output} /></div>
             <ArtifactView artifact={final.output} />
-            <ArtifactActions run={run} latest />
             <details className="rounded-lg border border-slate-200 bg-slate-50/60 px-4 py-3">
               <summary className="flex cursor-pointer items-center gap-1.5 text-sm font-medium text-slate-700">
                 <ListChecks className="size-4 text-slate-500" aria-hidden />ดูขั้นตอนที่ทำ{loops > 0 && ` · ส่งกลับไปแก้ ${loops} ครั้ง`}
@@ -293,7 +309,7 @@ function Desk({ run }) {
   )
 }
 
-function ChatView({ thread, onShowSteps, variant, deskRunId, onOpenDesk }) {
+function ChatView({ thread, onShowSteps, variant, deskRunId, onOpenDesk, docRunId, onOpenDoc }) {
   const bottom = useRef(null)
   const last = thread.at(-1)
   const progressKey = last ? `${last.id}:${last.status}:${last.current}` : ''
@@ -309,7 +325,7 @@ function ChatView({ thread, onShowSteps, variant, deskRunId, onOpenDesk }) {
           </div>
           {variant === 'B'
             ? <DeskNote run={run} selected={run.id === deskRunId} onOpen={() => onOpenDesk(run.id)} />
-            : <AssistantMessage run={run} latest={run === last} onShowSteps={() => onShowSteps(run.id)} />}
+            : <AssistantMessage run={run} latest={run === last} onShowSteps={() => onShowSteps(run.id)} docRunId={docRunId} onOpenDoc={() => onOpenDoc(run.id)} />}
         </div>
       ))}
       <div ref={bottom} />
@@ -436,6 +452,7 @@ export default function Workspace() {
   const location = useLocation()
   const [variant] = useVariant() // PROTOTYPE: A = one column, B = chat + work area
   const [stepsRunId, setStepsRunId] = useState(null) // the Run whose steps are open in the side panel
+  const [docRunId, setDocRunId] = useState(null) // A: the Run whose file is open as a document on the right
   const [deskPick, setDeskPick] = useState(null) // B: the Run the user chose to look at in the work area
   const handled = useRef(null)
   const q = params.get('q')
@@ -453,6 +470,10 @@ export default function Workspace() {
     setParams({ run: id, variant })
   }
   const stepsRun = variant === 'A' ? thread.find((r) => r.id === stepsRunId) : null // closes by itself when the user leaves the Thread
+  const docRun = variant === 'A' ? thread.find((r) => r.id === docRunId) : null
+  // one side panel at a time: opening the document closes the steps and the other way round
+  const openDoc = (id) => { setStepsRunId(null); setDocRunId(id) }
+  const openSteps = (id) => { setDocRunId(null); setStepsRunId(id) }
   // B: the work area follows the newest multi-step Run unless the user picked an older one. A chat answer needs no work area.
   const deskRuns = thread.filter((r) => !isChatRun(r))
   const deskRun = deskRuns.find((r) => r.id === deskPick) ?? deskRuns.at(-1) ?? null
@@ -470,14 +491,14 @@ export default function Workspace() {
       <section className={cn('flex min-h-0 min-w-0 flex-1', split ? 'flex-col gap-4 lg:flex-row lg:gap-6' : 'flex-col')}>
         {run ? (
           <>
-            {split && <div className="order-first max-h-[45%] min-h-0 overflow-y-auto lg:order-last lg:max-h-none lg:flex-1 lg:overflow-visible"><Desk key={deskRun.id} run={deskRun} /></div>}
+            {split && <div className="order-first flex max-h-[45%] min-h-0 flex-col lg:order-last lg:max-h-none lg:flex-1"><Desk key={deskRun.id} run={deskRun} /></div>}
             <div className={cn('flex min-h-0 min-w-0 flex-1 flex-col', split && 'lg:w-[26rem] lg:flex-none')}>
               <div className="flex items-center gap-3 pb-3">
                 <Button size="sm" icon={Plus} onClick={() => setParams({ variant })} className="lg:hidden">แชตใหม่</Button>
                 <p className="hidden min-w-0 truncate text-sm font-medium text-slate-700 sm:block">{thread[0]?.title}</p>
               </div>
               <div className="min-h-0 flex-1 overflow-y-auto">
-                <ChatView thread={thread} onShowSteps={setStepsRunId} variant={variant} deskRunId={split ? deskRun.id : null} onOpenDesk={setDeskPick} />
+                <ChatView thread={thread} onShowSteps={openSteps} variant={variant} deskRunId={split ? deskRun.id : null} onOpenDesk={setDeskPick} docRunId={docRun?.id ?? null} onOpenDoc={openDoc} />
               </div>
               <div className="pt-3">
                 <Composer pick={pick} onPickChange={setPick} onSend={(p, pk, files) => send(p, pk, run.threadId, files)} />
@@ -488,6 +509,7 @@ export default function Workspace() {
           <NewChat variant={variant} pick={pick} onPickChange={setPick} onSend={(p, pk, files) => send(p, pk, undefined, files)} />
         )}
       </section>
+      {docRun && <DocPanel key={docRun.id} run={docRun} onClose={() => setDocRunId(null)} />}
       {stepsRun && <StepsPanel key={stepsRun.id} run={stepsRun} onClose={() => setStepsRunId(null)} />}
     </div>
   )
