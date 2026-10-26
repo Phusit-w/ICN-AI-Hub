@@ -42,7 +42,7 @@ describe('Journey 2: reuse a Favourite agent or an Agent with Steps', () => {
     await app.click(screen.getByRole('button', { name: 'ส่ง' }))
 
     expect(app.url()).toMatch(/^\/workspace\?run=/)
-    expect(screen.queryByRole('button', { name: 'เริ่มเลย' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'เริ่มทำงาน' })).not.toBeInTheDocument()
     await app.letRunsFinish()
     expectArtifactShown()
     // The pick (1 click, journey 2's budget) plus the send, the same click Journey 1 counts: no Plan click.
@@ -63,7 +63,7 @@ describe('Journey 2: reuse a Favourite agent or an Agent with Steps', () => {
     await app.type(app.box('ข้อความ'), 'สรุปจุดขายของระบบ Smart Warehouse สำหรับลูกค้าค้าปลีกรายใหญ่{Enter}')
 
     expect(app.url()).toMatch(/^\/workspace\?run=/)
-    expect(screen.queryByRole('button', { name: 'เริ่มเลย' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'เริ่มทำงาน' })).not.toBeInTheDocument()
     expect(screen.getAllByText(/Sales Proposal Agent/).length).toBeGreaterThan(0)
   })
 

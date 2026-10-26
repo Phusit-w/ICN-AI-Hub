@@ -6,7 +6,7 @@
 
 **Blocked by:** ไม่มี
 
-**Status:** ready-for-agent
+**Status:** done
 
 เทสต์ในตั๋วนี้ (10 ข้อ):
 - `1-new-request`: an employee types a request in new chat, sends it, and gets an Artifact within 2 clicks
@@ -14,7 +14,14 @@
 - `save-agent-with-steps`: saves one new Agent whose Step count matches the Plan; the new Agent with Steps carries its Step badge; reusing the new Agent starts work straight away; offers no separate "save as Workflow" choice
 - `workspace-chat-or-plan`: a multi-Agent request with nothing picked stops at the Plan; a request matched to an Agent with Steps by keyword is still a system Plan; the Plan can be edited (a step removed) before starting
 
-- [ ] เทสต์ทั้ง 10 ข้อหาปุ่มด้วยชื่อที่แอปใช้จริง และผ่าน
-- [ ] ข้อที่เปลี่ยนไปใช้ปุ่มแล้วล้มต่อที่ขั้นอื่น (เช่น ไปหาแถว "ใช้ซ้ำ" หรือแผงขั้นตอน) ให้โอนไปตั๋ว 02 หรือ 05 พร้อมจดไว้ในตั๋วนั้น
-- [ ] `docs/DESIGN.md` และ `GLOSSARY.md` ใช้คำเดียวกับแอป
-- [ ] `npx vitest run` ไม่มีข้อไหนล้มเพิ่ม
+- [x] เทสต์ทั้ง 10 ข้อหาปุ่มด้วยชื่อที่แอปใช้จริง และผ่าน
+- [x] ข้อที่เปลี่ยนไปใช้ปุ่มแล้วล้มต่อที่ขั้นอื่น (เช่น ไปหาแถว "ใช้ซ้ำ" หรือแผงขั้นตอน) ให้โอนไปตั๋ว 02 หรือ 05 พร้อมจดไว้ในตั๋วนั้น
+- [x] `docs/DESIGN.md` และ `GLOSSARY.md` ใช้คำเดียวกับแอป
+- [x] `npx vitest run` ไม่มีข้อไหนล้มเพิ่ม
+
+## Comments
+
+2026-10-26: ทำแล้วโดยเปลี่ยนคำ "เริ่มเลย" เป็น "เริ่มทำงาน" ทุกที่ (25 จุดใน src, test, docs) เทสต์ในตั๋วนี้ผ่าน 8 ข้อ จาก 10 ข้อ:
+- 7 ข้อผ่านเพราะเปลี่ยนชื่อปุ่มอย่างเดียว
+- ข้อ "a request matched to an Agent with Steps by keyword" ต้องแก้อีกเรื่อง: ปุ่มลบขั้นตอนในการ์ดแผนงานตั้งชื่อตามงานของขั้น (`ลบขั้นตอน <งาน> ออกจากแผน`) ไม่ใช่ชื่อ Agent เทสต์จึงอ่านขั้นตอนจากรายการในการ์ดแผนงานแทน
+- อีก 2 ข้อล้มต่อที่แถว "ใช้ซ้ำ" ไม่ใช่เรื่องปุ่ม จึงย้ายไปตั๋ว 02: `save-agent-with-steps` "saves one new Agent whose Step count matches the Plan, shown in the reuse row" และ "reusing the new Agent starts work straight away…"

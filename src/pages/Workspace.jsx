@@ -373,7 +373,7 @@ export default function Workspace() {
   // `pick` is { agentId } when the user chose an Agent, otherwise {} and the planner decides.
   const send = (prompt, pick, threadId, attachments) => {
     // One rule: a chat answer, or an Agent the user picked (with or without Steps), starts straight away.
-    // Several Agents the system chose itself (even an Agent with Steps matched by keyword) wait at the Plan for "เริ่มเลย".
+    // Several Agents the system chose itself (even an Agent with Steps matched by keyword) wait at the Plan for "เริ่มทำงาน".
     const picked = Boolean(pick?.agentId)
     const id = actions.planRun(prompt, pick ?? {}, state, { threadId, attachments, autoStart: (plan) => picked || isChatRun(plan) })
     setParams({ run: id })

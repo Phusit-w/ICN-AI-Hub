@@ -10,7 +10,7 @@ async function finishedRun(prompt, { plan = true } = {}) {
   const app = startJourney('/workspace')
   await app.type(app.box('ข้อความ'), prompt)
   await app.click(screen.getByRole('button', { name: 'ส่ง' }))
-  if (plan) await app.click(screen.getByRole('button', { name: 'เริ่มเลย' }))
+  if (plan) await app.click(screen.getByRole('button', { name: 'เริ่มทำงาน' }))
   await app.letRunsFinish()
   return app
 }

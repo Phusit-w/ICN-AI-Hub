@@ -25,7 +25,7 @@ async function saveForReuse(app) {
 async function finishedPlanRun() {
   const app = startJourney()
   await send(app, PLAN_REQUEST)
-  await app.click(screen.getByRole('button', { name: 'เริ่มเลย' }))
+  await app.click(screen.getByRole('button', { name: 'เริ่มทำงาน' }))
   await app.letRunsFinish()
   return app
 }
@@ -59,7 +59,7 @@ describe('Save for reuse after a multi-Agent Run', () => {
     expectAgentPicked(SAVED_NAME)
     await send(app, 'ตลาด Solar Rooftop ภาคอีสาน')
 
-    expect(screen.queryByRole('button', { name: 'เริ่มเลย' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'เริ่มทำงาน' })).not.toBeInTheDocument()
     await app.letRunsFinish()
     expectArtifactShown()
     await app.click(screen.getAllByRole('button', { name: 'ตัวเลือกเพิ่มเติม' }).at(-1))

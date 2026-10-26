@@ -11,7 +11,7 @@ describe('Journey 1: new request to Artifact', () => {
     await app.type(app.box('ข้อความ'), 'ช่วยค้นข้อมูลตลาด Solar Rooftop สรุปเป็นรายงาน และสร้างภาพประกอบ')
     await app.click(screen.getByRole('button', { name: 'ส่ง' }))
     // The system planned several Agents itself, so the Run waits at the Plan for one confirming click.
-    await app.click(screen.getByRole('button', { name: 'เริ่มเลย' }))
+    await app.click(screen.getByRole('button', { name: 'เริ่มทำงาน' }))
     await app.letRunsFinish()
 
     expect(app.url()).toMatch(/^\/workspace\?run=/)

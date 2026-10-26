@@ -14,12 +14,12 @@ describe('Workspace: chat or Plan, decided by the system', () => {
     await send(app)
     await app.letRunsFinish()
 
-    expect(screen.queryByRole('button', { name: 'เริ่มเลย' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'เริ่มทำงาน' })).toBeNull()
     expect(screen.getByText(/ICN Assistant AI Agent ของบริษัท/)).toBeVisible()
     expectWithinBudget(app, 1)
   })
 
-  it('a multi-Agent request with nothing picked stops at the Plan, and "เริ่มเลย" runs it to an Artifact', async () => {
+  it('a multi-Agent request with nothing picked stops at the Plan, and "เริ่มทำงาน" runs it to an Artifact', async () => {
     const app = startJourney('/workspace')
 
     await app.type(app.box('ข้อความ'), 'ช่วยค้นข้อมูลตลาด Solar Rooftop สรุปเป็นรายงาน และสร้างภาพประกอบ')
@@ -28,7 +28,7 @@ describe('Workspace: chat or Plan, decided by the system', () => {
 
     // Nothing ran while the Plan waits for the user.
     expect(screen.queryByRole('button', { name: /ดาวน์โหลด/ })).toBeNull()
-    await app.click(screen.getByRole('button', { name: 'เริ่มเลย' }))
+    await app.click(screen.getByRole('button', { name: 'เริ่มทำงาน' }))
     await app.letRunsFinish()
 
     expectArtifactShown()
@@ -41,10 +41,12 @@ describe('Workspace: chat or Plan, decided by the system', () => {
     await app.type(app.box('ข้อความ'), 'ทำ Proposal ระบบ Smart Warehouse ให้ลูกค้า Siam Logistics')
     await send(app)
 
-    expect(screen.getByRole('button', { name: 'เริ่มเลย' })).toBeVisible()
+    expect(screen.getByRole('button', { name: 'เริ่มทำงาน' })).toBeVisible()
     // "Sales Proposal Pipeline" is expanded into its Steps, so the Plan is one level deep.
-    const stages = screen.getAllByRole('button', { name: /ออกจากแผน$/ }).map((b) => b.getAttribute('aria-label').replace(/^ลบ | ออกจากแผน$/g, ''))
-    expect(stages).toEqual(['Research Agent', 'Sales Proposal Agent', 'Document Agent', 'Image Agent', 'Review Agent'])
+    // The Plan lists each Step with the Agent doing it (shown without the word "Agent").
+    const stages = within(screen.getByRole('region', { name: 'แผนงาน' })).getAllByRole('listitem')
+    expect(stages).toHaveLength(5)
+    ;['Research', 'Sales Proposal', 'Document', 'Image', 'Review'].forEach((name, i) => expect(stages[i]).toHaveTextContent(name))
   })
 
   it('a request with a picked Agent starts immediately, with no Plan to confirm', async () => {
@@ -53,7 +55,7 @@ describe('Workspace: chat or Plan, decided by the system', () => {
     await app.type(app.box('ข้อความ'), 'ทำใบเสนอราคาระบบกล้องวงจรปิดให้ลูกค้า ABC พร้อมรายละเอียด')
     await send(app)
 
-    expect(screen.queryByRole('button', { name: 'เริ่มเลย' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'เริ่มทำงาน' })).toBeNull()
     await app.letRunsFinish()
     expectArtifactShown()
     expectWithinBudget(app, 1)
@@ -80,7 +82,7 @@ describe('Workspace: chat or Plan, decided by the system', () => {
     await app.type(app.box('ข้อความ'), 'ตลาดเครื่องปรับอากาศอินเวอร์เตอร์ในไทย ปี 2026')
     await send(app)
 
-    expect(screen.queryByRole('button', { name: 'เริ่มเลย' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'เริ่มทำงาน' })).toBeNull()
     await app.letRunsFinish()
     expectArtifactShown()
     expectWithinBudget(app, 1)
@@ -96,7 +98,7 @@ describe('Workspace: chat or Plan, decided by the system', () => {
     await app.click(removeButtons[0])
 
     expect(screen.getAllByRole('button', { name: /ออกจากแผน/ })).toHaveLength(before - 1)
-    await app.click(screen.getByRole('button', { name: 'เริ่มเลย' }))
+    await app.click(screen.getByRole('button', { name: 'เริ่มทำงาน' }))
     await app.letRunsFinish()
     expectArtifactShown()
   })
@@ -106,7 +108,7 @@ describe('Workspace: chat or Plan, decided by the system', () => {
 
     await app.type(app.box('ข้อความ'), 'ช่วยค้นข้อมูลตลาด Solar Rooftop สรุปเป็นรายงาน และสร้างภาพประกอบ')
     await send(app)
-    await app.click(screen.getByRole('button', { name: 'เริ่มเลย' }))
+    await app.click(screen.getByRole('button', { name: 'เริ่มทำงาน' }))
     await app.advance(1000)
 
     // Step chips stay in the conversation while the Run works, and the panel is closed.

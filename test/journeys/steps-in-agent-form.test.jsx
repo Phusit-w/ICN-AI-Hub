@@ -90,7 +90,7 @@ describe('The "ขั้นตอน" section of the Agent form', () => {
     await app.type(app.box('ข้อความ'), 'ตลาดหุ่นยนต์ทำความสะอาดในไทย')
     await app.click(screen.getByRole('button', { name: 'ส่ง' }))
 
-    expect(screen.queryByRole('button', { name: 'เริ่มเลย' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'เริ่มทำงาน' })).toBeNull()
     await app.letRunsFinish()
     expectArtifactShown()
     await app.click(screen.getByRole('button', { name: 'ตัวเลือกเพิ่มเติม' }))

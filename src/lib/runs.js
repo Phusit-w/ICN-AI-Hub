@@ -35,7 +35,7 @@ function makeStep({ agent, label, kind, sensitive }) {
   }
 }
 
-// Requests that match a company Agent with Steps. The system chose it, so its Plan still waits for "เริ่มเลย".
+// Requests that match a company Agent with Steps. The system chose it, so its Plan still waits for "เริ่มทำงาน".
 const STEPS_RULES = [
   [/proposal|ข้อเสนอ|เสนอราคา|\btor\b/i, 'agent-proposal-pipeline'],
   [/onboard|พนักงานใหม่/i, 'agent-new-hire-onboarding'],
