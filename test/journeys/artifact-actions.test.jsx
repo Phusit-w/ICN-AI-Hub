@@ -3,7 +3,7 @@ import { screen, within } from '@testing-library/react'
 import { startJourney } from '../journey'
 
 // Actions under a finished Artifact (spec stories 20–22): "ดาวน์โหลด" is the one primary action,
-// "บันทึกไว้ใช้ซ้ำ" is visible beside it, and copy, share and "ดูขั้นตอน" sit in a "⋯" menu.
+// "บันทึกไว้ใช้ซ้ำ" is visible beside it, and copy and share sit in a "⋯" menu.
 
 const send = (app) => app.click(screen.getByRole('button', { name: 'ส่ง' }))
 
@@ -43,23 +43,13 @@ describe.each([
     for (const name of ['คัดลอก', 'แชร์', 'ดูขั้นตอน']) expect(within(row).queryByRole('button', { name })).toBeNull()
   })
 
-  it('copy, share and "ดูขั้นตอน" are in the "⋯" menu, opened with one click', async () => {
+  it('copy and share are in the "⋯" menu, opened with one click', async () => {
     const app = await finishRun()
 
     await app.click(within(actionRow()).getByRole('button', { name: 'ตัวเลือกเพิ่มเติม' }))
 
     const menu = screen.getByRole('menu')
-    expect(within(menu).getAllByRole('menuitem').map((i) => i.textContent)).toEqual(['คัดลอก', 'แชร์', 'ดูขั้นตอน'])
-  })
-
-  it('"ดูขั้นตอน" from the menu opens the step side panel', async () => {
-    const app = await finishRun()
-
-    await app.click(within(actionRow()).getByRole('button', { name: 'ตัวเลือกเพิ่มเติม' }))
-    await app.click(screen.getByRole('menuitem', { name: 'ดูขั้นตอน' }))
-
-    expect(screen.queryByRole('menu')).toBeNull()
-    expect(screen.getByRole('complementary', { name: 'ขั้นตอนการทำงาน' })).toBeVisible()
+    expect(within(menu).getAllByRole('menuitem').map((i) => i.textContent)).toEqual(['คัดลอก', 'แชร์'])
   })
 
   it('saving for reuse keeps one primary button on the page', async () => {

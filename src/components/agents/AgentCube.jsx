@@ -1,4 +1,4 @@
-// PROTOTYPE variant B: an Agent shown as its own Cube.
+// An Agent shown as its own Cube.
 import { useEffect, useState } from 'react'
 import EyeTracker from '../ui/EyeTracker'
 import { cubeOf } from '../../lib/cube'

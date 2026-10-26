@@ -1,4 +1,4 @@
-// PROTOTYPE variant B: from Bencho's "Eye tracker" (MIT, bencho.dev/licence), converted from TSX to JSX. Not for main until B is chosen.
+// From Bencho's "Eye tracker" (MIT, bencho.dev/licence), converted from TSX to JSX.
 import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 
 /* ══ Eye tracker ═══════════════════════════════════════════

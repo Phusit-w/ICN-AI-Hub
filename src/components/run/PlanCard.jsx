@@ -1,11 +1,11 @@
-// PROTOTYPE (branch prototype/workspace-layout): the Plan and its progress as one module, so confirming the Plan
+// The Plan and its progress as one module, so confirming the Plan
 // turns the same card into progress instead of swapping in an unrelated block.
 import { useState } from 'react'
-import { ChevronDown, ChevronUp, CircleCheck, CircleDashed, ListChecks, LoaderCircle, Play, Undo2, X } from 'lucide-react'
+import { ChevronDown, ChevronUp, CircleCheck, CircleDashed, LoaderCircle, Play, Undo2, X } from 'lucide-react'
 import { cn, truncate } from '../../lib/utils'
 import { useStore } from '../../store/AppStore'
 import AgentCube from '../../components/agents/AgentCube'
-import { useCube, useVariant } from './PrototypeSwitcher'
+import { useCube } from '../../lib/useCube'
 import Button from '../../components/ui/Button'
 
 const STATUS = {
@@ -23,7 +23,7 @@ function heading(run) {
 }
 
 /**
- * Variant B while a Run is under way: one Cube per step, each the Agent's own. The one working glances about and keeps
+ * While a Run is under way: one Cube per step, each the Agent's own. The one working glances about and keeps
  * the task in its bubble, the ones waiting doze, the finished ones squint happily, and a finished one beside the
  * working one looks across at it as the work is handed over.
  */
@@ -52,14 +52,13 @@ function CubeTeam({ run }) {
 /**
  * `bare` drops the border and padding when the card already sits on a surface of its own.
  * `collapsible`: while the Run is under way, show one line of text ("กำลังทำงาน ขั้นตอน 2 จาก 3 · ตรวจทาน…")
- * with a button to expand the full list. `open` / `onOpenChange` let the parent hold that state (variant B's work
+ * with a button to expand the full list. `open` / `onOpenChange` let the parent hold that state (the work
  * area also shows the live activity only while expanded).
  */
-export default function PlanCard({ run, onRemove, onStart, onShowSteps, bare, collapsible, open: openProp, onOpenChange }) {
+export default function PlanCard({ run, onRemove, onStart, bare, collapsible, open: openProp, onOpenChange }) {
   const [openInner, setOpenInner] = useState(false)
   const open = openProp ?? openInner
   const setOpen = onOpenChange ?? setOpenInner
-  const [variant] = useVariant()
   const [cubeOn] = useCube()
   const planned = run.status === 'planned'
   const canRemove = planned && run.steps.length > 1 && onRemove
@@ -67,7 +66,7 @@ export default function PlanCard({ run, onRemove, onStart, onShowSteps, bare, co
   const now = run.steps[Math.min(run.current, run.steps.length - 1)]
   return (
     <section aria-label="แผนงาน" className={cn(!bare && 'rounded-xl border border-slate-200 bg-white p-4')}>
-      {variant === 'B' && cubeOn && !planned && <CubeTeam run={run} />}
+      {cubeOn && !planned && <CubeTeam run={run} />}
       {compact && now
         ? <p className="text-sm text-slate-700" aria-live="polite">{heading(run).replace(' · ', ' ')} · {truncate(now.task, 26)}</p>
         : <h3 className="text-sm font-semibold text-slate-900" aria-live="polite">{heading(run)}</h3>}
@@ -95,12 +94,7 @@ export default function PlanCard({ run, onRemove, onStart, onShowSteps, bare, co
           {open ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}{open ? 'ย่อ' : 'ดูขั้นตอนทั้งหมด'}
         </button>
       )}
-      {(planned || (run.status === 'running' && onShowSteps && !compact)) && (
-        <div className="mt-4 flex flex-wrap gap-2">
-          {planned && <Button variant="primary" icon={Play} onClick={onStart}>เริ่มทำงาน</Button>}
-          {onShowSteps && <Button variant={planned ? 'secondary' : 'ghost'} size={planned ? 'md' : 'sm'} icon={ListChecks} onClick={onShowSteps}>ดูขั้นตอน</Button>}
-        </div>
-      )}
+      {planned && <Button variant="primary" icon={Play} onClick={onStart} className="mt-4">เริ่มทำงาน</Button>}
     </section>
   )
 }

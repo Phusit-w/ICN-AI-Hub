@@ -1,6 +1,6 @@
-// PROTOTYPE (branch prototype/workspace-layout): variant B's search. A quiet field in the sidebar head that, once pressed,
+// The sidebar search. A quiet field in the sidebar head that, once pressed,
 // spreads into a popup holding the real input and the results. Same motion as the agent menu (see ComposerPick): the press sinks,
-// the shape spreads 60ms in with no overshoot, the rows rise one after another. Not for main.
+// the shape spreads 60ms in with no overshoot, the rows rise one after another.
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { MessageSquare, Search } from 'lucide-react'
@@ -105,7 +105,7 @@ export default function SearchPopup({ compact = false, onNavigate }) {
 
       {/* The shape: exactly the field's size when shut, then it spreads down and right, lined up with the sidebar's padding. */}
       <div
-        role="dialog" aria-label="ค้นหาทั้งระบบ" inert={!open}
+        role="dialog" aria-label="ค้นหาทั้งระบบ" aria-hidden={!open} inert={!open}
         style={open ? { width: WIDTH, height: HEIGHT, left: -dx } : undefined}
         className={cn(
           'absolute top-0 left-0 z-50 overflow-hidden border bg-white shadow-xl transition-[width,height,left,border-radius,opacity,border-color] duration-[220ms] motion-reduce:duration-150', EASE,

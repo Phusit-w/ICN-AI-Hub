@@ -45,6 +45,14 @@ _Avoid_: Cron, automation, trigger
 The deliverable a Run produces, such as a document, table or image.
 _Avoid_: Output, result, message
 
+**Desk** (พื้นที่ทำงาน):
+The area beside the Thread where a Run's Plan, progress and Artifacts are shown; the Thread itself only talks. It opens by itself on a finished Run and stays closed while one is running until the User expands it.
+_Avoid_: Panel, canvas, preview
+
+**Cube**:
+The small face that stands for an Agent: its body shape, eyes, colour and accessory. The User can switch every Cube off with the button at the foot of the sidebar; the app then shows plain icons.
+_Avoid_: Avatar, mascot, robot
+
 **Save for reuse** (บันทึกไว้ใช้ซ้ำ):
 Turning a finished Run into an Agent the user can use again; when several Agents did the work, the new Agent carries them as Steps.
 _Avoid_: Save as workflow, save as agent

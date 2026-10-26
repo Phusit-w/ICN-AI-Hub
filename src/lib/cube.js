@@ -1,4 +1,4 @@
-// PROTOTYPE variant B: each Agent's Cube (see components/ui/EyeTracker.jsx): its body shape, eye style, body colour and accessory.
+// Each Agent's Cube (see components/ui/EyeTracker.jsx): its body shape, eye style, body colour and accessory.
 export const CUBE_SHAPES = ['Cube', 'Ball', 'Pill', 'Hexagon']
 export const CUBE_EYES = ['Slant', 'Dots', 'Squares']
 // navy (the default), steel blue, teal, violet, amber, rose: all dark enough for the white eyes to read

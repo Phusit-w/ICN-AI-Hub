@@ -14,7 +14,7 @@ import EntityIcon from '../components/agents/EntityIcon'
 import AgentCube from '../components/agents/AgentCube'
 import CubeField from '../components/agents/CubeField'
 import { cubeOf } from '../lib/cube'
-import { useCube, useVariant } from './workspace-prototype/PrototypeSwitcher'
+import { useCube } from '../lib/useCube'
 import { FavoriteButton } from '../components/agents/AgentCard'
 import { Avatar } from '../components/ui/Overlay'
 
@@ -28,7 +28,6 @@ function Section({ title, icon, children, action }) {
 }
 
 export default function AgentDetail() {
-  const [variant] = useVariant() // PROTOTYPE: B shows the Agent as its Cube
   const [cubeOn] = useCube()
   const [editingCube, setEditingCube] = useState(false)
   const { id } = useParams()
@@ -51,7 +50,7 @@ export default function AgentDetail() {
 
       <Card className="p-6">
         <div className="flex flex-col gap-5 md:flex-row md:items-start">
-          {variant === 'B' && cubeOn ? (
+          {cubeOn ? (
             <span className="flex flex-col items-start gap-1">
               <AgentCube agent={agent} size={72} />
               {agent.owner === state.userId && (
@@ -84,7 +83,7 @@ export default function AgentDetail() {
         </div>
       </Card>
 
-      {variant === 'B' && cubeOn && editingCube && (
+      {cubeOn && editingCube && (
         <Card className="p-5"><CubeField kind={agent.kind} value={cubeOf(agent)} onChange={(cube) => actions.updateAgent(agent.id, { cube })} /></Card>
       )}
 
@@ -126,7 +125,7 @@ export default function AgentDetail() {
 
           {hasSteps(agent) ? (
             <Section title={`ขั้นตอน (${agent.steps.length})`} icon={ListOrdered}>
-              {variant === 'B' && cubeOn && (
+              {cubeOn && (
                 <div className="mb-4 flex flex-wrap items-center gap-2" aria-hidden>
                   {stepAgents(agent, state.agents).map((a, i) => (
                     <Fragment key={a.id}>

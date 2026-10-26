@@ -97,8 +97,10 @@ describe('Skills have no page or tab of their own (spec story 40)', () => {
     cleanup()
 
     app = startJourney()
-    await app.type(screen.getByRole('searchbox', { name: 'ค้นหาทั้งระบบ' }), 'Pricing')
-    await app.click(screen.getByRole('button', { name: /Pricing Calculator/ }))
+    await app.click(screen.getByRole('button', { name: 'ค้นหาทั้งระบบ' }))
+    await app.advance(100) // the popup opens a moment after the press
+    await app.type(screen.getByRole('combobox', { name: 'ค้นหาทั้งระบบ' }), 'Pricing')
+    await app.click(screen.getByRole('option', { name: /Pricing Calculator/ }))
     expect(app.url()).toBe('/agents?skill=skill-pricing')
     cleanup()
 

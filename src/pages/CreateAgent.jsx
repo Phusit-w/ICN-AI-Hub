@@ -15,7 +15,7 @@ import SkillsField from '../components/agents/SkillsField'
 import BuilderChat from '../components/agents/BuilderChat'
 import EyeTracker from '../components/ui/EyeTracker'
 import CubeField from '../components/agents/CubeField'
-import { useCube, useVariant } from './workspace-prototype/PrototypeSwitcher'
+import { useCube } from '../lib/useCube'
 
 const WIZARD_PAGES = ['ข้อมูลพื้นฐาน', 'คำสั่งการทำงาน', 'Model & ข้อมูล', 'Knowledge & Skills', 'Tools & Output', 'การแชร์ & ขั้นตอน']
 const KINDS = ['research', 'document', 'sales', 'hr', 'it', 'accounting', 'data', 'image', 'review']
@@ -29,7 +29,6 @@ const GREETING = 'สวัสดีค่ะ อยากได้ Agent แบ
  */
 function AgentBuilder({ form, setForm, initialText, onCreate, onDetailed }) {
   const { state } = useStore()
-  const [variant] = useVariant() // PROTOTYPE: B shows the Cube
   const [cube] = useCube()
   const [messages, setMessages] = useState([{ from: 'ai', text: GREETING }])
   const set = (patch) => setForm((f) => ({ ...f, ...patch }))
@@ -42,7 +41,7 @@ function AgentBuilder({ form, setForm, initialText, onCreate, onDetailed }) {
   return (
     <div className="mx-auto max-w-6xl">
       <div className="mb-5 flex flex-wrap items-start gap-3">
-        {variant === 'B' && cube && <div className="eyt-fit shrink-0"><EyeTracker idle size={52} /></div>}
+        {cube && <div className="eyt-fit shrink-0"><EyeTracker idle size={52} /></div>}
         <div className="min-w-0 flex-1">
           <h1 className="text-2xl font-semibold tracking-tight text-slate-900">สร้าง AI Agent</h1>
           <p className="mt-1 text-sm text-slate-500">คุยกับ AI ทางซ้าย ฟอร์มทางขวาจะถูกกรอกให้ แก้เองได้ทุกช่อง แล้วกดสร้าง</p>
@@ -66,7 +65,7 @@ function AgentBuilder({ form, setForm, initialText, onCreate, onDetailed }) {
               disabled={!form.name.trim() && !form.description.trim()}
             >ให้ AI ช่วยเขียน</Button>
           </Field>
-          {variant === 'B' && cube && <CubeField kind={form.kind} value={form.cube} onChange={(cube) => set({ cube })} />}
+          {cube && <CubeField kind={form.kind} value={form.cube} onChange={(cube) => set({ cube })} />}
           <SkillsField skills={form.skills} onChange={(skills) => set({ skills })} />
           <ShareChoice value={form.share} onChange={(share) => set({ share })} companyNeedsApproval={!isAdminView(state)} />
           <StepsField steps={form.steps} onChange={(steps) => set({ steps })} />

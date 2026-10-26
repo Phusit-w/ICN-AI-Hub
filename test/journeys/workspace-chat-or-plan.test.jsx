@@ -143,13 +143,14 @@ describe('Workspace: chat or Plan, decided by the system', () => {
     expect(screen.getByRole('navigation', { name: 'ประวัติแชต' })).toBeInTheDocument()
   })
 
-  it('the search button on the collapsed sidebar opens the sidebar with the cursor in search', async () => {
+  it('the search button on the collapsed sidebar opens the search with the cursor in it', async () => {
     const app = startJourney('/workspace')
 
     await app.click(screen.getByRole('button', { name: 'ย่อแถบเมนู' }))
-    await app.click(screen.getByRole('button', { name: 'ค้นหา' }))
+    await app.click(screen.getByRole('button', { name: 'ค้นหาทั้งระบบ' }))
+    await app.advance(100) // the popup opens a moment after the press
 
-    expect(screen.getByRole('searchbox', { name: 'ค้นหาทั้งระบบ' })).toHaveFocus()
+    expect(screen.getByRole('combobox', { name: 'ค้นหาทั้งระบบ' })).toHaveFocus()
   })
 
   it('sensitive data still shows a short notice', async () => {

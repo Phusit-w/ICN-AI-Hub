@@ -1,24 +1,20 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Link, NavLink, Outlet, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, NavLink, Outlet, useLocation, useSearchParams } from 'react-router-dom'
 import {
-  Bot, Menu, PanelLeftClose, PanelLeftOpen, Search, ShieldCheck, SquarePen, X,
+  Bot, Box, Menu, PanelLeftClose, PanelLeftOpen, ShieldCheck, SquarePen, X,
 } from 'lucide-react'
 import { isAdminView, useStore } from '../../store/AppStore'
 import { userById, VIEW_PERSONAS } from '../../data/catalog'
 import { cn, isToday } from '../../lib/utils'
-import { skillLink } from '../../lib/routes'
 import { isChatRun, threadsOf } from '../../lib/runs'
 import usePersistentState from '../../lib/usePersistentState'
 import { Avatar, Toaster } from '../ui/Overlay'
 import MenuButton from '../ui/Menu'
-import EntityIcon from '../agents/EntityIcon'
-import { SearchInput } from '../ui/Form'
 import { HelpButton } from './Help'
 import SearchPopup from './SearchPopup'
-import PrototypeSwitcher, { PROTOTYPE_ON, useVariant } from '../../pages/workspace-prototype/PrototypeSwitcher'
+import { useCube } from '../../lib/useCube'
 import { useTour } from '../tour/Tour'
-import logo from '../../assets/icn-logo.png'
-import logoClear from '../../assets/icn-logo-clear.png' // PROTOTYPE variant B: the same logo with its pale-blue square made transparent
+import logo from '../../assets/icn-logo-clear.png' // the logo with its pale-blue square made transparent
 
 const NAV = [
   { section: 'งานของฉัน', items: [
@@ -131,20 +127,19 @@ function ChatHistory({ onNavigate }) {
  * the chat history filling the middle, and the user at the bottom.
  * `collapsed` shrinks it to an icon rail without the history; labels move into tooltips. Only the desktop sidebar collapses.
  */
-function Sidebar({ onNavigate, collapsed = false, onToggle, onSearch, focusSearch = false, searchTop = false }) {
+function Sidebar({ onNavigate, collapsed = false, onToggle }) {
   const { state } = useStore()
   const nav = NAV.filter((group) => !group.adminOnly || isAdminView(state))
   const { pathname, search } = useLocation()
   const onNewChat = pathname === '/workspace' && !new URLSearchParams(search).has('run')
   return (
     <div className={cn('flex h-full flex-col py-3', collapsed ? 'px-2' : 'px-3')}>
-      {/* PROTOTYPE variant B (`searchTop`): the logo alone, then the search icon beside the collapse button. */}
-      <div className={cn('flex items-center', collapsed ? 'flex-col gap-2' : searchTop ? 'gap-2 pl-2' : 'justify-between pl-2', searchTop && !onToggle && 'pr-9')}>
+      {/* The logo alone, then the search icon beside the collapse button. */}
+      <div className={cn('flex items-center', collapsed ? 'flex-col gap-2' : 'gap-2 pl-2', !onToggle && 'pr-9')}>
         <Link to="/workspace" onClick={onNavigate} title="ICN AI Hub" className="flex shrink-0 items-center gap-2.5">
-          <img src={searchTop ? logoClear : logo} alt="ICN" className={cn('size-8', !searchTop && 'rounded-lg ring-1 ring-slate-200')} />
-          {!collapsed && !searchTop && <span className="text-sm font-semibold text-slate-900">ICN AI Hub</span>}
+          <img src={logo} alt="ICN" className="size-8" />
         </Link>
-        {searchTop && !collapsed && <span className="ml-auto w-9"><SearchPopup compact onNavigate={onNavigate} /></span>}
+        {!collapsed && <span className="ml-auto w-9"><SearchPopup compact onNavigate={onNavigate} /></span>}
         {onToggle && (
           <button
             type="button" onClick={onToggle} aria-label={collapsed ? 'ขยายแถบเมนู' : 'ย่อแถบเมนู'} title={collapsed ? 'ขยายแถบเมนู' : 'ย่อแถบเมนู'}
@@ -161,11 +156,7 @@ function Sidebar({ onNavigate, collapsed = false, onToggle, onSearch, focusSearc
         >
           <SquarePen className="size-[18px]" aria-hidden />{!collapsed && 'แชตใหม่'}
         </Link>
-        {searchTop
-          ? collapsed && <SearchPopup compact onNavigate={onNavigate} />
-          : collapsed
-            ? <button type="button" onClick={onSearch} aria-label="ค้นหา" title="ค้นหา" className={cn(itemClass(false), 'w-full justify-center py-2')}><Search className="size-[18px]" /></button>
-            : <GlobalSearch onNavigate={onNavigate} autoFocus={focusSearch} />}
+        {collapsed && <SearchPopup compact onNavigate={onNavigate} />}
       </div>
 
       <nav className={cn('mt-4', collapsed ? 'space-y-3' : 'space-y-4')} aria-label="Main">
@@ -193,81 +184,47 @@ function Sidebar({ onNavigate, collapsed = false, onToggle, onSearch, focusSearc
 
       {collapsed ? <div className="flex-1" /> : <ChatHistory onNavigate={onNavigate} />}
 
+      <CubeToggle collapsed={collapsed} />
       <ProfileMenu collapsed={collapsed} />
     </div>
   )
 }
 
-function GlobalSearch({ onNavigate, autoFocus = false }) {
-  const { state } = useStore()
-  const navigate = useNavigate()
-  const [q, setQ] = useState('')
-  const [open, setOpen] = useState(false)
-  const box = useRef(null)
-  useEffect(() => {
-    const close = (e) => box.current && !box.current.contains(e.target) && setOpen(false)
-    document.addEventListener('mousedown', close)
-    return () => document.removeEventListener('mousedown', close)
-  }, [])
-
-  const term = q.trim().toLowerCase()
-  const match = (s) => s.toLowerCase().includes(term)
-  const results = term ? [
-    ...state.agents.filter((a) => match(a.name) || match(a.description)).slice(0, 5).map((a) => ({ id: a.id, label: a.name, sub: 'Agent', icon: a.kind, to: `/agents/${a.id}` })),
-    ...state.skills.filter((s) => match(s.name) || match(s.purpose)).slice(0, 4).map((s) => ({ id: s.id, label: s.name, sub: 'ทักษะ', icon: s.icon, to: skillLink(s.id), skill: true })),
-  ] : []
-
-  const go = (to) => { setOpen(false); setQ(''); navigate(to); onNavigate?.() }
+/** Switches the Cube mascot on or off for every page; the choice stays in this browser. */
+function CubeToggle({ collapsed }) {
+  const [on, setOn] = useCube()
   return (
-    <div ref={box} data-tour="search" className="relative">
-      <SearchInput
-        placeholder="ค้นหา Agent ทักษะ…" value={q}
-        onChange={(e) => { setQ(e.target.value); setOpen(true) }} onFocus={() => setOpen(true)}
-        onKeyDown={(e) => { if (e.key === 'Enter' && results[0]) go(results[0].to) }}
-        aria-label="ค้นหาทั้งระบบ" autoFocus={autoFocus}
-      />
-      {open && term && (
-        <div className="rise absolute top-11 left-0 z-40 w-80 max-w-[calc(100vw-2rem)] overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl">
-          {results.length === 0 && <p className="px-4 py-3 text-sm text-slate-500">ไม่พบผลลัพธ์สำหรับ “{q}”</p>}
-          {results.map((r) => (
-            <button key={r.id} type="button" onClick={() => go(r.to)} className="flex w-full items-center gap-3 px-3 py-2 text-left hover:bg-slate-50">
-              <EntityIcon icon={r.icon} size="sm" tone={r.skill ? 'skill' : 'agent'} />
-              <span className="flex-1 truncate text-sm text-slate-800">{r.label}</span>
-              <span className="text-xs text-slate-400">{r.sub}</span>
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
+    <button
+      type="button" aria-pressed={on} onClick={() => setOn(!on)} aria-label="เปิดหรือปิดตัว Cube" title={collapsed ? `Cube ${on ? 'เปิด' : 'ปิด'}` : undefined}
+      className={cn(itemClass(false), 'mt-2 w-full', collapsed ? 'justify-center py-2' : 'px-2 py-1.5', !on && 'text-slate-400')}
+    >
+      <Box className="size-[18px]" aria-hidden />
+      {!collapsed && <><span className="flex-1 text-left">Cube</span><span className="text-xs text-slate-400">{on ? 'เปิด' : 'ปิด'}</span></>}
+    </button>
   )
 }
-
 export default function AppShell() {
   const [menuOpen, setMenuOpen] = useState(false)
   const { pathname } = useLocation()
   const [collapsed, setCollapsed] = usePersistentState('icn.sidebar.collapsed', false)
-  const [focusSearch, setFocusSearch] = useState(false)
-  const [variant, setVariant] = useVariant() // PROTOTYPE: B moves the search into the sidebar head
-  const searchTop = variant === 'B'
   // A tour step pointing into the sidebar needs it on screen: expanded on desktop, the drawer on phones.
   const { sidebarStep } = useTour()
   const railOnly = collapsed && !sidebarStep
   const drawerOpen = menuOpen || sidebarStep
-  const toggle = () => { setFocusSearch(false); setCollapsed(!collapsed) }
-  const openSearch = () => { setFocusSearch(true); setCollapsed(false) }
+  const toggle = () => setCollapsed(!collapsed)
   useEffect(() => { window.scrollTo(0, 0) }, [pathname])
 
   return (
     <div className={cn('min-h-screen transition-[padding] duration-200', railOnly ? 'lg:pl-16' : 'lg:pl-64')}>
       <aside className={cn('fixed inset-y-0 left-0 z-30 hidden border-r border-slate-200 bg-slate-50 transition-[width] duration-200 lg:block', railOnly ? 'w-16' : 'w-64')}>
-        <Sidebar collapsed={railOnly} onToggle={toggle} onSearch={openSearch} focusSearch={focusSearch} searchTop={searchTop} />
+        <Sidebar collapsed={railOnly} onToggle={toggle} />
       </aside>
       {drawerOpen && (
         <div className="fixed inset-0 z-40 lg:hidden" role="dialog" aria-modal="true">
           <div className="absolute inset-0 bg-slate-900/30" onClick={() => setMenuOpen(false)} />
           <aside className="rise absolute inset-y-0 left-0 w-72 bg-slate-50 shadow-xl">
             <button type="button" onClick={() => setMenuOpen(false)} className="absolute top-3.5 right-3 z-10 rounded p-1.5 text-slate-500" aria-label="ปิดเมนู"><X className="size-5" /></button>
-            <Sidebar onNavigate={() => setMenuOpen(false)} searchTop={searchTop} />
+            <Sidebar onNavigate={() => setMenuOpen(false)} />
           </aside>
         </div>
       )}
@@ -278,8 +235,7 @@ export default function AppShell() {
           <Menu className="size-5" />
         </button>
         <Link to="/workspace" className="flex items-center gap-2 lg:hidden">
-          <img src={searchTop ? logoClear : logo} alt="ICN" className={cn('size-7', !searchTop && 'rounded-md ring-1 ring-slate-200')} />
-          {!searchTop && <span className="text-sm font-semibold text-slate-900">ICN AI Hub</span>}
+          <img src={logo} alt="ICN" className="size-7" />
         </Link>
         <div className="ml-auto flex items-center gap-1">
           <HelpButton />
@@ -289,7 +245,6 @@ export default function AppShell() {
       <main className="mx-auto max-w-[1440px] px-4 pt-2 pb-6 sm:px-6 lg:px-8 lg:pb-8">
         <Outlet />
       </main>
-      {PROTOTYPE_ON && <PrototypeSwitcher current={variant} onChange={setVariant} />}
       <Toaster />
       <RunFinishedToasts />
     </div>

@@ -13,14 +13,11 @@ async function openStepLog() {
   return app
 }
 
-/** Open the work area of the Thread's latest Run. */
-const openLatest = (app) => app.click(screen.getAllByRole('button', { name: 'เปิดผลงาน' }).at(-1))
-
 describe('Example chat: step log with a Schedule', () => {
   it('has two Runs; the second says the Schedule started it', async () => {
     await openStepLog()
 
-    expect(screen.getAllByRole('button', { name: 'เปิดผลงาน' })).toHaveLength(2)
+    expect(screen.getAllByText(/^เสร็จแล้ว — /)).toHaveLength(2)
     expect(screen.getByText('ตั้งเวลา · จันทร์ 19 ต.ค. 20:00')).toBeVisible()
     expect(screen.getByText(/สรุปก้าวเดินกลุ่มเดินสัปดาห์ 5-11 ต.ค./)).toBeVisible()
   })
@@ -36,8 +33,7 @@ describe('Example chat: step log with a Schedule', () => {
   })
 
   it('the second Run flags the blurry row with its reason and leaves the unreadable total empty', async () => {
-    const app = await openStepLog()
-    await openLatest(app)
+    const app = await openStepLog() // the work area opens on the latest Run
 
     expect(screen.getAllByText('ก้าวเดิน 12-18 ต.ค. 2026').length).toBeGreaterThan(0)
     const row = within(screen.getByRole('table')).getByRole('row', { name: /ฟ้า/ })
@@ -48,8 +44,7 @@ describe('Example chat: step log with a Schedule', () => {
   })
 
   it('its Excel holds both weeks and a summary per week, and carries the flag and the empty cell', async () => {
-    const app = await openStepLog()
-    await openLatest(app)
+    const app = await openStepLog() // the work area opens on the latest Run
     const files = captureDownloads()
 
     await app.click(screen.getByRole('button', { name: 'ดาวน์โหลด Excel' }))

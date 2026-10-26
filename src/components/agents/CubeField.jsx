@@ -1,4 +1,4 @@
-// PROTOTYPE variant B: pick an Agent's Cube while building it.
+// Pick an Agent's Cube while building it.
 import { Shuffle } from 'lucide-react'
 import { cn } from '../../lib/utils'
 import Button from '../ui/Button'

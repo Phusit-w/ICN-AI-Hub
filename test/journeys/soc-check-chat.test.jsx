@@ -10,7 +10,6 @@ afterEach(() => vi.restoreAllMocks())
 async function openSocChat() {
   const app = startJourney()
   await app.click(within(screen.getByRole('navigation', { name: 'ประวัติแชต' })).getByRole('link', { name: /ตรวจ SOC เทียบ datasheet/ }))
-  await app.click(screen.getByRole('button', { name: 'เปิดผลงาน' }))
   return app
 }
 

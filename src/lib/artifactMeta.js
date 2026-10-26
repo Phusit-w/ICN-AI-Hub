@@ -1,6 +1,6 @@
-// PROTOTYPE (branch prototype/workspace-layout): what a finished output is, in the words a User would use.
+// What a finished output is, in the words a User would use.
 import { FileText, ListChecks, Network, Table2 } from 'lucide-react'
-import { sheetsOf } from '../../lib/sheets'
+import { sheetsOf } from './sheets'
 
 /** "N แถว" for one sheet; with several, the sheets are what you count. */
 function tableCount(output) {
