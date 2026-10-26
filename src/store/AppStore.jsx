@@ -9,6 +9,7 @@ import { uid } from '../lib/utils'
 import usePersistentState from '../lib/usePersistentState'
 import { relevantMemories, seedPersonal } from '../lib/personal'
 import { EXCEL_COLUMNS, EXCEL_FILE, OUTWARD, outwardFor } from '../lib/outward'
+import { APPS, appById, noApps, OUTWARD_APP } from '../lib/apps'
 import { CODE_TTL_MS, GROUP_INTRO, GROUP_NAME, groupSummary, hear, lineOf, newCode, noticeFinished, say, withLine } from '../lib/line'
 
 const TICK_MS = 400
@@ -83,13 +84,16 @@ const initialState = () => ({
   // The Office365 Excel file that Personal agents add rows to (simulated); rows are only ever added at the end.
   // Each User's LINE (simulated): { linked, code, expiresAt, notify, botInGroup, private, group }, keyed by user id.
   line: {},
+  // Which apps the Admin has switched on for the whole company, and the accounts closed (their Memory and Connections are gone).
+  apps: noApps(),
+  closed: [],
   office365: { excel: { file: EXCEL_FILE, columns: EXCEL_COLUMNS, rows: [['2026-10-19', 'สรุปยอดขายสัปดาห์', 'Arisa M.'], ['2026-10-20', 'ตรวจ SOC โครงการ A', 'Ploy K.']] } },
 })
 
 /** The User's answer to an Outward action the Run asked about: `decision` 'done' does it (simulated), 'declined' does nothing. */
 function resolveOutward(state, action) {
   const run = state.runs.find((r) => r.id === action.runId)
-  if (run?.outward?.status !== 'asking') return state
+  if (run?.outward?.status !== 'asking' || !state.apps[OUTWARD_APP[run.outward.type]]) return state
   const { type, draft } = run.outward
   const done = action.decision === 'done'
   let next = state
@@ -119,8 +123,25 @@ function finishRun(state, run, now) {
     : next
 }
 
+/** `state` with an Admin's action written to the audit log. */
+const adminLogged = (state, now, action, result, tone) => ({
+  ...state, auditLog: [{ id: uid('log'), time: clock(now), user: userById(VIEW_PERSONAS.admin).name, action, result, tone }, ...state.auditLog],
+})
+
 function reducer(state, action) {
   switch (action.type) {
+    case 'setApp':
+      return adminLogged({ ...state, apps: { ...state.apps, [action.app]: action.on } }, action.now,
+        `${action.on ? 'เปิด' : 'ปิด'} ${appById(action.app).label} ทั้งบริษัท`, action.on ? 'เปิดแล้ว' : 'ปิดแล้ว', action.on ? 'success' : 'warning')
+    case 'disconnectLine':
+      return adminLogged(withLine(state, action.userId, (l) => ({ ...l, linked: false, code: null })), action.now,
+        `ตัดการเชื่อม LINE ของ ${userById(action.userId).name}`, 'ต้องผูกใหม่', 'warning')
+    case 'closeAccount': {
+      const { [action.userId]: _memory, ...personal } = state.personal
+      const { [action.userId]: _line, ...line } = state.line
+      return adminLogged({ ...state, personal, line, closed: [...state.closed, action.userId] }, action.now,
+        `ปิดบัญชี ${userById(action.userId).name}`, 'ลบความจำและการเชื่อมต่อแล้ว', 'warning')
+    }
     case 'tick': {
       if (!state.runs.some((r) => r.status === 'running')) return state
       const runs = state.runs.map((r) => advanceRun(r, action.dt, action.now))
@@ -255,6 +276,7 @@ export function AppStoreProvider({ children }) {
        * `ctx` is the state, as for planRun; `useMemory` is the User's choice, for this one message, to let the bot use their Memory in the group.
        */
       lineSend: (chat, text, ctx, { useMemory = chat === 'private' } = {}) => {
+        if (!ctx.apps.line) return
         const heard = hear(lineOf(ctx), chat, text, Date.now())
         const mine = say('me', text)
         const talk = (...messages) => lineUpdate((l) => ({ ...l, linked: l.linked || Boolean(heard.bind), code: heard.bind ? null : l.code, [chat]: [...l[chat], ...messages] }))
@@ -282,6 +304,12 @@ export function AppStoreProvider({ children }) {
       savePersonal: (patch) => dispatch({ type: 'savePersonal', userId: VIEW_PERSONAS[viewRef.current], patch }),
       /** The User answers an Outward action their Personal agent asked about: `decision` is 'done' or 'declined'; `via` 'auto' when it needed no asking. */
       resolveOutward: (runId, decision, via = 'user') => dispatch({ type: 'resolveOutward', runId, decision, via, now: Date.now() }),
+      /** The Admin switches an app on or off for the whole company. */
+      setApp: (app, on) => dispatch({ type: 'setApp', app, on, now: Date.now() }),
+      /** The Admin unlinks one User's LINE: they link it again with a new code. */
+      disconnectLine: (userId) => dispatch({ type: 'disconnectLine', userId, now: Date.now() }),
+      /** The Admin closes an employee's account: their Memory and Connections are deleted. */
+      closeAccount: (userId) => dispatch({ type: 'closeAccount', userId, now: Date.now() }),
       toggleFavorite: (id) => dispatch({ type: 'toggleFavorite', id }),
       /** Record (or change) the user's Feedback on a Run's Artifact; `reason` is optional and only kept with 👎. */
       giveFeedback: (runId, verdict, reason) => dispatch({ type: 'giveFeedback', runId, feedback: reason ? { verdict, reason } : { verdict } }),

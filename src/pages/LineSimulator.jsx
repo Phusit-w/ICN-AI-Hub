@@ -33,6 +33,7 @@ function Phone() {
     setUseMemory(false)
   }
   const group = chat === 'group'
+  const off = !state.apps.line
   return (
     <section aria-label="หน้าจอ LINE (จำลอง)" className="flex h-[32rem] w-full max-w-sm flex-col overflow-hidden rounded-[2rem] border-4 border-slate-800 bg-emerald-50 shadow-md">
       <div role="tablist" aria-label="แชต LINE" className="flex shrink-0 bg-emerald-700 text-sm text-white">
@@ -40,6 +41,7 @@ function Phone() {
           <button key={id} type="button" role="tab" aria-selected={chat === id} onClick={() => setChat(id)} className={cn('flex-1 px-3 py-3 font-medium', chat === id ? 'bg-emerald-800' : 'opacity-80 hover:bg-emerald-600')}>{name}</button>
         ))}
       </div>
+      {off && <p role="status" className="shrink-0 bg-amber-100 px-3 py-2 text-xs text-amber-900">Admin ปิด LINE ไว้ บอตจึงยังไม่ตอบ</p>}
       <ul role="log" aria-label={group ? `แชตกลุ่ม ${GROUP_NAME}` : `แชตกับ ${BOT_NAME}`} className="flex-1 space-y-2 overflow-y-auto p-3">
         {line[chat].map((m) => <Bubble key={m.id} message={m} />)}
         {group && !line.botInGroup && (
@@ -54,8 +56,8 @@ function Phone() {
           </div>
         )}
         <div className="flex gap-2">
-          <input aria-label="พิมพ์ใน LINE" value={text} onChange={(e) => setText(e.target.value)} className="h-9 min-w-0 flex-1 rounded-full border border-slate-200 px-3 text-sm focus:outline-none" />
-          <button type="submit" aria-label="ส่งใน LINE" disabled={!text.trim()} className="flex size-9 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-white disabled:bg-slate-200"><Send className="size-4" /></button>
+          <input aria-label="พิมพ์ใน LINE" disabled={off} value={text} onChange={(e) => setText(e.target.value)} className="h-9 min-w-0 flex-1 rounded-full border border-slate-200 px-3 text-sm focus:outline-none" />
+          <button type="submit" aria-label="ส่งใน LINE" disabled={off || !text.trim()} className="flex size-9 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-white disabled:bg-slate-200"><Send className="size-4" /></button>
         </div>
       </form>
     </section>

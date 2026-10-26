@@ -44,13 +44,16 @@ function Root() {
 
 /**
  * Render the whole app at `route` (the new-chat screen by default) and return a click-counting driver.
+ * `apps` lists the company apps ('line', 'email', 'office365', 'addin') the Admin has switched on.
  * `view` starts the presenter in the 'user' (default) or 'admin' view, as if they had picked it before a reload.
  */
-export function startJourney(route = '/', { view } = {}) {
+export function startJourney(route = '/', { view, apps = [] } = {}) {
   if (view) localStorage.setItem(VIEW_STORAGE_KEY, JSON.stringify(view))
   vi.useFakeTimers()
   const router = createMemoryRouter([{ path: '*', element: <Root /> }], { initialEntries: [route] })
   render(<RouterProvider router={router} />)
+  // Apps start switched off for the company; a journey that needs one lists it, as if the Admin had switched it on.
+  act(() => apps.forEach((app) => latestStore.actions.setApp(app, true)))
   // No delay between keystrokes: user-event would otherwise wait on the (fake) clock.
   const user = userEvent.setup({ delay: null })
   let clicks = 0

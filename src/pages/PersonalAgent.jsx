@@ -94,7 +94,7 @@ export default function PersonalAgent() {
 
       <section aria-label="ช่องทาง" className="space-y-2">
         <h2 className="text-sm font-medium text-slate-800">ช่องทาง</h2>
-        <p className="text-sm text-slate-500">สั่งงาน Agent ของคุณจากนอกแอป <Link to="/agent/line" className="font-medium text-brand-700 hover:underline">LINE</Link></p>
+        <p className="text-sm text-slate-500">สั่งงาน Agent ของคุณจากนอกแอป <Link to="/agent/line" className="font-medium text-brand-700 hover:underline">LINE</Link> · <Link to="/agent/addin" className="font-medium text-brand-700 hover:underline">Office Add-in</Link></p>
       </section>
 
       {personal.schedules.length > 0 && (

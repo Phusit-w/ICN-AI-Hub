@@ -2,7 +2,9 @@ import { useState } from 'react'
 import { Activity, Building2, Check, Cloud, Coins, Minus, Server, ShieldAlert, ShieldCheck, ThumbsDown, ThumbsUp, Zap } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { DEPT_USAGE, KPIS, MODEL_USAGE, MONTHLY_COST, PERMISSIONS, POLICIES, ROLES } from '../data/governance'
-import { deptById, userById } from '../data/catalog'
+import { deptById, USERS, userById, VIEW_PERSONAS } from '../data/catalog'
+import { APPS } from '../lib/apps'
+import { lineOf } from '../lib/line'
 import { feedbackLabel, mostHelpfulAgents } from '../lib/feedback'
 import { cn, fmt, fmtBaht, timeAgo } from '../lib/utils'
 import Button from '../components/ui/Button'
@@ -178,6 +180,53 @@ function AuditTab() {
   )
 }
 
+/** The apps switched on for the whole company, who has linked LINE, and the employee accounts the Admin can close. */
+function ConnectionsTab() {
+  const { state, actions } = useStore()
+  const people = Object.values(USERS)
+  const linked = people.filter((u) => lineOf(state, u.id).linked)
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader title="การเชื่อมต่อ" subtitle="ปิดแอปไหน Channel และการเชื่อมต่อของแอปนั้นหยุดสำหรับทุกคนทันที ทุกการเปลี่ยนเข้า Audit log" />
+        <ul className="divide-y divide-slate-100 border-t border-slate-100">
+          {APPS.map((a) => (
+            <li key={a.id} className="px-5 py-3">
+              <div className="flex items-center gap-4">
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm text-slate-800">{a.label}</p>
+                  <p className="text-xs text-slate-500">{a.id === 'line' ? `ผูกบัญชีแล้ว ${linked.length} คน` : 'ใช้สิทธิ์ของผู้ใช้แต่ละคนเอง (จำลอง)'}</p>
+                </div>
+                <Toggle checked={state.apps[a.id]} label={`เปิด ${a.label} ทั้งบริษัท`} onChange={(on) => actions.setApp(a.id, on)} />
+              </div>
+              {a.id === 'line' && linked.length > 0 && (
+                <ul aria-label="ผู้ที่ผูก LINE" className="mt-2 space-y-1">
+                  {linked.map((u) => (
+                    <li key={u.id} className="flex items-center justify-between text-sm text-slate-600">{u.name}
+                      <Button size="sm" onClick={() => actions.disconnectLine(u.id)}>{`ตัดการเชื่อม ${u.name}`}</Button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </li>
+          ))}
+        </ul>
+      </Card>
+      <Card>
+        <CardHeader title="บัญชีพนักงาน" subtitle="ปิดบัญชีแล้วความจำและการเชื่อมต่อของคนนั้นถูกลบ" />
+        <ul className="divide-y divide-slate-100 border-t border-slate-100">
+          {people.filter((u) => u.id !== VIEW_PERSONAS.admin).map((u) => (
+            <li key={u.id} className="flex items-center gap-4 px-5 py-2.5 text-sm text-slate-700">
+              <span className="min-w-0 flex-1">{u.name} · {u.title}</span>
+              {state.closed.includes(u.id) ? <Badge tone="neutral">ปิดแล้ว</Badge> : <Button size="sm" variant="danger" onClick={() => actions.closeAccount(u.id)}>{`ปิดบัญชี ${u.name}`}</Button>}
+            </li>
+          ))}
+        </ul>
+      </Card>
+    </div>
+  )
+}
+
 const USEFUL_AGENTS = 'Agent ที่มีประโยชน์ที่สุดเดือนนี้'
 const KIND_LABEL = { agent: 'Agent', skill: 'ทักษะ' }
 
@@ -281,6 +330,7 @@ export default function Governance() {
     { id: 'requests', label: pending ? `คำขอแชร์ทั้งบริษัท (${pending})` : 'คำขอแชร์ทั้งบริษัท', content: <ShareRequestsTab /> },
     { id: 'policies', label: 'นโยบายข้อมูล', content: <PolicyTab policies={policies} onToggle={togglePolicy} /> },
     { id: 'permissions', label: 'สิทธิ์การใช้งาน', content: <PermissionsTab /> },
+    { id: 'connections', label: 'การเชื่อมต่อ', content: <ConnectionsTab /> },
     { id: 'audit', label: 'Audit log', content: <AuditTab /> },
     { id: 'useful-agents', label: USEFUL_AGENTS, content: <UsefulAgentsTab /> },
   ]

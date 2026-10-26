@@ -19,7 +19,7 @@ const card = () => within(screen.getByRole('region', { name: 'ถามก่อ
 
 describe('Asking before acting', () => {
   it('an email is drafted for checking; "ส่ง" sends it (simulated) and "ไม่ทำ" sends nothing', async () => {
-    const app = startJourney()
+    const app = startJourney('/', { apps: ['email', 'office365'] })
     await ask(app, EMAIL)
     expect(card().getByText(/^เรื่อง ร่างอีเมลตอบลูกค้า/)).toBeVisible()
     expect(card().getByText(/เรียน ผู้เกี่ยวข้อง/)).toBeVisible()
@@ -34,7 +34,7 @@ describe('Asking before acting', () => {
   })
 
   it('"เพิ่ม" adds the row at the end of the Office365 file, and nothing in the file can be deleted or overwritten', async () => {
-    const app = startJourney()
+    const app = startJourney('/', { apps: ['email', 'office365'] })
     const before = app.store.state.office365.excel.rows
     await ask(app, EXCEL)
     expect(card().getByText(/ต่อท้ายไฟล์ ตารางงานทีม.xlsx บน Office365/)).toBeVisible()
@@ -52,7 +52,7 @@ describe('Asking before acting', () => {
   })
 
   it('"ทำเองเลย" for Excel skips the question; switching it off asks again; the other kinds still ask', async () => {
-    const app = startJourney('/agent')
+    const app = startJourney('/agent', { apps: ['email', 'office365'] })
     await app.click(screen.getByRole('switch', { name: 'ทำเองเลย: เพิ่มแถวใน Excel' }))
     await app.click(newChatLink())
     await ask(app, EXCEL)
@@ -72,13 +72,13 @@ describe('Asking before acting', () => {
   })
 
   it('reading and drafting need no yes: an ordinary request shows no card', async () => {
-    const app = startJourney()
+    const app = startJourney('/', { apps: ['email', 'office365'] })
     await ask(app, 'สรุปข้อมูลตลาดลูกค้าค้าปลีกในไทย และทำรายงาน')
     expect(screen.queryByRole('region', { name: /ถามก่อนลงมือ|ผลการลงมือ/ })).toBeNull()
   })
 
   it('every outward action, asked or automatic, and a refusal, is written to the audit log', async () => {
-    const app = startJourney()
+    const app = startJourney('/', { apps: ['email', 'office365'] })
     await ask(app, EMAIL)
     await app.click(card().getByRole('button', { name: 'ส่ง' }))
     await app.click(newChatLink())
@@ -98,7 +98,7 @@ describe('Asking before acting', () => {
     const openStepLog = async (app) => app.click(within(screen.getByRole('navigation', { name: 'ประวัติแชต' })).getByRole('link', { name: 'บันทึกก้าวเดิน' }))
 
     it('waits for the User’s yes before adding its week to the Excel file', async () => {
-      const app = startJourney()
+      const app = startJourney('/', { apps: ['email', 'office365'] })
       const before = app.store.state.office365.excel.rows
       await openStepLog(app)
 
@@ -109,7 +109,7 @@ describe('Asking before acting', () => {
     })
 
     it('goes ahead by itself once the User has set Excel to automatic', async () => {
-      const app = startJourney('/agent')
+      const app = startJourney('/agent', { apps: ['email', 'office365'] })
       await app.click(screen.getByRole('switch', { name: 'ทำเองเลย: เพิ่มแถวใน Excel' }))
       const before = app.store.state.office365.excel.rows.length
       await app.click(newChatLink())

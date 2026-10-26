@@ -53,6 +53,6 @@ export const groupSummary = (run) => `งานที่ขอเรียกผ
 export function noticeFinished(state, run) {
   const line = lineOf(state, run.owner)
   const asked = run.line?.chat
-  if (!line.linked || asked === 'group' || (!asked && !line.notify)) return state
+  if (!state.apps.line || !line.linked || asked === 'group' || (!asked && !line.notify)) return state
   return withLine(state, run.owner, (l) => ({ ...l, private: [...l.private, finishedMessage(run)] }))
 }

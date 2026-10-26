@@ -19,7 +19,7 @@ describe('Governance: headline numbers and detail tabs', () => {
     const app = startJourney('/governance', { view: 'admin' })
     const tabs = within(screen.getByRole('tablist', { name: 'รายละเอียด' })).getAllByRole('tab')
     expect(tabs.map((t) => t.textContent)).toEqual([
-      'ค่าใช้จ่ายและ Model', 'แผนก', 'คำขอแชร์ทั้งบริษัท (2)', 'นโยบายข้อมูล', 'สิทธิ์การใช้งาน', 'Audit log', 'Agent ที่มีประโยชน์ที่สุดเดือนนี้',
+      'ค่าใช้จ่ายและ Model', 'แผนก', 'คำขอแชร์ทั้งบริษัท (2)', 'นโยบายข้อมูล', 'สิทธิ์การใช้งาน', 'การเชื่อมต่อ', 'Audit log', 'Agent ที่มีประโยชน์ที่สุดเดือนนี้',
     ])
     expect(screen.getByRole('tabpanel', { name: 'ค่าใช้จ่ายและ Model' })).toBeInTheDocument()
     expect(screen.queryByText('บันทึกเหตุการณ์สำคัญวันนี้')).not.toBeInTheDocument()

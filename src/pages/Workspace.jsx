@@ -23,6 +23,7 @@ import { userById } from '../data/catalog'
 import { personalOf, timesAskedBefore } from '../lib/personal'
 import { canSaveForReuse } from '../lib/reuse'
 import { OUTWARD } from '../lib/outward'
+import { appById, OUTWARD_APP } from '../lib/apps'
 import PlanCard from '../components/run/PlanCard'
 import { useCube } from '../lib/useCube'
 import AgentCube from '../components/agents/AgentCube'
@@ -159,7 +160,8 @@ function RepeatHint({ run }) {
 function OutwardCard({ run }) {
   const { state, actions } = useStore()
   const { type, status, draft, via, rowNo } = run.outward
-  const auto = personalOf(state).auto[type]
+  const off = !state.apps[OUTWARD_APP[type]]
+  const auto = personalOf(state).auto[type] && !off
   useEffect(() => { if (status === 'asking' && auto) actions.resolveOutward(run.id, 'done', 'auto') }, [status, auto, run.id, actions])
   if (status === 'asking' && auto) return null
   const asking = status === 'asking'
@@ -185,7 +187,9 @@ function OutwardCard({ run }) {
           ต่อท้ายไฟล์ {draft.file} บน Office365: {draft.columns.map((c, i) => `${c} ${draft.row[i]}`).join(' · ')}
         </p>
       )}
-      {asking ? (
+      {asking && off ? (
+        <p className="text-sm text-slate-500">Admin ปิด {appById(OUTWARD_APP[type]).label} ไว้ จึงยังทำไม่ได้</p>
+      ) : asking ? (
         <div className="flex gap-2">
           <Button size="sm" variant="primary" onClick={() => actions.resolveOutward(run.id, 'done')}>{yes}</Button>
           <Button size="sm" onClick={() => actions.resolveOutward(run.id, 'declined')}>ไม่ทำ</Button>

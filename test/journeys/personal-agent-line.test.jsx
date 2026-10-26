@@ -21,7 +21,7 @@ const openGroup = (app) => app.click(phone().getByRole('tab', { name: /กลุ
 
 describe('LINE bot (simulated)', () => {
   it('someone not linked gets how to link; the code links them; then the Personal agent answers and sends only a short summary with a link', async () => {
-    const app = startJourney('/agent/line')
+    const app = startJourney('/agent/line', { apps: ['line'] })
     await say(app, 'สวัสดี')
     expect(chat().getByText(/ยังไม่ได้ผูกบัญชี/)).toBeVisible()
     expect(app.store.state.runs.some((r) => r.line)).toBe(false)
@@ -43,7 +43,7 @@ describe('LINE bot (simulated)', () => {
   })
 
   it('a code that has run out, or is wrong, does not link', async () => {
-    const app = startJourney('/agent/line')
+    const app = startJourney('/agent/line', { apps: ['line'] })
     await app.click(screen.getByRole('button', { name: 'รับรหัสผูกบัญชี' }))
     const code = screen.getByLabelText('รหัสผูกบัญชี').textContent
     await app.advance(6 * 60 * 1000)
@@ -58,7 +58,7 @@ describe('LINE bot (simulated)', () => {
 
   describe('in a group', () => {
     async function inGroup() {
-      const app = startJourney('/agent/line')
+      const app = startJourney('/agent/line', { apps: ['line'] })
       await linkAccount(app)
       await openGroup(app)
       await app.click(phone().getByRole('button', { name: 'เชิญบอตเข้ากลุ่ม' }))
@@ -106,7 +106,7 @@ describe('LINE bot (simulated)', () => {
     })
 
     it('posts by itself once "ทำเองเลย" is on for LINE groups', async () => {
-      const app = startJourney('/agent')
+      const app = startJourney('/agent', { apps: ['line'] })
       await app.click(screen.getByRole('switch', { name: 'ทำเองเลย: โพสต์ในกลุ่ม LINE' }))
       await app.click(screen.getByRole('link', { name: 'LINE' }))
       await linkAccount(app)
@@ -119,7 +119,7 @@ describe('LINE bot (simulated)', () => {
   })
 
   it('a sensitive message is refused and starts no Run', async () => {
-    const app = startJourney('/agent/line')
+    const app = startJourney('/agent/line', { apps: ['line'] })
     await linkAccount(app)
     const runs = app.store.state.runs.length
     await say(app, 'ขอดูเงินเดือนของทีมขาย')
@@ -128,7 +128,7 @@ describe('LINE bot (simulated)', () => {
   })
 
   it('tells the User on LINE when a Run they started in the app finishes, unless they switched that off', async () => {
-    const app = startJourney('/agent/line')
+    const app = startJourney('/agent/line', { apps: ['line'] })
     await linkAccount(app)
     await app.click(newChatLink())
     await app.type(app.box('ข้อความ'), 'สรุปนโยบายวันลา')

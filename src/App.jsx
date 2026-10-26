@@ -9,6 +9,7 @@ import Governance from './pages/Governance'
 import PersonalAgent from './pages/PersonalAgent'
 import PersonalSetup from './pages/PersonalSetup'
 import LineSimulator from './pages/LineSimulator'
+import AddinPanel from './pages/AddinPanel'
 import { skillLink } from './lib/routes'
 import { isAdminView, useStore } from './store/AppStore'
 
@@ -36,6 +37,7 @@ export default function App() {
         <Route path="agent" element={<PersonalAgent />} />
         <Route path="agent/setup" element={<PersonalSetup />} />
         <Route path="agent/line" element={<LineSimulator />} />
+        <Route path="agent/addin" element={<AddinPanel />} />
         <Route path="agents" element={<AgentLibrary />} />
         <Route path="agents/new" element={<CreateAgent />} />
         <Route path="agents/:id" element={<AgentDetail />} />
