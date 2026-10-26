@@ -6,32 +6,33 @@ import { actionFor, expectAgentPicked, startJourney } from '../journey'
 const POPULAR = 'ยอดนิยมในองค์กร'
 const SHARED = 'แชร์ให้ฉัน'
 
-const chips = () => screen.getByRole('group', { name: 'แสดงเฉพาะ' })
-const chip = (name) => within(chips()).getByRole('button', { name })
+const filterChip = (name) => screen.queryByRole('button', { name: `ล้างตัวกรอง ${name}` })
 const agentList = () => screen.getByRole('list', { name: 'รายการ Agent' })
 
 describe('Shared items: filter chips and "ใช้งาน"', () => {
-  it('the old community link lands on the Agents page with the "popular" filter on', () => {
+  it('the old community link lands on the Agents page with the "popular" filter chip on', () => {
     const app = startJourney('/community')
     expect(app.url()).toBe('/agents?filter=popular')
-    expect(chip(POPULAR)).toHaveAttribute('aria-pressed', 'true')
-    expect(chip(SHARED)).toHaveAttribute('aria-pressed', 'false')
+    expect(filterChip(POPULAR)).toBeInTheDocument()
+    expect(filterChip(SHARED)).toBeNull()
   })
 
-  it('the Agents page has one row of the two chips, and the active one shows and filters', async () => {
-    const app = startJourney('/agents')
-    expect(within(chips()).getAllByRole('button').map((b) => b.textContent)).toEqual([POPULAR, SHARED])
-    expect(chip(POPULAR)).toHaveAttribute('aria-pressed', 'false')
+  it("the Agents page shows no filter chip until a filter is in the URL", () => {
+    startJourney("/agents")
+    expect(filterChip(POPULAR)).toBeNull()
+    expect(filterChip(SHARED)).toBeNull()
+  })
 
-    await app.click(chip(SHARED))
-    expect(app.url()).toBe('/agents?filter=shared')
-    expect(chip(SHARED)).toHaveAttribute('aria-pressed', 'true')
+  it('the "shared" filter chip filters the list, and clicking it clears the filter', async () => {
+    const app = startJourney('/agents?filter=shared')
+    expect(filterChip(SHARED)).toBeInTheDocument()
     // Made by someone else and shared with me: in. Made by me: out.
     expect(within(agentList()).getByText('IT Support Agent')).toBeInTheDocument()
     expect(within(agentList()).queryByText('Customer Insight Agent')).not.toBeInTheDocument()
 
-    await app.click(chip(SHARED))
+    await app.click(filterChip(SHARED))
     expect(app.url()).toBe('/agents')
+    expect(filterChip(SHARED)).toBeNull()
     expect(within(agentList()).getByText('Customer Insight Agent')).toBeInTheDocument()
   })
 
