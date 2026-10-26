@@ -13,22 +13,13 @@ const menuItems = (nav) => within(nav).getAllByRole('link').map((l) => l.getAttr
 const skillDialog = (name) => screen.getByRole('dialog', { name })
 
 describe('Navigation: new chat plus a two-item menu', () => {
-  it('the app opens on new chat: greeting, composer and the reuse row, with "แชตใหม่" marked as the current page', () => {
+  it('the app opens on new chat: a greeting and the composer, no reuse row, with "แชตใหม่" marked as the current page', () => {
     const app = startJourney('/')
     expect(app.url()).toBe('/workspace')
     expect(screen.getByRole('heading', { level: 1, name: /สวัสดี คุณ/ })).toBeInTheDocument()
-    expect(screen.getByRole('region', { name: 'ใช้ซ้ำ' })).toBeInTheDocument()
+    expect(screen.getByRole('textbox', { name: 'ข้อความ' })).toBeInTheDocument()
+    expect(screen.queryByRole('region', { name: 'ใช้ซ้ำ' })).toBeNull()
     expect(screen.getAllByRole('link', { name: 'แชตใหม่' })[0]).toHaveAttribute('aria-current', 'page')
-  })
-
-  it('on new chat, an Agent in "ใช้ซ้ำ" is not shown again under "Agent ของแผนกคุณ"', () => {
-    startJourney('/')
-    const names = (region) => within(region).getAllByRole('button').map((b) => b.textContent.replace(/^Agent /, '').replace(/·.*$/, ''))
-    const reuse = names(screen.getByRole('region', { name: 'ใช้ซ้ำ' }))
-    const dept = screen.queryByRole('region', { name: /Agent ของแผนกคุณ/ })
-    if (dept) for (const b of within(dept).getAllByRole('button')) {
-      expect(reuse.some((n) => b.textContent.startsWith(n))).toBe(false)
-    }
   })
 
   it('the Agents page recommends only once the user says what the job is', async () => {

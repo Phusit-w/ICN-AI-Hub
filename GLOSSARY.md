@@ -20,7 +20,7 @@ A reusable capability that any number of Agents can be given; chosen while build
 _Avoid_: Plugin, tool
 
 **Favourite agent** (Agent ประจำ):
-An Agent a user has starred so it stays at hand on Home, the Agents page and the composer.
+An Agent a user has starred so it stays at hand on the Agents page. It is not shown on Home (there is no reuse row); it is also chosen from the composer's Agent menu.
 _Avoid_: Pinned agent, bookmark
 
 ### Doing work

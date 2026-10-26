@@ -43,7 +43,7 @@ Model ──location──▶ Local | Cloud | Auto  (Auto = router picks by data
 3. **Outputs, not messages** — ผลลัพธ์ของแต่ละ Agent เป็นชิ้นงาน ดูย้อนได้ทีละขั้น
 4. **Safe by default** — ข้อมูลลับถูกส่งไป Local AI อัตโนมัติ และแสดงให้ผู้ใช้เห็นว่าข้อมูลไม่ออกนอกบริษัท
 5. **Plain language** — ทุกฟอร์มมีคำอธิบายภาษาคน, มีตัวอย่าง, มี template ให้เริ่ม · ทุกหน้าอธิบายตัวเองได้โดยไม่ต้องเปิดทัวร์ (ทัวร์มีแค่ 5 ขั้น)
-6. **Clean** — หนึ่งหน้ามีปุ่มหลัก (สีแบรนด์) ปุ่มเดียว · แสดงเฉพาะข้อมูลที่ช่วยตัดสินใจ · แยกส่วนด้วยระยะห่าง ไม่ใช้กรอบซ้อนกรอบ · งานที่ทำบ่อยอยู่ใน click budget (สั่งงานจนได้ Artifact ≤ 2 คลิก, ใช้ซ้ำ 1 คลิก, เปิดผลงานเก่า 1 คลิก, สร้าง Agent ≤ 3 คลิก, ใช้ของที่แชร์ ≤ 2 คลิก)
+6. **Clean** — หนึ่งหน้ามีปุ่มหลัก (สีแบรนด์) ปุ่มเดียว · แสดงเฉพาะข้อมูลที่ช่วยตัดสินใจ · แยกส่วนด้วยระยะห่าง ไม่ใช้กรอบซ้อนกรอบ · งานที่ทำบ่อยอยู่ใน click budget (สั่งงานจนได้ Artifact ≤ 2 คลิก, เลือก Agent ที่มีอยู่ 2 คลิก, เปิดผลงานเก่า 1 คลิก, สร้าง Agent ≤ 3 คลิก, ใช้ของที่แชร์ ≤ 2 คลิก)
 
 ---
 
@@ -68,7 +68,7 @@ Old links: / → /workspace · /community → /agents?filter=popular · /workflo
 ## 3. Information architecture
 
 - **Global (ทุกหน้า):** Sidebar แบบ ChatGPT / Claude / Gemini: ปุ่ม **แชตใหม่** และช่องค้นหา (Agent + Skill; Skill เปิดรายละเอียดบนหน้าAI Agent) ด้านบน (แชตใหม่คือหน้าแรกของแอป), เมนู 3 รายการ (กลุ่ม "งานของฉัน" 2 รายการ + "องค์กร"), **ประวัติแชต** (งานที่กำลังทำมีจุดกระพริบ) (Thread ล่าสุดก่อน แบ่ง วันนี้ / ก่อนหน้านี้ กด 1 ครั้งเปิดได้), ผู้ใช้อยู่ล่างสุด; ย่อเป็นแถบไอคอนได้ (ซ่อนประวัติ, ปุ่มค้นหาขยายแล้วโฟกัสช่องค้นหา; ทัวร์เปิด sidebar ให้เองเมื่อขั้นนั้นอยู่ใน sidebar). Top bar โล่ง ไม่มีเส้นขอบ: ปุ่มเมนูบนมือถือ, ปุ่ม **วิธีใช้** (คำศัพท์ + ทัวร์ 5 ขั้น). หน้าแชตไม่มีแผงประวัติแยก
-- **งานของฉัน** — สิ่งที่ผู้ใช้ทำทุกวัน: สั่งงาน, ใช้ซ้ำ, ติดตาม Run, หาและใช้ Agent / Skill
+- **งานของฉัน** — สิ่งที่ผู้ใช้ทำทุกวัน: สั่งงาน, เลือก Agent ที่มีอยู่, ติดตาม Run, หาและใช้ Agent / Skill
 - **องค์กร** — สิ่งที่ผู้ดูแลควบคุม: ค่าใช้จ่าย, Model, สิทธิ์, นโยบาย, Audit log, Agent ที่มีประโยชน์ที่สุดเดือนนี้
 - **ของที่แชร์** ไม่มีหน้าแยก: อยู่ในแต่ละ library ผ่านชิป "ยอดนิยมในองค์กร" / "แชร์ให้ฉัน" และปุ่มหลักคือ **ใช้งาน** เสมอ (Agent ที่มีขั้นตอนซึ่งแชร์มา ใช้ได้ทันทีโดยไม่ต้องคัดลอก)
 
@@ -86,7 +86,7 @@ Object ทุกตัวมีชุด metadata เดียวกัน: Owne
 
 คำถามสั้น (เช่น "ลาพักร้อนได้กี่วัน") ตอบเป็นแชตทันที ไม่มี Plan
 
-**Flow B — ใช้ซ้ำ (1 คลิก ไม่เปลี่ยนหน้า)**: แชตใหม่ → แถว **ใช้ซ้ำ** → กด Favourite agent หรือ Agent ที่ใช้บ่อย (มีขั้นตอนหรือไม่ก็ตาม) → ถูกเติมในช่องสั่งงาน → พิมพ์แล้วส่ง → Run เริ่มทันที (ไม่มี Plan เพราะผู้ใช้เลือกเอง)
+**Flow B — ใช้ Agent ที่มีอยู่ (2 คลิก ไม่เปลี่ยนหน้า; ไม่มีแถว ใช้ซ้ำ ในหน้าแรกแล้ว)**: แชตใหม่ → เปิดเมนู Agent ในช่องสั่งงาน (2 คลิก) → เลือก Agent (มีขั้นตอนหรือไม่ก็ตาม รวมถึงที่บันทึกไว้ใช้ซ้ำ) → ถูกเติมในช่องสั่งงาน → พิมพ์แล้วส่ง → Run เริ่มทันที (ไม่มี Plan เพราะผู้ใช้เลือกเอง)
 
 **Flow C — เปิดผลงานเก่า (1 คลิก)**: sidebar → **ประวัติแชต** → กด Thread
 
@@ -104,7 +104,7 @@ Object ทุกตัวมีชุด metadata เดียวกัน: Owne
 
 | # | Screen | Layout (desktop) | Key elements |
 |---|---|---|---|
-| 1 | **แชตใหม่** (หน้าแรก) | Welcome card (ครั้งแรกครั้งเดียว) · คำทักทาย · ช่องสั่งงาน · แถว **ใช้ซ้ำ** | ชิปตัวอย่างงาน (ส่งทันที) แสดงเฉพาะเมื่อยังไม่มี Run · ลิงก์เบา "Agent ทั้งหมด" |
+| 1 | **แชตใหม่** (หน้าแรก) | Welcome card (ครั้งแรกครั้งเดียว) · คำทักทาย · ช่องสั่งงาน (เมนู Agent อยู่ในช่อง) | ชิปตัวอย่างงาน (ส่งทันที) แสดงเฉพาะเมื่อยังไม่มี Run · ลิงก์เบา "Agent ทั้งหมด" |
 | 2 | **แชต (Workspace)** | Thread + composer (ประวัติแชตอยู่ใน sidebar หลัก) (อัตโนมัติ / เลือก Agent) · ขวา: panel ขั้นตอน (เปิดจาก "ดูขั้นตอน") | ระบบตัดสินใจเองว่าแชตหรือ Plan · Plan + "เริ่มทำงาน" · step chips · Sensitive-data notice · ใต้ Artifact: ดาวน์โหลด / บันทึกไว้ใช้ซ้ำ / ⋯ |
 | 3 | **AI Agent** | ＋ สร้าง Agent (ปุ่มหลัก) · ช่องบอกงาน + ป้ายงาน → แนะนำ 3 อันดับ (แสดงเมื่อบอกงานแล้วเท่านั้น) · รายการทั้งหมด + ชิปแชร์ + ตัวกรอง (ซ่อนไว้) | การ์ด: ไอคอน, ชื่อ, 1 บรรทัด, **ใช้งาน** · ทั้งการ์ดเปิดรายละเอียด · ดาวแสดงเมื่อ hover/focus |
 | 4 | **ทักษะ (หน้าต่างรายละเอียด, `?skill=`)** | ไม่มีหน้าหรือแท็บ · เลือก/สร้างในฟอร์มสร้าง Agent | รายละเอียด (Input → Output, ใช้ใน Agent ตัวไหน, เวอร์ชัน) · **เพิ่มให้ Agent** หลายตัวพร้อมกัน |
@@ -119,7 +119,7 @@ Object ทุกตัวมีชุด metadata เดียวกัน: Owne
 | Group | Components |
 |---|---|
 | `layout/` | `AppShell` (Sidebar: แชตใหม่, GlobalSearch, เมนู 3 รายการ, ChatHistory, ผู้ใช้ = เมนูโปรไฟล์สลับมุมมอง; ย่อได้ · Topbar โล่ง (วิธีใช้) · mobile drawer) · `Help` (`TERMS` คำศัพท์รวม Plan, WelcomeCard, ปุ่มวิธีใช้/เริ่มทัวร์) |
-| `tour/` | `Tour` (spotlight + popover, ข้ามขั้นที่มองไม่เห็น) · `steps.js` (5 ขั้น: ช่องสั่งงาน, ใช้ซ้ำ, ค้นหา, AI Agent, พร้อมแล้ว) |
+| `tour/` | `Tour` (spotlight + popover, ข้ามขั้นที่มองไม่เห็น) · `steps.js` (4 ขั้น: ช่องสั่งงาน, ค้นหา, AI Agent, พร้อมแล้ว) |
 | `ui/Button` | variants: primary · secondary · ghost · subtle · danger; sizes sm/md/lg/icon; `to` → router Link |
 | `ui/Badge` | `Badge`, `StatusPill` (Waiting/Processing/Completed/Sent back/Ready/Running), `ModelBadge` (Local/Cloud/Auto), `DeptBadge`, `ShareBadge` |
 | `ui/Card` | `Card`, `CardHeader`, `PageHeader`, `StatCard`, `EmptyState`, `ProgressBar` |
@@ -128,7 +128,7 @@ Object ทุกตัวมีชุด metadata เดียวกัน: Owne
 | `ui/Overlay` | `Modal`, `Toaster`, `Avatar` |
 | `agents/` | `EntityIcon` (agent = brand tint, skill = neutral), `AgentCard` (`ItemCard`: ไอคอน, ชื่อ, คำอธิบาย 1 บรรทัด, ป้าย "N ขั้นตอน", "ใช้งาน"; `FavoriteButton`), `StepsField` (ส่วน "ขั้นตอน" ในฟอร์มสร้าง Agent: เพิ่ม เรียงลำดับ ลบ), `SkillsField` (ส่วน "ทักษะ": เลือก + สร้างทักษะใหม่ในหน้าต่าง), `BuilderChat` (แชตของหน้าสร้าง Agent: @ เรียก Agent, ไม่เข้าประวัติแชต) |
 | `skills/` | `QuickCreateSkill` (+ `useSaveSkill`), `SkillDialog` (รายละเอียด Skill + เพิ่มให้ Agent, เปิดด้วย `?skill=`) |
-| `run/` | `Pipeline` (panel ขั้นตอน), `ArtifactView` (bullets/table/doc/diagram/checklist), `ComposerPick` (Agent ที่เลือกในช่องสั่งงาน), `ReuseRow` (แถวใช้ซ้ำในแชตใหม่), `SaveForReuse`, `Feedback` (👍/👎 ใต้ Artifact) |
+| `run/` | `Pipeline` (panel ขั้นตอน), `ArtifactView` (bullets/table/doc/diagram/checklist), `ComposerPick` (Agent ที่เลือกในช่องสั่งงาน), `SaveForReuse`, `Feedback` (👍/👎 ใต้ Artifact) |
 
 Logic: `store/AppStore.jsx` (reducer + one clock for all runs) · `lib/runs.js` (`threadsOf` สำหรับประวัติการคุย, planner: chat หรือ Plan, model router, step engine with loop-back) · `lib/reuse.js` (บันทึกไว้ใช้ซ้ำ) · `lib/sharing.js` (ตัวกรองยอดนิยม / แชร์ให้ฉัน) · `lib/routes.js` (ลิงก์ไปรายละเอียด Skill) · `lib/agentDraft.js`, `lib/skillDraft.js` (AI กรอกฟอร์มสร้าง) · `lib/mockOutputs.js`
 
@@ -180,15 +180,15 @@ Tests: `test/journeys/` — whole-app journey tests (Vitest + Testing Library) �
 | 1 | IA, design system, mock data, App shell, Home, Agent/Skill Library, Agent Detail | ✅ เสร็จ |
 | 2 | Workspace + simulated orchestration (plan → run → handoff → loop-back → deliverable), Create Agent/Skill, Clone/Fork | ✅ เสร็จ |
 | 3 | ตัวต่อลำดับงานแบบลากวาง (เลิกใช้แล้ว: รวมเป็นขั้นตอนของ Agent ตาม ADR 0001), Governance | ✅ เสร็จ (เวอร์ชันเดโม) |
-| 3½ | Simpler pages: เมนู 5 รายการ, แถวใช้ซ้ำ, ไม่มีตัวสลับโหมด (แชต หรือ Plan), ทักษะเป็นแท็บ, ไม่มีหน้าชุมชน, สร้างในหน้าเดียว, ทัวร์ 6 ขั้น, journey tests | ✅ เสร็จ |
+| 3½ | Simpler pages: เมนู 5 รายการ, ไม่มีตัวสลับโหมด (แชต หรือ Plan), ทักษะเป็นแท็บ, ไม่มีหน้าชุมชน, สร้างในหน้าเดียว, ทัวร์ 6 ขั้น, journey tests | ✅ เสร็จ |
 | 4 | Polish & pitch: ซ้อมสคริปต์เดโม, user test กับพนักงาน 5 คน, ปรับ copy, (ทางเลือก) เชื่อม LLM จริง 1 ตัวผ่าน Local model เพื่อพิสูจน์ provider-agnostic | ⏭ ถัดไป |
 
 **ไม่อยู่ใน scope:** backend, auth/SSO, AI จริง, การเก็บข้อมูลถาวร (refresh = reset), การอัปโหลดไฟล์จริง
 
 ### Demo script (5 นาที)
-1. แชตใหม่ — "นี่คือห้องทำงาน AI ของทั้งบริษัท" ช่องสั่งงานอยู่ตรงกลาง แถวใช้ซ้ำ และประวัติแชตด้านซ้าย
+1. แชตใหม่ — "นี่คือห้องทำงาน AI ของทั้งบริษัท" ช่องสั่งงานอยู่ตรงกลาง และประวัติแชตด้านซ้าย
 2. พิมพ์ "ทำ Proposal ให้ลูกค้า" → ระบบเสนอ **Plan** → **เริ่มทำงาน** → ชี้ step chips / "ดูขั้นตอน" → ขั้นตรวจส่งกลับ Research → Proposal → ดาวน์โหลด · บันทึกไว้ใช้ซ้ำ
-3. กด แชตใหม่ → Agent ที่เพิ่งบันทึก (มีขั้นตอนตาม Plan) อยู่ในแถวใช้ซ้ำ → กด 1 ครั้ง พิมพ์ ส่ง → เริ่มทันที ไม่ต้องยืนยัน Plan
+3. กด แชตใหม่ → Agent ที่เพิ่งบันทึก (มีขั้นตอนตาม Plan) อยู่ในเมนู Agent ของช่องสั่งงาน → เลือก (2 คลิก) พิมพ์ ส่ง → เริ่มทันที ไม่ต้องยืนยัน Plan
 4. AI Agent → ＋ สร้าง Agent → คุยกับ AI (พิมพ์ @HR Policy Agent ให้ช่วยเขียน) → ฟอร์มถูกกรอก → ✨ ให้ AI ช่วยเขียน → สร้าง (≤ 3 คลิก)
 5. รายละเอียด Skill (จากการค้นหา) → เพิ่ม "Company Report Format" ให้ 3 Agents พร้อมกัน ("แก้ที่เดียว ทุก Agent ได้")
 6. ภาพรวมและการกำกับดูแล → 63% Local, ข้อมูลเงินเดือนถูก block — "ปลอดภัยและไม่ผูกกับ Provider"

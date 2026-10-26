@@ -5,7 +5,6 @@ import { DEPARTMENTS, deptById, userById } from '../../data/catalog'
 import { cn } from '../../lib/utils'
 
 // A pick is what the user chose for a request: { agentId } (with or without Steps), or {} when the system chooses.
-// The composer and the "ใช้ซ้ำ" row share it.
 
 const toPick = (agentId) => (agentId ? { agentId } : {})
 

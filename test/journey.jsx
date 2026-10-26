@@ -120,6 +120,13 @@ export function expectArtifactShown() {
   expect(screen.getAllByRole('button', { name: /ดาวน์โหลด/ }).length).toBeGreaterThan(0)
 }
 
+/** Open the composer's Agent menu and choose `name` from it: 2 clicks. */
+export async function pickAgentFromMenu(app, name) {
+  await app.click(screen.getByRole('button', { name: 'เลือก Agent' }))
+  await app.advance(100) // the menu opens a beat after the press
+  await app.click(screen.getByRole('option', { name }))
+}
+
 /** The Workspace composer shows `name` as the picked Agent (with or without Steps). */
 export function expectAgentPicked(name) {
   expect(screen.getByRole('button', { name: 'เลือก Agent' })).toHaveTextContent(name)

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { screen, within } from '@testing-library/react'
-import { mainMenu, startJourney, newChatLink } from '../journey'
+import { mainMenu, startJourney } from '../journey'
 
 // Ticket 08: Agent cards show only an icon, name, one-line description and "ใช้งาน" (and "N ขั้นตอน" for an Agent with Steps).
 // The rest of the card opens details. The Favourite star sits on the card (shown on hover and keyboard focus).
@@ -31,13 +31,6 @@ describe('Clean Agent cards', () => {
     app = startJourney('/agents')
     await app.click(within(cardOf(agentList(), 'IT Support Agent')).getByRole('link', { name: 'ใช้งาน' }))
     expect(app.url()).toBe('/workspace?agent=agent-it-support')
-  })
-
-  it('starring an Agent from its card adds it to the reuse row in new chat', async () => {
-    const app = startJourney('/agents')
-    await app.click(within(cardOf(agentList(), 'IT Support Agent')).getByRole('button', { name: 'เพิ่มใน Favorite' }))
-    await app.click(newChatLink())
-    expect(within(screen.getByRole('region', { name: 'ใช้ซ้ำ' })).getByRole('button', { name: /IT Support Agent/ })).toBeInTheDocument()
   })
 
   it('the detail page shows uses and version', () => {

@@ -1,7 +1,6 @@
 // "Save for reuse" (บันทึกไว้ใช้ซ้ำ): turning a finished Run into an Agent. See GLOSSARY.md.
 
 import { BLANK_FORM, INSTRUCTION_STARTERS, agentFromForm, formFromAgent } from './agentDraft'
-import { hasSteps } from './steps'
 import { truncate } from './utils'
 
 // Review Agent is added to every multi-step plan automatically, so it doesn't count as the user's choice.
@@ -67,19 +66,4 @@ export function agentFromRun(run, thread, { name, owner, agents }) {
     ...(thread.some((r) => r.sensitive) && { classification: 'confidential' }),
   }
   return agentFromForm(form, { owner, note: base.note, forkedFrom: base.forkedFrom })
-}
-
-/**
- * The new-chat screen's "ใช้ซ้ำ" row, as Agents: what the user saved for reuse (newest first), their Favourites,
- * the Agents they started Runs with (newest first), then the Agents with Steps they made themselves.
- */
-export function reuseAgents({ runs, agents, favorites, userId }, max = 8) {
-  const mine = runs.filter((r) => r.owner === userId).sort((a, b) => b.createdAt - a.createdAt)
-  const ids = [
-    ...mine.filter((r) => r.savedAs).map((r) => r.savedAs.id),
-    ...favorites,
-    ...mine.filter((r) => r.agentId).map((r) => r.agentId),
-    ...agents.filter((a) => a.owner === userId && hasSteps(a)).map((a) => a.id),
-  ]
-  return [...new Set(ids)].map((id) => agents.find((a) => a.id === id)).filter(Boolean).slice(0, max)
 }

@@ -1,12 +1,15 @@
 import { describe, expect, it } from 'vitest'
 import { screen, within } from '@testing-library/react'
-import { expectAgentPicked, expectArtifactShown, mainMenu, newChatLink, startJourney } from '../journey'
+import { expectAgentPicked, expectArtifactShown, mainMenu, newChatLink, pickAgentFromMenu, startJourney } from '../journey'
 
 // Save for reuse after a Plan (spec stories 26–28): a Run several Agents did becomes one Agent whose Steps
 // are the Plan's Agents in order; a Run one Agent did still becomes an Agent without Steps.
 
-/** The "ใช้ซ้ำ" row under the new-chat composer. */
-const reuseRow = () => screen.getByRole('region', { name: 'ใช้ซ้ำ' })
+/** Open the composer's Agent menu on the new-chat screen, where a saved Agent is listed. */
+async function openAgentMenu(app) {
+  await app.click(screen.getByRole('button', { name: 'เลือก Agent' }))
+  await app.advance(100)
+}
 
 // The system plans Research, Document, Image and Review Agents for this request.
 const PLAN_REQUEST = 'ช่วยค้นข้อมูลตลาด Solar Rooftop สรุปเป็นรายงาน และสร้างภาพประกอบ'
@@ -31,13 +34,14 @@ async function finishedPlanRun() {
 }
 
 describe('Save for reuse after a multi-Agent Run', () => {
-  it('saves one new Agent whose Step count matches the Plan, shown in the reuse row', async () => {
+  it('saves one new Agent, listed in the composer menu on new chat', async () => {
     const app = await finishedPlanRun()
 
     await saveForReuse(app)
     await app.click(newChatLink())
+    await openAgentMenu(app)
 
-    expect(within(reuseRow()).getByRole('button', { name: new RegExp(`${SAVED_NAME.source}.*4 ขั้นตอน`) })).toBeVisible()
+    expect(screen.getByRole('option', { name: SAVED_NAME })).toBeVisible()
   })
 
   it('the new Agent with Steps carries its Step badge on the AI Agent page', async () => {
@@ -55,7 +59,7 @@ describe('Save for reuse after a multi-Agent Run', () => {
     await saveForReuse(app)
     await app.click(newChatLink())
 
-    await app.click(within(reuseRow()).getByRole('button', { name: SAVED_NAME }))
+    await pickAgentFromMenu(app, SAVED_NAME)
     expectAgentPicked(SAVED_NAME)
     await send(app, 'ตลาด Solar Rooftop ภาคอีสาน')
 
@@ -85,8 +89,8 @@ describe('Save for reuse after a one-Agent Run', () => {
     await saveForReuse(app)
     await app.click(newChatLink())
 
-    const saved = within(reuseRow()).getByRole('button', { name: /Agent สรุปจุดขายของระบบ Smart Warehouse/ })
-    expect(saved).toBeVisible()
-    expect(saved).not.toHaveTextContent(/ขั้นตอน/)
+    await app.click(within(mainMenu()).getByRole('link', { name: /AI Agent/ }))
+    const card = screen.getAllByRole('link', { name: /Agent สรุปจุดขายของระบบ Smart Warehouse/ })[0].closest('li')
+    expect(card).not.toHaveTextContent(/ขั้นตอน/)
   })
 })
