@@ -18,15 +18,23 @@ import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router-dom'
 import { expect, vi } from 'vitest'
 import App from '../src/App'
-import { AppStoreProvider, VIEW_STORAGE_KEY } from '../src/store/AppStore'
+import { AppStoreProvider, useStore, VIEW_STORAGE_KEY } from '../src/store/AppStore'
 import { TourProvider } from '../src/components/tour/Tour'
 
 /** Long enough for any multi-Agent Run, including a review loop back, to complete. */
 const RUN_TIMEOUT_MS = 3 * 60 * 1000
 
+/** The store as the app last saw it, so a journey can read what the screen does not show or act as another User would. */
+let latestStore = null
+function StoreProbe() {
+  latestStore = useStore()
+  return null
+}
+
 function Root() {
   return (
     <AppStoreProvider>
+      <StoreProbe />
       <TourProvider>
         <App />
       </TourProvider>
@@ -48,6 +56,8 @@ export function startJourney(route = '/', { view } = {}) {
   let clicks = 0
 
   return {
+    /** The store behind the screen: `state` and `actions`, always current. */
+    get store() { return latestStore },
     /** Number of clicks the user has made so far in this journey. */
     get clicks() { return clicks },
     /** A counted click, the way a user would click. */

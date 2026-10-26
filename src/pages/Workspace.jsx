@@ -20,7 +20,8 @@ import SaveForReuse from '../components/run/SaveForReuse'
 import Feedback from '../components/run/Feedback'
 import ComposerPick, { pickFromParams, usePick } from '../components/run/ComposerPick'
 import { userById } from '../data/catalog'
-import { personalOf } from '../lib/personal'
+import { personalOf, timesAskedBefore } from '../lib/personal'
+import { canSaveForReuse } from '../lib/reuse'
 import PlanCard from '../components/run/PlanCard'
 import { useCube } from '../lib/useCube'
 import AgentCube from '../components/agents/AgentCube'
@@ -142,6 +143,14 @@ function MemoryUsed({ run }) {
   return <p className="text-xs text-slate-500">ใช้ความจำ: {run.memoryUsed.join(' · ')}</p>
 }
 
+/** The Personal agent notices a request made again and offers to keep it; pressing "บันทึกไว้ใช้ซ้ำ" accepts, doing nothing creates nothing. */
+function RepeatHint({ run }) {
+  const { state } = useStore()
+  const times = timesAskedBefore(state.runs, run)
+  if (run.status !== 'completed' || !canSaveForReuse(run) || times === 0) return null
+  return <p className="text-xs text-slate-500">{personalOf(state).name}เห็นว่าคุณขอเรื่องนี้มาแล้ว {times} ครั้ง ถ้าจะใช้อีก กด “บันทึกไว้ใช้ซ้ำ” เพื่อเก็บเป็น Agent</p>
+}
+
 function Typing() {
   return (
     <span className="inline-flex gap-1 py-2" aria-label="กำลังพิมพ์">
@@ -172,6 +181,7 @@ function DeskNote({ run, latest, selected, onOpen, onClose }) {
               <ArtifactView artifact={run.steps[0].output} />
               <ArtifactActions run={run} latest={latest} />
               <MemoryUsed run={run} />
+              <RepeatHint run={run} />
             </>
           ) : <Typing />
         ) : (
@@ -187,6 +197,7 @@ function DeskNote({ run, latest, selected, onOpen, onClose }) {
               </button>
             ) : !selected && <Button size="sm" variant="secondary" icon={Eye} onClick={onOpen}>{run.status === 'completed' ? 'เปิดดูผลงาน' : 'ดูแผนงาน'}</Button>}
             <MemoryUsed run={run} />
+            <RepeatHint run={run} />
           </>
         )}
       </div>

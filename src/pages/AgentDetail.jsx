@@ -1,5 +1,5 @@
 import { Fragment, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, ArrowRight, CalendarClock, Copy, Palette, ThumbsUp, FileText, History, ListOrdered, Lock, Play, Wrench, BookOpen, Puzzle } from 'lucide-react'
 import { isAwaitingCompanyShare, useStore } from '../store/AppStore'
 import { DATA_CLASSES, deptById, knowledgeById, modelById, toolById, userById } from '../data/catalog'
@@ -7,6 +7,7 @@ import { fmt } from '../lib/utils'
 import { feedbackLabel, feedbackSummary } from '../lib/feedback'
 import { skillLink } from '../lib/routes'
 import { agentsUsingAsStep, hasSteps, stepAgents } from '../lib/steps'
+import { adoptedAgent, hasNewVersion, originalOf, updateFromOriginal } from '../lib/adopt'
 import { Card, CardHeader, EmptyState } from '../components/ui/Card'
 import Button from '../components/ui/Button'
 import Badge, { DeptBadge, ModelBadge, ShareBadge } from '../components/ui/Badge'
@@ -32,6 +33,7 @@ export default function AgentDetail() {
   const [editingCube, setEditingCube] = useState(false)
   const { id } = useParams()
   const { state, actions } = useStore()
+  const navigate = useNavigate()
   const agent = state.agents.find((a) => a.id === id)
   if (!agent) {
     return <EmptyState title="ไม่พบ Agent นี้" action={<Button to="/agents">กลับไป Agent Library</Button>} />
@@ -43,6 +45,14 @@ export default function AgentDetail() {
   const usedBy = agentsUsingAsStep(agent, state.agents)
   const runs = state.runs.filter((r) => r.agentId === agent.id || r.steps.some((s) => s.agentId === agent.id)).slice(0, 4)
   const classification = DATA_CLASSES.find((c) => c.id === agent.classification)
+  const original = originalOf(agent, state.agents)
+  const newVersion = agent.owner === state.userId && hasNewVersion(agent, state.agents)
+  // Taking someone else's Agent copies it to you in one click; what the owner edits later waits until you update.
+  const adopt = () => {
+    const copy = actions.addAgent(adoptedAgent(agent, state.userId))
+    actions.toast(`รับ ${copy.name} ไปใช้แล้ว`)
+    navigate(`/agents/${copy.id}`)
+  }
 
   return (
     <div className="space-y-6" data-eyt-frame>
@@ -63,6 +73,7 @@ export default function AgentDetail() {
               <h1 className="text-2xl font-semibold tracking-tight text-slate-900">{agent.name}</h1>
               <Badge tone="outline">v{agent.version}</Badge>
               {agent.forkedFrom && <Badge tone="brand" icon={Copy}>Cloned from {agent.forkedFrom}</Badge>}
+              {newVersion && <Badge tone="warning">มีเวอร์ชันใหม่ v{original.version}</Badge>}
             </div>
             <p className="mt-1.5 max-w-3xl text-sm leading-relaxed text-slate-600">{agent.description}</p>
             <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-slate-500">
@@ -77,6 +88,8 @@ export default function AgentDetail() {
           </div>
           <div className="flex shrink-0 items-center gap-2">
             <FavoriteButton id={agent.id} className="border border-slate-200 p-2" />
+            {newVersion && <Button onClick={() => actions.updateAgent(agent.id, updateFromOriginal(agent, original, state.userId))}>อัปเดตเป็น v{original.version}</Button>}
+            {agent.owner !== state.userId && <Button variant="subtle" onClick={adopt}>รับไปใช้</Button>}
             <Button icon={Copy} to={`/agents/new?from=${agent.id}`}>คัดลอกไปปรับใช้</Button>
             <Button variant="primary" icon={Play} to={`/workspace?agent=${agent.id}`}>ใช้งาน</Button>
           </div>

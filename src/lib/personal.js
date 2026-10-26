@@ -23,6 +23,12 @@ const NONE = { name: DEFAULT_NAME, setup: 'pending', memories: [] }
 /** The signed-in User's Personal agent (a brand-new User has one that is not set up yet). */
 export const personalOf = (state) => state.personal?.[state.userId] ?? NONE
 
+/** How many earlier Runs by the same User asked for exactly this (ignoring spaces and case): the same request again. */
+export function timesAskedBefore(runs, run) {
+  const same = (text) => text.replace(/\s+/g, '').toLowerCase()
+  return runs.filter((r) => r.id !== run.id && r.owner === run.owner && r.createdAt <= run.createdAt && same(r.prompt) === same(run.prompt)).length
+}
+
 /** The Memories whose keywords appear in the request: only these are used for it, never the whole Memory. */
 export function relevantMemories(memories, prompt) {
   const text = prompt.toLowerCase()
