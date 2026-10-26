@@ -5,9 +5,9 @@ import { TOUR_STEPS } from '../../src/components/tour/steps'
 // jsdom has no layout (every rect is 0×0), so the tour itself would skip each step as "not visible".
 // Instead, open each step's page and check its target element is there.
 describe('Tour: short, and never points at something that is gone', () => {
-  it('has at most 6 steps: command box, search, Agents, ready', () => {
+  it('has at most 6 steps: command box, search, Agents, your Agent, ready', () => {
     expect(TOUR_STEPS.length).toBeLessThanOrEqual(6)
-    expect(TOUR_STEPS.map((s) => s.title)).toEqual(['สั่งงาน AI', 'ค้นหาทั้งระบบ', 'AI Agent', 'พร้อมแล้ว!'])
+    expect(TOUR_STEPS.map((s) => s.title)).toEqual(['สั่งงาน AI', 'ค้นหาทั้งระบบ', 'AI Agent', 'Agent ของคุณ', 'พร้อมแล้ว!'])
   })
 
   it.each(TOUR_STEPS.map((s, i) => [i + 1, s.title, s]))('step %i "%s": its target exists on its page', (_, __, step) => {
