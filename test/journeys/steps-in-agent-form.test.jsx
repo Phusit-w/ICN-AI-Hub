@@ -93,10 +93,8 @@ describe('The "ขั้นตอน" section of the Agent form', () => {
     expect(screen.queryByRole('button', { name: 'เริ่มทำงาน' })).toBeNull()
     await app.letRunsFinish()
     expectArtifactShown()
-    await app.click(screen.getByRole('button', { name: 'ตัวเลือกเพิ่มเติม' }))
-    await app.click(screen.getByRole('menuitem', { name: 'ดูขั้นตอน' }))
-    const panel = screen.getByRole('complementary', { name: 'ขั้นตอนการทำงาน' })
-    const ran = within(panel).getAllByText(/^(Research|Document|Image) Agent$/).map((el) => el.textContent)
-    expect([...new Set(ran)]).toEqual(['Research Agent', 'Document Agent', 'Image Agent'])
+    const steps = screen.getByText(/^ดูขั้นตอนที่ทำ/)
+    await app.click(steps)
+    expect(steps.closest('details')).toHaveTextContent(/Research.*Document.*Image/s) // the Steps ran in the Agent's order
   })
 })

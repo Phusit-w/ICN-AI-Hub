@@ -88,8 +88,10 @@ describe('The "⋯" menu from the keyboard', () => {
     expect(screen.getByRole('menuitem', { name: 'คัดลอก' })).toHaveFocus()
     await app.type(document.activeElement, '{ArrowDown}')
     expect(screen.getByRole('menuitem', { name: 'แชร์' })).toHaveFocus()
-    await app.type(document.activeElement, '{ArrowUp}{ArrowUp}')
-    expect(screen.getByRole('menuitem', { name: 'ดูขั้นตอน' })).toHaveFocus()
+    await app.type(document.activeElement, '{ArrowDown}') // past the last item it wraps to the first
+    expect(screen.getByRole('menuitem', { name: 'คัดลอก' })).toHaveFocus()
+    await app.type(document.activeElement, '{ArrowUp}') // and back from the first to the last
+    expect(screen.getByRole('menuitem', { name: 'แชร์' })).toHaveFocus()
 
     await app.type(document.activeElement, '{Escape}')
     expect(screen.queryByRole('menu')).toBeNull()
@@ -97,7 +99,8 @@ describe('The "⋯" menu from the keyboard', () => {
 
     await app.type(more, '{ArrowDown}')
     await app.type(document.activeElement, '{End}{Enter}')
-    expect(screen.getByRole('complementary', { name: 'ขั้นตอนการทำงาน' })).toBeVisible()
+    expect(screen.queryByRole('menu')).toBeNull()
+    expect(screen.getByText('คัดลอกลิงก์สำหรับแชร์แล้ว')).toBeVisible()
     expect(app.clicks).toBe(clicksBefore)
   })
 })

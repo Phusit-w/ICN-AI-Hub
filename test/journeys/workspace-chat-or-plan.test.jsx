@@ -103,7 +103,7 @@ describe('Workspace: chat or Plan, decided by the system', () => {
     expectArtifactShown()
   })
 
-  it('"ดูขั้นตอน" opens the steps as a side panel next to the Thread, closed again in one click', async () => {
+  it('"ดูขั้นตอนที่ทำ" under a finished Artifact opens and closes the steps in the Desk', async () => {
     const app = startJourney('/workspace')
 
     await app.type(app.box('ข้อความ'), 'ช่วยค้นข้อมูลตลาด Solar Rooftop สรุปเป็นรายงาน และสร้างภาพประกอบ')
@@ -111,17 +111,23 @@ describe('Workspace: chat or Plan, decided by the system', () => {
     await app.click(screen.getByRole('button', { name: 'เริ่มทำงาน' }))
     await app.advance(1000)
 
-    // Step chips stay in the conversation while the Run works, and the panel is closed.
-    expect(screen.getByText(/กำลังทำ:/)).toBeVisible()
+    // The conversation says which step is under way; there is no side panel and no "ดูขั้นตอน" button.
+    expect(screen.getByText(/กำลังทำงาน ขั้นตอน/)).toBeVisible()
     expect(screen.queryByRole('complementary', { name: 'ขั้นตอนการทำงาน' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'ดูขั้นตอน' })).toBeNull()
 
-    await app.click(screen.getByRole('button', { name: 'ดูขั้นตอน' }))
-    const panel = screen.getByRole('complementary', { name: 'ขั้นตอนการทำงาน' })
-    expect(within(panel).getByText('Review Agent')).toBeVisible()
+    await app.letRunsFinish()
+    expectArtifactShown()
+    const steps = screen.getByText(/^ดูขั้นตอนที่ทำ/).closest('details')
+    expect(steps).not.toHaveAttribute('open')
+
+    await app.click(within(steps).getByText(/^ดูขั้นตอนที่ทำ/))
+    expect(steps).toHaveAttribute('open')
+    expect(steps).toHaveTextContent(/Research.*Review/s)
     expect(screen.getByRole('textbox', { name: 'ข้อความ' })).toBeVisible() // the Thread is still there
 
-    await app.click(within(panel).getByRole('button', { name: 'ปิดขั้นตอน' }))
-    expect(screen.queryByRole('complementary', { name: 'ขั้นตอนการทำงาน' })).toBeNull()
+    await app.click(within(steps).getByText(/^ดูขั้นตอนที่ทำ/))
+    expect(steps).not.toHaveAttribute('open')
   })
 
   it('chat history sits in the sidebar on every page, and one click opens a past Thread', async () => {
@@ -180,9 +186,9 @@ describe('Workspace: chat or Plan, decided by the system', () => {
     await app.letRunsFinish()
     expectArtifactShown()
 
-    await app.click(screen.getByRole('button', { name: 'ตัวเลือกเพิ่มเติม' }))
-    await app.click(screen.getByRole('menuitem', { name: 'ดูขั้นตอน' }))
-    const panel = screen.getByRole('complementary', { name: 'ขั้นตอนการทำงาน' })
-    expect(within(panel).getAllByText(/ส่งงานกลับไปที่ Research Agent/)).toHaveLength(1)
+    const steps = screen.getByText(/^ดูขั้นตอนที่ทำ/)
+    expect(steps).toHaveTextContent('ส่งกลับไปแก้ 1 ครั้ง') // the Review sent the work back to the Research once
+    await app.click(steps)
+    expect(steps.closest('details')).toHaveTextContent(/Research.*Review/s)
   })
 })

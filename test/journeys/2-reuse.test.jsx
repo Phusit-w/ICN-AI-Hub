@@ -49,11 +49,9 @@ describe('Journey 2: reuse a Favourite agent or an Agent with Steps', () => {
     expectWithinBudget(app, 2)
 
     // Each Step did its part, in the Agent's order.
-    await app.click(screen.getByRole('button', { name: 'ตัวเลือกเพิ่มเติม' }))
-    await app.click(screen.getByRole('menuitem', { name: 'ดูขั้นตอน' }))
-    const panel = screen.getByRole('complementary', { name: 'ขั้นตอนการทำงาน' })
-    const stepNames = within(panel).getAllByText(/^(Research|Data|Document|Image) Agent$/).map((el) => el.textContent)
-    expect([...new Set(stepNames)]).toEqual(['Research Agent', 'Data Agent', 'Document Agent', 'Image Agent'])
+    const steps = screen.getByText(/^ดูขั้นตอนที่ทำ/)
+    await app.click(steps)
+    expect(steps.closest('details')).toHaveTextContent(/Research.*Data.*Document.*Image/s) // the Steps ran in the Agent's order
   })
 
   it('sending with a Favourite agent runs it straight away', async () => {

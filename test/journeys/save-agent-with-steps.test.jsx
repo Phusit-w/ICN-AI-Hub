@@ -62,11 +62,9 @@ describe('Save for reuse after a multi-Agent Run', () => {
     expect(screen.queryByRole('button', { name: 'เริ่มทำงาน' })).not.toBeInTheDocument()
     await app.letRunsFinish()
     expectArtifactShown()
-    await app.click(screen.getAllByRole('button', { name: 'ตัวเลือกเพิ่มเติม' }).at(-1))
-    await app.click(screen.getByRole('menuitem', { name: 'ดูขั้นตอน' }))
-    const panel = screen.getByRole('complementary', { name: 'ขั้นตอนการทำงาน' })
-    const stepNames = within(panel).getAllByText(/^(Research|Document|Image|Review) Agent$/).map((el) => el.textContent)
-    expect([...new Set(stepNames)]).toEqual(['Research Agent', 'Document Agent', 'Image Agent', 'Review Agent'])
+    const steps = screen.getByText(/^ดูขั้นตอนที่ทำ/)
+    await app.click(steps)
+    expect(steps.closest('details')).toHaveTextContent(/Research.*Document.*Image.*Review/s) // the Steps ran in the Agent's order
   })
 
   it('offers no separate "save as Workflow" choice', async () => {

@@ -4,13 +4,19 @@
 
 **Blocked by:** 01 เสร็จแล้ว (ข้อใน `workspace-chat-or-plan` ต้องกดปุ่มเริ่มก่อนถึงจะถึงขั้นนี้)
 
-**Status:** ready-for-agent
+**Status:** done
 
 เทสต์ในตั๋วนี้ (3 ข้อ):
 - `artifact-actions`: "⋯" menu from the keyboard opens with Enter, moves with the arrow keys, runs an item with Enter, and closes with Escape (ตอนนี้เมนูมีแค่ "คัดลอก" กับ "แชร์" ให้เทสต์ใช้สองรายการนี้)
 - `workspace-chat-or-plan`: "ดูขั้นตอน" opens the steps as a side panel next to the Thread, closed again in one click (เขียนใหม่เป็นเปิดและปิดหัวข้อใน Desk)
 - `workspace-chat-or-plan`: in an Agent with Steps, a Review after a Research sends the work back once (อ่านจำนวนครั้งที่ส่งกลับจากหัวข้อ "ดูขั้นตอนที่ทำ · ส่งกลับไปแก้ N ครั้ง" และจาก Desk)
 
-- [ ] เทสต์ทั้ง 3 ข้อตรวจที่ที่ย้ายไป และผ่าน
-- [ ] ไม่มีเทสต์ใดอ้างแผง "ขั้นตอนการทำงาน" (complementary) หรือรายการเมนู "ดูขั้นตอน" ที่ไม่มีแล้ว
-- [ ] `npx vitest run` ไม่มีข้อไหนล้มเพิ่ม
+- [x] เทสต์ทั้ง 3 ข้อตรวจที่ที่ย้ายไป และผ่าน
+- [x] ไม่มีเทสต์ใดอ้างแผง "ขั้นตอนการทำงาน" (complementary) หรือรายการเมนู "ดูขั้นตอน" ที่ไม่มีแล้ว
+- [x] `npx vitest run` ไม่มีข้อไหนล้มเพิ่ม
+
+## Comments
+
+- เมนู ⋯ วนรอบได้ (ลูกศรลงจากข้อสุดท้ายกลับไปข้อแรก) เทสต์เมนูจึงตรวจการวนนี้ และตรวจว่า "แชร์" ขึ้น toast "คัดลอกลิงก์สำหรับแชร์แล้ว"
+- ใน Desk รายการขั้นตอนแสดงชื่อชนิด (Research, Document, Image, Review) ไม่ใช่ "Research Agent" และไม่มีข้อความ "ส่งงานกลับไปที่ …" (ข้อความนั้นอยู่ใน events ของ Run ซึ่งเคยแสดงในแผนเดิม) เทสต์ส่งกลับจึงอ่านจำนวนครั้งจากหัวข้อ "ส่งกลับไปแก้ N ครั้ง" และเห็นว่ามีทั้ง Research กับ Review ในรายการ แต่ไม่ได้ตรวจว่าส่งกลับไป Agent ตัวไหน
+- แก้แผงเก่าในเทสต์ของตั๋ว 02 ด้วย (`2-reuse` ข้อที่รันขั้นตอน) และ `save-agent-with-steps` กับ `steps-in-agent-form` (ข้อนี้ปิดข้อที่ 4 ของตั๋ว 03) เหลือ 18 ข้อที่ยังล้ม
