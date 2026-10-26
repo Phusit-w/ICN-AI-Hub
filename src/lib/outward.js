@@ -3,9 +3,9 @@
 import { truncate } from './utils'
 
 export const OUTWARD = {
-  email: { label: 'ส่งอีเมล', autoLabel: 'ส่งอีเมล' },
-  'line-group': { label: 'โพสต์ในกลุ่ม LINE', autoLabel: 'โพสต์ในกลุ่ม LINE' },
-  excel: { label: 'เพิ่มแถวใน Excel', autoLabel: 'เพิ่มแถวใน Excel' },
+  email: { label: 'ส่งอีเมล', yes: 'ส่ง' },
+  'line-group': { label: 'โพสต์ในกลุ่ม LINE', yes: 'โพสต์' },
+  excel: { label: 'เพิ่มแถวใน Excel', yes: 'เพิ่ม' },
 }
 export const OUTWARD_TYPES = Object.keys(OUTWARD)
 

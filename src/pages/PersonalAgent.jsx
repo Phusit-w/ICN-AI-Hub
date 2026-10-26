@@ -92,6 +92,11 @@ export default function PersonalAgent() {
         </ul>
       </section>
 
+      <section aria-label="ช่องทาง" className="space-y-2">
+        <h2 className="text-sm font-medium text-slate-800">ช่องทาง</h2>
+        <p className="text-sm text-slate-500">สั่งงาน Agent ของคุณจากนอกแอป <Link to="/agent/line" className="font-medium text-brand-700 hover:underline">LINE</Link></p>
+      </section>
+
       {personal.schedules.length > 0 && (
         <section aria-label="ตั้งเวลา" className="space-y-2">
           <h2 className="text-sm font-medium text-slate-800">ตั้งเวลา ({personal.schedules.length})</h2>

@@ -9,6 +9,7 @@ import { uid } from '../lib/utils'
 import usePersistentState from '../lib/usePersistentState'
 import { relevantMemories, seedPersonal } from '../lib/personal'
 import { EXCEL_COLUMNS, EXCEL_FILE, OUTWARD, outwardFor } from '../lib/outward'
+import { CODE_TTL_MS, GROUP_INTRO, GROUP_NAME, groupSummary, hear, lineOf, newCode, noticeFinished, say, withLine } from '../lib/line'
 
 const TICK_MS = 400
 const MIN = 60000
@@ -80,14 +81,54 @@ const initialState = () => ({
   // Each User's Personal agent: { name, setup: 'pending' | 'skipped' | 'done', memories }, keyed by user id.
   personal: seedPersonal(),
   // The Office365 Excel file that Personal agents add rows to (simulated); rows are only ever added at the end.
+  // Each User's LINE (simulated): { linked, code, expiresAt, notify, botInGroup, private, group }, keyed by user id.
+  line: {},
   office365: { excel: { file: EXCEL_FILE, columns: EXCEL_COLUMNS, rows: [['2026-10-19', 'สรุปยอดขายสัปดาห์', 'Arisa M.'], ['2026-10-20', 'ตรวจ SOC โครงการ A', 'Ploy K.']] } },
 })
 
+/** The User's answer to an Outward action the Run asked about: `decision` 'done' does it (simulated), 'declined' does nothing. */
+function resolveOutward(state, action) {
+  const run = state.runs.find((r) => r.id === action.runId)
+  if (run?.outward?.status !== 'asking') return state
+  const { type, draft } = run.outward
+  const done = action.decision === 'done'
+  let next = state
+  let rowNo
+  if (done && type === 'excel') {
+    const rows = [...state.office365.excel.rows, draft.row]
+    rowNo = rows.length
+    next = { ...next, office365: { ...state.office365, excel: { ...state.office365.excel, rows } } }
+  }
+  if (done && type === 'line-group') next = withLine(next, run.owner, (l) => ({ ...l, group: [...l.group, say('bot', draft.text)] }))
+  const entry = {
+    id: uid('log'), time: clock(action.now), user: userById(run.owner).name,
+    action: done ? `${OUTWARD[type].label} (จำลอง): ${draft.subject ?? draft.file ?? draft.group}` : `ไม่${OUTWARD[type].label}: ผู้ใช้เลือกไม่ทำ`,
+    result: done ? (action.via === 'auto' ? 'ทำเองตามที่ตั้งไว้' : 'ผู้ใช้ยืนยัน') : 'ยกเลิก', tone: done ? 'success' : 'neutral',
+  }
+  return {
+    ...next, auditLog: [entry, ...next.auditLog],
+    runs: next.runs.map((r) => (r.id === run.id ? { ...r, outward: { ...r.outward, status: action.decision, via: action.via, rowNo } } : r)),
+  }
+}
+
+/** A Run that has just finished: tell the User on LINE, and do by itself an Outward action they set to automatic (the Run may be in a LINE chat nobody has the app open for). */
+function finishRun(state, run, now) {
+  const next = noticeFinished(state, run)
+  return run.outward?.status === 'asking' && state.personal[run.owner]?.auto?.[run.outward.type]
+    ? resolveOutward(next, { runId: run.id, decision: 'done', via: 'auto', now })
+    : next
+}
+
 function reducer(state, action) {
   switch (action.type) {
-    case 'tick':
+    case 'tick': {
       if (!state.runs.some((r) => r.status === 'running')) return state
-      return { ...state, runs: state.runs.map((r) => advanceRun(r, action.dt, action.now)) }
+      const runs = state.runs.map((r) => advanceRun(r, action.dt, action.now))
+      const finished = runs.filter((r, i) => r.status === 'completed' && state.runs[i].status === 'running')
+      return finished.reduce((s, r) => finishRun(s, r, action.now), { ...state, runs })
+    }
+    case 'updateLine':
+      return withLine(state, action.userId, action.update)
     case 'addRun':
       return { ...state, runs: [action.run, ...state.runs] }
     case 'updateRun':
@@ -131,28 +172,8 @@ function reducer(state, action) {
       const current = state.personal[action.userId] ?? { name: 'Agent ของคุณ', setup: 'pending', memories: [] }
       return { ...state, personal: { ...state.personal, [action.userId]: { ...current, ...action.patch } } }
     }
-    case 'resolveOutward': {
-      const run = state.runs.find((r) => r.id === action.runId)
-      if (run?.outward?.status !== 'asking') return state
-      const { type, draft } = run.outward
-      const done = action.decision === 'done'
-      let office365 = state.office365
-      let rowNo
-      if (done && type === 'excel') {
-        const rows = [...office365.excel.rows, draft.row]
-        rowNo = rows.length
-        office365 = { ...office365, excel: { ...office365.excel, rows } }
-      }
-      const entry = {
-        id: uid('log'), time: clock(action.now), user: userById(run.owner).name,
-        action: done ? `${OUTWARD[type].label} (จำลอง): ${draft.subject ?? draft.file}` : `ไม่${OUTWARD[type].label}: ผู้ใช้เลือกไม่ทำ`,
-        result: done ? (action.via === 'auto' ? 'ทำเองตามที่ตั้งไว้' : 'ผู้ใช้ยืนยัน') : 'ยกเลิก', tone: done ? 'success' : 'neutral',
-      }
-      return {
-        ...state, office365, auditLog: [entry, ...state.auditLog],
-        runs: state.runs.map((r) => (r.id === run.id ? { ...r, outward: { ...r.outward, status: action.decision, via: action.via, rowNo } } : r)),
-      }
-    }
+    case 'resolveOutward':
+      return resolveOutward(state, action)
     case 'toggleFavorite':
       return { ...state, favorites: state.favorites.includes(action.id) ? state.favorites.filter((f) => f !== action.id) : [...state.favorites, action.id] }
     case 'toast':
@@ -197,24 +218,51 @@ export function AppStoreProvider({ children }) {
       dispatch({ type: 'requestCompanyShare', request: { id: uid('req'), kind, itemId: item.id, requester: item.owner, at: Date.now() } })
       return { ...item, share: 'department' }
     }
+    /**
+     * Plan a request; by default it waits so the user can review which agents will run.
+     * `autoStart` is a boolean or a predicate on the plan, for callers whose decision depends on what was planned.
+     */
+    const planRun = (prompt, opts, ctx, { threadId, autoStart = false, attachments = [], line, useMemory = true } = {}) => {
+      const plan = planRequest(prompt, { ...ctx, ...opts })
+      const owner = VIEW_PERSONAS[viewRef.current]
+      // The Personal agent uses only the Memories that bear on this request, and the Run records which.
+      const memoryUsed = useMemory ? relevantMemories(ctx.personal?.[owner]?.memories ?? [], prompt).map((m) => m.text) : []
+      const made = createRun({ prompt, plan, owner, threadId })
+      // A request called in from a LINE group is answered there, which is a post and waits for the User's yes.
+      const outward = line?.chat === 'group'
+        ? { type: 'line-group', status: 'asking', draft: { group: GROUP_NAME, text: groupSummary(made) } }
+        : outwardFor(prompt, userById(owner).name)
+      const run = { ...made, attachments, memoryUsed, outward, line }
+      const start = typeof autoStart === 'function' ? autoStart(plan) : autoStart
+      dispatch({ type: 'addRun', run: start ? startRun(run) : run })
+      return run.id
+    }
+
+    const lineUpdate = (update) => dispatch({ type: 'updateLine', userId: VIEW_PERSONAS[viewRef.current], update })
     return {
       toast,
       dismissToast: (id) => dispatch({ type: 'dismissToast', id }),
-      /**
-       * Plan a request; by default it waits so the user can review which agents will run.
-       * `autoStart` is a boolean or a predicate on the plan, for callers whose decision depends on what was planned.
-       */
-      planRun: (prompt, opts, ctx, { threadId, autoStart = false, attachments = [] } = {}) => {
-        const plan = planRequest(prompt, { ...ctx, ...opts })
-        const owner = VIEW_PERSONAS[viewRef.current]
-        // The Personal agent uses only the Memories that bear on this request, and the Run records which.
-        const memoryUsed = relevantMemories(ctx.personal?.[owner]?.memories ?? [], prompt).map((m) => m.text)
-        const run = { ...createRun({ prompt, plan, owner, threadId }), attachments, memoryUsed, outward: outwardFor(prompt, userById(owner).name) }
-        const start = typeof autoStart === 'function' ? autoStart(plan) : autoStart
-        dispatch({ type: 'addRun', run: start ? startRun(run) : run })
-        return run.id
-      },
+      planRun,
       startRun: (id) => dispatch({ type: 'updateRun', id, update: (r) => startRun(r) }),
+      /** Offer the signed-in User a code to link their LINE with (it expires soon). */
+      lineCode: () => lineUpdate((l) => ({ ...l, code: newCode(), expiresAt: Date.now() + CODE_TTL_MS })),
+      /** Whether the bot tells the User on LINE when a Run they started in the app finishes. */
+      lineNotify: (on) => lineUpdate((l) => ({ ...l, notify: on })),
+      /** Add the bot to the simulated group; the first thing it does there is say that it reads only what calls it. */
+      lineInviteBot: () => lineUpdate((l) => ({ ...l, botInGroup: true, group: [...l.group, say('bot', GROUP_INTRO)] })),
+      /**
+       * The User writes in their simulated LINE `chat` ('private' or 'group') and the bot answers by its rules (lib/line.js).
+       * `ctx` is the state, as for planRun; `useMemory` is the User's choice, for this one message, to let the bot use their Memory in the group.
+       */
+      lineSend: (chat, text, ctx, { useMemory = chat === 'private' } = {}) => {
+        const heard = hear(lineOf(ctx), chat, text, Date.now())
+        const mine = say('me', text)
+        const talk = (...messages) => lineUpdate((l) => ({ ...l, linked: l.linked || Boolean(heard.bind), code: heard.bind ? null : l.code, [chat]: [...l[chat], ...messages] }))
+        if (heard.work) {
+          planRun(heard.work, {}, ctx, { autoStart: true, line: { chat }, useMemory })
+          talk(mine, ...(chat === 'private' ? [say('bot', 'รับงานแล้ว กำลังทำ เสร็จแล้วจะส่งสรุปมาให้ที่นี่')] : []))
+        } else talk(mine, ...(heard.reply ? [say('bot', heard.reply)] : []))
+      },
       /** Shallow-merge `patch` into a run, e.g. to record what it was saved as. */
       annotateRun: (id, patch) => dispatch({ type: 'updateRun', id, update: (r) => ({ ...r, ...patch }) }),
       removeStep: (id, stepId) => dispatch({

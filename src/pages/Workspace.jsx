@@ -163,7 +163,7 @@ function OutwardCard({ run }) {
   useEffect(() => { if (status === 'asking' && auto) actions.resolveOutward(run.id, 'done', 'auto') }, [status, auto, run.id, actions])
   if (status === 'asking' && auto) return null
   const asking = status === 'asking'
-  const yes = type === 'email' ? 'ส่ง' : 'เพิ่ม'
+  const { yes } = OUTWARD[type]
   const excel = state.office365.excel
   return (
     <section aria-label={asking ? 'ถามก่อนลงมือ' : 'ผลการลงมือ'} className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50/60 p-4">
@@ -174,6 +174,11 @@ function OutwardCard({ run }) {
         <div className="rounded-lg border border-slate-200 bg-white p-3 text-sm text-slate-700">
           <p className="font-medium text-slate-900">{draft.subject}</p>
           <p className="mt-2 whitespace-pre-line">{draft.body}</p>
+        </div>
+      ) : type === 'line-group' ? (
+        <div className="rounded-lg border border-slate-200 bg-white p-3 text-sm text-slate-700">
+          <p className="font-medium text-slate-900">กลุ่ม {draft.group}</p>
+          <p className="mt-2 break-words">{draft.text}</p>
         </div>
       ) : (
         <p className="text-sm text-slate-700">
@@ -188,7 +193,7 @@ function OutwardCard({ run }) {
       ) : status === 'done' ? (
         <>
           <p className="text-sm text-emerald-700">
-            {type === 'email' ? 'ส่งอีเมลแล้ว (จำลอง)' : `เพิ่มแถวที่ ${rowNo} ในไฟล์แล้ว`}{via === 'auto' && ' · ทำเองตามที่ตั้งไว้'}
+            {type === 'email' ? 'ส่งอีเมลแล้ว (จำลอง)' : type === 'line-group' ? 'โพสต์ในกลุ่มแล้ว (จำลอง)' : `เพิ่มแถวที่ ${rowNo} ในไฟล์แล้ว`}{via === 'auto' && ' · ทำเองตามที่ตั้งไว้'}
           </p>
           {type === 'excel' && (
             <div className="overflow-x-auto">
@@ -199,7 +204,7 @@ function OutwardCard({ run }) {
             </div>
           )}
         </>
-      ) : <p className="text-sm text-slate-500">ไม่ได้ทำ ไม่มีอะไรถูก{type === 'email' ? 'ส่ง' : 'เพิ่ม'}</p>}
+      ) : <p className="text-sm text-slate-500">ไม่ได้ทำ ไม่มีอะไรถูก{yes}</p>}
     </section>
   )
 }
