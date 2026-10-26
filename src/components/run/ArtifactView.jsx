@@ -1,6 +1,7 @@
 import { CircleAlert, CircleCheck } from 'lucide-react'
 import logo from '../../assets/icn-logo.png'
 import Tabs from '../ui/Tabs'
+import { cn } from '../../lib/utils'
 import { hasMarks, MARK_COLUMN, sheetsOf } from '../../lib/sheets'
 
 /** The company name on the letterhead, as on ICN's organization chart. */
@@ -35,7 +36,7 @@ function Diagram({ nodes }) {
 function SheetTable({ sheet }) {
   return (
     <div className="overflow-x-auto rounded-lg border border-slate-200">
-      <table className="w-full text-sm">
+      <table className="w-full min-w-[36rem] text-sm">
         <thead className="bg-slate-50 text-left text-xs text-slate-500">
           <tr>
             {sheet.columns.map((c) => <th key={c} className="px-3 py-2 font-medium">{c}</th>)}
@@ -45,7 +46,7 @@ function SheetTable({ sheet }) {
         <tbody className="divide-y divide-slate-100">
           {sheet.rows.map((r, i) => (
             <tr key={i} className={sheet.marks?.[i] ? 'bg-amber-50' : undefined}>
-              {r.map((c, j) => <td key={j} className="px-3 py-2 text-slate-700">{c}</td>)}
+              {r.map((c, j) => <td key={j} className={cn('px-3 py-2 text-slate-700', String(c).length <= 14 && 'whitespace-nowrap')}>{c}</td>)}
               {hasMarks(sheet) && <td className="px-3 py-2 text-xs font-medium text-amber-700">{sheet.marks[i]}</td>}
             </tr>
           ))}

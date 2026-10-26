@@ -400,7 +400,7 @@ export default function Workspace() {
       <section className={cn('flex min-h-0 min-w-0 flex-1', split ? 'flex-col gap-4 lg:flex-row lg:gap-6' : 'flex-col')}>
         {run ? (
           <>
-            {split && <div className="order-first flex max-h-[45%] min-h-0 flex-col lg:order-last lg:max-h-none lg:flex-1"><Desk key={deskRun.id} run={deskRun} onClose={closeDesk} /></div>}
+            {split && <div className="order-first flex max-h-[45%] min-h-0 min-w-0 flex-col lg:order-last lg:max-h-none lg:flex-1"><Desk key={deskRun.id} run={deskRun} onClose={closeDesk} /></div>}
             <div className={cn('flex min-h-0 min-w-0 flex-1 flex-col', split && 'lg:w-[26rem] lg:flex-none')}>
               <div className="flex items-center gap-3 pb-3">
                 <Button size="sm" icon={Plus} onClick={() => setParams({})} className="lg:hidden">แชตใหม่</Button>
