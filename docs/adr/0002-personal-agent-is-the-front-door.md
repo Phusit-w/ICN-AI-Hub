@@ -16,3 +16,12 @@ Two rules go with it. A Personal agent never writes or sends anything outside th
 - Using another User's Agent copies it to the borrower (keeping a link to the original and showing "มีเวอร์ชันใหม่"), so the owner's later edits never change the borrower's results unseen.
 - An Admin switches each outside app and channel on or off for the whole company (all off to begin with) and can cut one person's connection. When a staff account is closed, that person's memory and connections are deleted.
 - Anything that reaches outside the company (LINE, Office365, a cloud model) gets only what the request needs, and the Run shows which memories were used. Requests the sensitive-data check catches are refused on LINE and sent to the web app.
+
+## Where the demo stops short of this
+
+The demo simulates LINE, Office365, email and the Office Add-in. It differs from the decision above in four places, all to be closed when the real thing is built:
+
+- Only LINE is linked person by person, so only LINE has a count of linked people and a per-person cut. Email and Office365 use the signed-in User's rights without a link step.
+- A Schedule is a rule on the Personal agent, but nothing fires it by itself, so no "Schedule ran" notice is sent on LINE yet.
+- Closing an account deletes its memory and LINE link but does not stop that person signing in.
+- The Add-in must be checked against Microsoft's Office Add-ins documentation (declared API domains, CORS, supported Office versions) before it is built for real.
