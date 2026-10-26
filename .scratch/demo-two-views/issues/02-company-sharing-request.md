@@ -6,7 +6,7 @@ Spec: `.scratch/demo-two-views/spec.md` (stories 14, 15, 17–20, 24).
 
 **Blocked by:** 01
 
-**Status:** ready-for-agent
+**Status:** done
 
 - [x] Sharing with the whole company as a User shows "รออนุมัติ" and the item stays at department sharing
 - [x] Admin sees pending requests with requester, item and time

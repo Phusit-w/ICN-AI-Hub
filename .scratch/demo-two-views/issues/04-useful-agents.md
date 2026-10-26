@@ -6,7 +6,7 @@ Spec: `.scratch/demo-two-views/spec.md` (stories 21, 22, 43, 44).
 
 **Blocked by:** 03
 
-**Status:** ready-for-agent
+**Status:** done
 
 - [x] No list ranking people anywhere in the app
 - [x] Top Agents by Feedback, each showing its department and helpful % / count

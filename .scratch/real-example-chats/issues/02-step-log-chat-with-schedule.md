@@ -4,7 +4,7 @@
 
 **Blocked by:** 01 (ต้องมีชนิด Artifact แบบตารางและปุ่มดาวน์โหลด)
 
-**Status:** ready-for-agent
+**Status:** done
 
 - [x] Thread มี 2 Run; Run ที่สองมีป้ายว่าเริ่มจาก Schedule
 - [x] การ์ด Schedule ในแชตแสดง "จันทร์ 20:00" และช่วงที่ครอบ; Schedule อยู่บน Agent ไม่ใช่บน Thread

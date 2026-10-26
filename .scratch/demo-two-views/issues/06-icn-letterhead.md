@@ -6,7 +6,7 @@ Spec: `.scratch/demo-two-views/spec.md` (stories 45, 46).
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** done
 
 - [x] Document Artifact preview shows the ICN logo and company name above the content
 - [x] Table, image and chat Artifacts show no letterhead

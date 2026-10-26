@@ -6,7 +6,7 @@ Spec: `.scratch/demo-two-views/spec.md` (stories 1–13, 16, 23).
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** done
 
 - [x] Profile menu switches view; the sidebar name/title changes with it
 - [x] Opens in the User view; the chosen view survives a reload

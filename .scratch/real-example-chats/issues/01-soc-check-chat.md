@@ -4,7 +4,7 @@
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** done
 
 - [x] Thread ตัวอย่างอยู่ในประวัติแชตของ User เดโม (วันที่ก่อน 2026-10-22) และเปิดได้ใน Workspace layout ปัจจุบัน
 - [x] ตารางแสดงในพื้นที่ทำงาน มี pass / fail / not found อย่างน้อยอย่างละหนึ่งแถว และคอลัมน์หน้าที่อ้างทุกแถว

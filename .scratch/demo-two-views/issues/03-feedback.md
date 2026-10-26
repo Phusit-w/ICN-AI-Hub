@@ -6,7 +6,7 @@ Spec: `.scratch/demo-two-views/spec.md` (stories 27–33).
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** done
 
 - [x] 👍/👎 under each finished Artifact; 👎 offers an optional reason; the verdict can be changed
 - [x] Agent page shows helpful % and count, updating right after the user's Feedback
