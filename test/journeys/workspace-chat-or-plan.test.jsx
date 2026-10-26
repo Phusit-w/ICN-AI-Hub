@@ -67,13 +67,15 @@ describe('Workspace: chat or Plan, decided by the system', () => {
     await app.type(app.box('ข้อความ'), 'วิเคราะห์ข้อมูล inventory คลังสินค้า และสรุปเป็นรายงาน')
     await send(app)
 
-    const stages = () => screen.getAllByRole('button', { name: /ออกจากแผน$/ }).map((b) => b.getAttribute('aria-label'))
-    expect(stages().some((s) => s.includes('Sales Proposal Agent'))).toBe(false)
+    // The Plan lists each step with its Agent's name (without "Agent"); the Proposal Agent's steps include "Sales Proposal".
+    const plannedWithProposal = () => screen.queryAllByText('Sales Proposal').length > 0
+    expect(screen.getByRole('button', { name: 'เริ่มทำงาน' })).toBeVisible() // there is a Plan to read
+    expect(plannedWithProposal()).toBe(false)
 
     await app.click(screen.getAllByRole('link', { name: 'แชตใหม่' })[0])
     await app.type(app.box('ข้อความ'), 'ตอบ TOR โครงการกล้องวงจรปิด')
     await send(app)
-    expect(stages().some((s) => s.includes('Sales Proposal Agent'))).toBe(true)
+    expect(plannedWithProposal()).toBe(true)
   })
 
   it('a request with a picked Agent with Steps starts immediately, with no Plan to confirm', async () => {

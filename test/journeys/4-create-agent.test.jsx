@@ -50,9 +50,8 @@ describe('Journey 4: create an Agent', () => {
   })
 
   it('@ calls an existing Agent to help write; the AI uses it, and it does not become a Step', async () => {
-    const app = startJourney()
+    const app = startJourney('/agents/new') // the way there from Home is the first test's; no shortcut link on Home any more
 
-    await app.click(screen.getByRole('link', { name: /สร้างเองได้/ }))
     await app.type(app.box('ข้อความถึง AI'), 'ตอบคำถามสวัสดิการ ตาม @HR')
     expect(screen.getByRole('option', { name: 'HR Policy Agent' })).toBeVisible()
     await app.type(app.box('ข้อความถึง AI'), '{Enter}{Enter}') // pick the first option, then send
@@ -65,7 +64,7 @@ describe('Journey 4: create an Agent', () => {
     await app.click(screen.getByRole('button', { name: /ให้ AI ช่วยเขียน/ }))
     await app.click(screen.getByRole('button', { name: 'สร้าง Agent' }))
     expect(app.url()).toMatch(/^\/agents\/(?!new)/)
-    expectWithinBudget(app, 3)
+    expectWithinBudget(app, 2)
   })
 
   it('the @ list can be picked with the mouse too', async () => {
