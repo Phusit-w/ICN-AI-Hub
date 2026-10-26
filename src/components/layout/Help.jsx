@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { BookOpen, CircleHelp, Compass, Sparkles, X } from 'lucide-react'
+import { CircleHelp, Compass } from 'lucide-react'
 import { useTour } from '../tour/Tour'
 import EntityIcon from '../agents/EntityIcon'
 import Button from '../ui/Button'
@@ -14,10 +14,6 @@ export const TERMS = [
   { icon: 'steps', tone: 'agent', term: 'ขั้นตอน (Step)', like: 'เหมือนการส่งต่องานระหว่างแผนก', text: 'Agent ตัวไหนก็มีขั้นตอนได้ แต่ละขั้นส่งงานให้ Agent อีกตัวทำต่อตามลำดับ เช่น สรุป TOR → คำนวณราคา → ร่างหนังสือ ใช้งานเหมือน Agent ทั่วไป' },
   { icon: 'research', tone: 'agent', term: 'Local / Cloud AI', like: 'ทำงานในบริษัท / ใช้บริการภายนอก', text: 'ข้อมูลลับประมวลผลบน Local AI ภายในบริษัทเสมอ ระบบเลือกให้อัตโนมัติ' },
 ]
-
-const SEEN_KEY = 'icn.welcome.dismissed'
-const readSeen = () => { try { return localStorage.getItem(SEEN_KEY) === '1' } catch { return false } }
-const writeSeen = () => { try { localStorage.setItem(SEEN_KEY, '1') } catch { /* storage unavailable — card simply reappears */ } }
 
 function TermList() {
   return (
@@ -50,36 +46,5 @@ export function HelpButton() {
         <TermList />
       </Modal>
     </>
-  )
-}
-
-/** First-visit introduction on the new-chat screen; dismissal is remembered per browser. */
-export function WelcomeCard() {
-  const [hidden, setHidden] = useState(readSeen)
-  const { start } = useTour()
-  if (hidden) return null
-  const close = () => { writeSeen(); setHidden(true) }
-  const steps = ['พิมพ์งานที่ต้องการเป็นภาษาปกติ', 'ระบบเลือก AI Agent ที่เหมาะให้เอง', 'รอรับผลงาน ดูความคืบหน้าได้ตลอด']
-  return (
-    <div className="rise relative rounded-2xl border border-brand-100 bg-brand-50/50 p-5">
-      <button type="button" onClick={close} className="absolute top-3 right-3 rounded-md p-1 text-slate-400 hover:bg-white hover:text-slate-600" aria-label="ปิดคำแนะนำ"><X className="size-4" /></button>
-      <p className="flex items-center gap-2 text-sm font-semibold text-slate-900"><Sparkles className="size-4 text-brand-600" /> ยินดีต้อนรับสู่ ICN AI Hub</p>
-      <p className="mt-1 text-[13px] text-slate-600">ไม่ต้องรู้เรื่อง AI ก็ใช้ได้ — ใช้แค่ 3 ขั้นตอน</p>
-      <ol className="mt-3 grid gap-2 sm:grid-cols-3">
-        {steps.map((s, i) => (
-          <li key={s} className="flex items-center gap-2.5 rounded-xl bg-white px-3 py-2.5 text-[13px] text-slate-700 ring-1 ring-brand-100">
-            <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-brand-600 text-xs font-semibold text-white">{i + 1}</span>{s}
-          </li>
-        ))}
-      </ol>
-      <details className="group mt-3">
-        <summary className="flex cursor-pointer items-center gap-1.5 text-[13px] font-medium text-brand-700"><BookOpen className="size-3.5" /> คำศัพท์ที่จะเจอในระบบ</summary>
-        <div className="mt-3 rounded-xl bg-white p-4 ring-1 ring-brand-100"><TermList /></div>
-      </details>
-      <div className="mt-3 flex flex-wrap items-center gap-2">
-        <Button size="sm" variant="secondary" icon={Compass} onClick={() => { close(); start() }}>เริ่มทัวร์แนะนำ (1 นาที)</Button>
-        <Button size="sm" variant="ghost" onClick={close}>เข้าใจแล้ว ไม่ต้องแสดงอีก</Button>
-      </div>
-    </div>
   )
 }
