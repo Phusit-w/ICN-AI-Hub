@@ -5,7 +5,10 @@ import { captureDownloads, lastWorkbook } from '../downloads'
 
 // Real example chats, ticket 01: the SOC check Thread in chat history, its table Artifact, and the Excel download.
 
-afterEach(() => vi.restoreAllMocks())
+afterEach(() => {
+  vi.restoreAllMocks()
+  delete window.claude
+})
 
 async function openSocChat() {
   const app = startJourney()
@@ -43,6 +46,23 @@ describe('Example chat: SOC check against a datasheet', () => {
     expect(sheet.name).toBe('ผลตรวจรายข้อ')
     expect(sheet.rowCount).toBe(shownRows.length)
     expect(shownRows.map((_, i) => sheet.getRow(i + 1).values.slice(1).map((v) => v ?? ''))).toEqual(shownRows)
+  })
+
+  it('inside a published Artifact the frame around it is asked to save the .xlsx, and declining it is not a failure', async () => {
+    const save = vi.fn().mockResolvedValueOnce({ status: 'saved' }).mockRejectedValueOnce({ code: 'declined', message: 'no' })
+    window.claude = { use: async (name) => (name === 'downloads' ? { save } : null) }
+    const app = await openSocChat()
+    const files = captureDownloads()
+
+    await app.click(screen.getByRole('button', { name: 'ดาวน์โหลด Excel' }))
+    await vi.waitFor(() => expect(save).toHaveBeenCalledTimes(1))
+    expect(save.mock.calls[0][0].filename).toBe('ผลตรวจ SOC เทียบ datasheet.xlsx')
+    expect(save.mock.calls[0][0].data.byteLength).toBeGreaterThan(0)
+
+    await app.click(screen.getByRole('button', { name: 'ดาวน์โหลด Excel' }))
+    await vi.waitFor(() => expect(save).toHaveBeenCalledTimes(2))
+    expect(files).toHaveLength(0) // the page started no download of its own
+    expect(screen.queryByText('ดาวน์โหลดไม่สำเร็จ ลองอีกครั้ง')).toBeNull()
   })
 
   it('the Agent behind it is in the library as a single Agent', async () => {

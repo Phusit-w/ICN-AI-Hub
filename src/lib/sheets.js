@@ -27,13 +27,28 @@ export function buildWorkbook(ExcelJS, artifact) {
   return wb
 }
 
-/** Build the .xlsx and hand it to the browser as a download. The Excel library is fetched only now. */
+/**
+ * Build the .xlsx and hand it to the browser as a download. The Excel library is fetched only now.
+ * Inside a published Artifact the page may not start a download itself, so the viewer's frame is asked to offer the file
+ * (they can decline, which is not a failure); anywhere else, or if the frame cannot, the page downloads it itself.
+ */
 export async function downloadExcel(artifact) {
   const mod = await import('exceljs')
   const wb = buildWorkbook(mod.default ?? mod, artifact)
   const buffer = await wb.xlsx.writeBuffer()
+  const filename = /\.xlsx$/i.test(artifact.title) ? artifact.title : `${artifact.title}.xlsx`
+
+  const frame = await window.claude?.use?.('downloads')
+  if (frame) {
+    try {
+      await frame.save({ filename, data: buffer })
+      return
+    } catch (error) {
+      if (error?.code === 'declined') return
+    }
+  }
+
   const url = URL.createObjectURL(new Blob([buffer], { type: XLSX_TYPE }))
-  const link = Object.assign(document.createElement('a'), { href: url, download: /\.xlsx$/i.test(artifact.title) ? artifact.title : `${artifact.title}.xlsx` })
-  link.click()
+  Object.assign(document.createElement('a'), { href: url, download: filename }).click()
   setTimeout(() => URL.revokeObjectURL(url), 10000) // revoking at once can cancel the download in some browsers
 }
