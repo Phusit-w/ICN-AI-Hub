@@ -11,6 +11,10 @@ An AI assistant with its own instruction, skills and knowledge, built for one ki
 An Agent that carries Steps is called a team (ทีม) in the interface, so it reads apart from a single-purpose Agent at a glance.
 _Avoid_: Bot, assistant profile, Workflow, สายงาน (there is no separate Workflow: a multi-stage job is an Agent with Steps)
 
+**Personal agent** (Agent ส่วนตัว):
+The one Agent every User has for themselves: it learns what they do, decides how each request is carried out (answer, Plan, or an Agent borrowed from the library), and speaks to them in the app and in their Channels. The User can name it; "Agent ของคุณ" is the starting name.
+_Avoid_: Assistant, bot, "อัตโนมัติ" (that was the choice that no longer exists beside it)
+
 **Step** (ขั้นตอน):
 One stage inside an Agent that hands the work to another Agent; Steps run in order, each taking what the one before produced. Only an Agent without Steps of its own can be a Step.
 _Avoid_: Node, task
@@ -30,7 +34,7 @@ One request carried out by one or more Agents, producing one or more Artifacts (
 _Avoid_: Task, job, execution
 
 **Plan** (แผนงาน):
-The ordered list of Agents the system proposes for a Run when the user did not pick an Agent themselves; the user confirms it before the Run starts.
+The ordered list of Agents the Personal agent proposes for a Run when the user did not pick an Agent themselves; the user confirms it before the Run starts.
 _Avoid_: Workflow, workflow mode (a Plan is not saved; Save for reuse turns it into an Agent with Steps)
 
 **Thread** (แชต):
@@ -38,7 +42,7 @@ A conversation made of one or more Runs that follow on from each other.
 _Avoid_: Session, conversation
 
 **Schedule** (ตั้งเวลา):
-A rule on an Agent that it does its job at a set time, such as every Monday 20:00; each time it fires, a new Run is added to the same Thread, covering the period since the last one.
+A rule on a User's Personal agent that it does a job at a set time, such as every Monday 20:00; each time it fires, a new Run is added to the same Thread, covering the period since the last one.
 _Avoid_: Cron, automation, trigger
 
 **Artifact** (ผลงาน):
@@ -48,6 +52,22 @@ _Avoid_: Output, result, message
 **Desk** (พื้นที่ทำงาน):
 The area beside the Thread where a Run's Plan, progress and Artifacts are shown; the Thread itself only talks. It opens by itself on a finished Run and stays closed while one is running until the User expands it.
 _Avoid_: Panel, canvas, preview
+
+**Memory** (ความจำ):
+What a Personal agent keeps about its User, such as their role, routine jobs and preferred report style. Shown to the User, who can edit or delete any of it; private to them, and never carried along when they share an Agent.
+_Avoid_: Profile (the page that shows it is called "สิ่งที่ Agent รู้เกี่ยวกับคุณ"), history
+
+**Connection** (การเชื่อม):
+The link a User gives their Personal agent to an outside app or Channel: LINE, email, Office365 or the Office Add-in. An Admin switches each kind on for the company and can cut one person's Connection.
+_Avoid_: Integration, plugin
+
+**Channel** (ช่องทาง):
+A place outside the web app where a User talks to their Personal agent, such as LINE (one-to-one, or in a group when called with @) or the Office Add-in beside a Word, Excel or PowerPoint file.
+_Avoid_: Bot, integration
+
+**Outward action** (การลงมือออกนอก):
+Anything a Personal agent does that leaves the app: sending an email, posting in a LINE group, adding a row to an Excel file. Needs the User's yes each time, unless the User has set that kind to automatic. Reading and drafting are not Outward actions.
+_Avoid_: Write access, permission
 
 **Cube**:
 The small face that stands for an Agent: its body shape, eyes, colour and accessory. The User can switch every Cube off with the button at the foot of the sidebar; the app then shows plain icons.
