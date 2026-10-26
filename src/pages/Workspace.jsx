@@ -22,6 +22,7 @@ import ComposerPick, { pickFromParams, usePick } from '../components/run/Compose
 import { userById } from '../data/catalog'
 import { personalOf, timesAskedBefore } from '../lib/personal'
 import { canSaveForReuse } from '../lib/reuse'
+import { OUTWARD } from '../lib/outward'
 import PlanCard from '../components/run/PlanCard'
 import { useCube } from '../lib/useCube'
 import AgentCube from '../components/agents/AgentCube'
@@ -151,6 +152,58 @@ function RepeatHint({ run }) {
   return <p className="text-xs text-slate-500">{personalOf(state).name}เห็นว่าคุณขอเรื่องนี้มาแล้ว {times} ครั้ง ถ้าจะใช้อีก กด “บันทึกไว้ใช้ซ้ำ” เพื่อเก็บเป็น Agent</p>
 }
 
+/**
+ * An Outward action the Personal agent drafted: sending or writing outside the app waits for the User's yes ("ถามก่อนลงมือ").
+ * If the User has set that kind to automatic, it is done on the spot and the card only reports it.
+ */
+function OutwardCard({ run }) {
+  const { state, actions } = useStore()
+  const { type, status, draft, via, rowNo } = run.outward
+  const auto = personalOf(state).auto[type]
+  useEffect(() => { if (status === 'asking' && auto) actions.resolveOutward(run.id, 'done', 'auto') }, [status, auto, run.id, actions])
+  if (status === 'asking' && auto) return null
+  const asking = status === 'asking'
+  const yes = type === 'email' ? 'ส่ง' : 'เพิ่ม'
+  const excel = state.office365.excel
+  return (
+    <section aria-label={asking ? 'ถามก่อนลงมือ' : 'ผลการลงมือ'} className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50/60 p-4">
+      <p className="text-sm font-semibold text-slate-900">
+        {asking ? `${personalOf(state).name}ร่างไว้แล้ว ${OUTWARD[type].label}ไหม` : OUTWARD[type].label}
+      </p>
+      {type === 'email' ? (
+        <div className="rounded-lg border border-slate-200 bg-white p-3 text-sm text-slate-700">
+          <p className="font-medium text-slate-900">{draft.subject}</p>
+          <p className="mt-2 whitespace-pre-line">{draft.body}</p>
+        </div>
+      ) : (
+        <p className="text-sm text-slate-700">
+          ต่อท้ายไฟล์ {draft.file} บน Office365: {draft.columns.map((c, i) => `${c} ${draft.row[i]}`).join(' · ')}
+        </p>
+      )}
+      {asking ? (
+        <div className="flex gap-2">
+          <Button size="sm" variant="primary" onClick={() => actions.resolveOutward(run.id, 'done')}>{yes}</Button>
+          <Button size="sm" onClick={() => actions.resolveOutward(run.id, 'declined')}>ไม่ทำ</Button>
+        </div>
+      ) : status === 'done' ? (
+        <>
+          <p className="text-sm text-emerald-700">
+            {type === 'email' ? 'ส่งอีเมลแล้ว (จำลอง)' : `เพิ่มแถวที่ ${rowNo} ในไฟล์แล้ว`}{via === 'auto' && ' · ทำเองตามที่ตั้งไว้'}
+          </p>
+          {type === 'excel' && (
+            <div className="overflow-x-auto">
+              <table aria-label={excel.file} className="w-full text-left text-xs text-slate-600">
+                <thead><tr>{excel.columns.map((c) => <th key={c} scope="col" className="pr-4 pb-1 font-medium text-slate-500">{c}</th>)}</tr></thead>
+                <tbody>{excel.rows.map((r, i) => <tr key={i}>{r.map((cell, j) => <td key={j} className="pr-4 py-0.5">{cell}</td>)}</tr>)}</tbody>
+              </table>
+            </div>
+          )}
+        </>
+      ) : <p className="text-sm text-slate-500">ไม่ได้ทำ ไม่มีอะไรถูก{type === 'email' ? 'ส่ง' : 'เพิ่ม'}</p>}
+    </section>
+  )
+}
+
 function Typing() {
   return (
     <span className="inline-flex gap-1 py-2" aria-label="กำลังพิมพ์">
@@ -182,6 +235,7 @@ function DeskNote({ run, latest, selected, onOpen, onClose }) {
               <ArtifactActions run={run} latest={latest} />
               <MemoryUsed run={run} />
               <RepeatHint run={run} />
+              {run.outward && <OutwardCard run={run} />}
             </>
           ) : <Typing />
         ) : (
@@ -198,6 +252,7 @@ function DeskNote({ run, latest, selected, onOpen, onClose }) {
             ) : !selected && <Button size="sm" variant="secondary" icon={Eye} onClick={onOpen}>{run.status === 'completed' ? 'เปิดดูผลงาน' : 'ดูแผนงาน'}</Button>}
             <MemoryUsed run={run} />
             <RepeatHint run={run} />
+            {run.status === 'completed' && run.outward && <OutwardCard run={run} />}
           </>
         )}
       </div>

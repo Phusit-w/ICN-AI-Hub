@@ -5,6 +5,8 @@ import { useStore } from '../store/AppStore'
 import { personalOf } from '../lib/personal'
 import { uid } from '../lib/utils'
 import Button from '../components/ui/Button'
+import { Toggle } from '../components/ui/Form'
+import { OUTWARD, OUTWARD_TYPES } from '../lib/outward'
 
 const inputClass = 'h-9 min-w-0 flex-1 rounded-lg border border-slate-200 bg-white px-3 text-sm focus:border-brand-400 focus:ring-4 focus:ring-brand-100 focus:outline-none'
 
@@ -75,6 +77,19 @@ export default function PersonalAgent() {
           <input aria-label="เพิ่มความจำ" value={added} placeholder="เช่น ส่งงานให้ลูกค้าเป็นภาษาไทยทางการ" onChange={(e) => setAdded(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && add()} className={inputClass} />
           <Button icon={Plus} onClick={add}>เพิ่ม</Button>
         </div>
+      </section>
+
+      <section aria-label="ทำเองเลย" className="space-y-2">
+        <h2 className="text-sm font-medium text-slate-800">ทำเองเลย</h2>
+        <p className="text-sm text-slate-500">ปกติ Agent ถามก่อนทุกครั้งที่จะส่งหรือเขียนออกนอก เปิดข้อไหนแล้ว Agent จะทำข้อนั้นเองโดยไม่ถาม ปิดกลับได้ทุกเมื่อ</p>
+        <ul className="divide-y divide-slate-100 rounded-xl border border-slate-200 bg-white px-4">
+          {OUTWARD_TYPES.map((type) => (
+            <li key={type} className="flex items-center justify-between py-2.5 text-sm text-slate-700">
+              {OUTWARD[type].label}
+              <Toggle label={`ทำเองเลย: ${OUTWARD[type].label}`} checked={personal.auto[type]} onChange={(on) => actions.savePersonal({ auto: { ...personal.auto, [type]: on } })} />
+            </li>
+          ))}
+        </ul>
       </section>
 
       {personal.schedules.length > 0 && (

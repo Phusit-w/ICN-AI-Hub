@@ -3,12 +3,15 @@
 
 export const DEFAULT_NAME = 'Agent ของคุณ'
 
+/** Which kinds of Outward action the User lets their Personal agent do without asking: none to begin with. */
+const noAuto = () => ({ email: false, 'line-group': false, excel: false })
+
 const memory = (id, text, keys) => ({ id, text, keys })
 
 /** The User persona has used their Personal agent for a while, so the demo opens with a real Memory to show. */
 export const seedPersonal = () => ({
   'u-kanya': {
-    name: DEFAULT_NAME, setup: 'done',
+    name: DEFAULT_NAME, setup: 'done', auto: noAuto(),
     // A Schedule is a rule of the Personal agent: at `when` it does the job of `agentId` and adds a Run to the Thread.
     schedules: [{ id: 'sch-step-log', agentId: 'agent-step-log', when: 'ทุกวันจันทร์ 20:00', covers: 'สัปดาห์ก่อนหน้า (จันทร์–อาทิตย์)' }],
     memories: [
@@ -17,10 +20,10 @@ export const seedPersonal = () => ({
     ],
   },
   // The Admin persona has not met their Personal agent yet, so switching to the Admin view shows the first-use invitation.
-  'u-kittipong': { name: DEFAULT_NAME, setup: 'pending', schedules: [], memories: [] },
+  'u-kittipong': { name: DEFAULT_NAME, setup: 'pending', auto: noAuto(), schedules: [], memories: [] },
 })
 
-const NONE = { name: DEFAULT_NAME, setup: 'pending', schedules: [], memories: [] }
+const NONE = { name: DEFAULT_NAME, setup: 'pending', auto: noAuto(), schedules: [], memories: [] }
 
 /** The signed-in User's Personal agent (a brand-new User has one that is not set up yet). */
 export const personalOf = (state) => state.personal?.[state.userId] ?? NONE

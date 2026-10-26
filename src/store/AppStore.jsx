@@ -8,6 +8,7 @@ import { advanceRun, createRun, planRequest, replayRun, startRun } from '../lib/
 import { uid } from '../lib/utils'
 import usePersistentState from '../lib/usePersistentState'
 import { relevantMemories, seedPersonal } from '../lib/personal'
+import { EXCEL_COLUMNS, EXCEL_FILE, OUTWARD, outwardFor } from '../lib/outward'
 
 const TICK_MS = 400
 const MIN = 60000
@@ -42,7 +43,9 @@ function seedRuns() {
       const steps = planned.steps.slice(0, outputs.length)
       const reason = steps.length > 1 ? planned.reason : `ใช้ Agent "${steps[0].name}" ที่คุณเลือก`
       const run = replayRun(createRun({ prompt, plan: { ...planned, steps, reason }, owner: CURRENT_USER_ID, threadId, createdAt: Date.now() - ago }), ago)
-      return { ...run, title, attachments, scheduleLabel, scheduleSet, steps: run.steps.map((s, i) => ({ ...s, id: uid('step'), output: outputs[i] })) }
+      // A Run the Schedule started adds its week to the Office365 file, which waits for the User's yes unless they set it to automatic.
+      const outward = scheduleLabel && { type: 'excel', status: 'asking', draft: { file: EXCEL_FILE, columns: EXCEL_COLUMNS, row: ['2026-10-19', title, 'Agent ของคุณ (ตั้งเวลา)'] } }
+      return { ...run, title, attachments, scheduleLabel, scheduleSet, outward: outward || undefined, steps: run.steps.map((s, i) => ({ ...s, id: uid('step'), output: outputs[i] })) }
     })
   }
   return [
@@ -76,6 +79,8 @@ const initialState = () => ({
   auditLog: AUDIT_LOG,
   // Each User's Personal agent: { name, setup: 'pending' | 'skipped' | 'done', memories }, keyed by user id.
   personal: seedPersonal(),
+  // The Office365 Excel file that Personal agents add rows to (simulated); rows are only ever added at the end.
+  office365: { excel: { file: EXCEL_FILE, columns: EXCEL_COLUMNS, rows: [['2026-10-19', 'สรุปยอดขายสัปดาห์', 'Arisa M.'], ['2026-10-20', 'ตรวจ SOC โครงการ A', 'Ploy K.']] } },
 })
 
 function reducer(state, action) {
@@ -125,6 +130,28 @@ function reducer(state, action) {
     case 'savePersonal': {
       const current = state.personal[action.userId] ?? { name: 'Agent ของคุณ', setup: 'pending', memories: [] }
       return { ...state, personal: { ...state.personal, [action.userId]: { ...current, ...action.patch } } }
+    }
+    case 'resolveOutward': {
+      const run = state.runs.find((r) => r.id === action.runId)
+      if (run?.outward?.status !== 'asking') return state
+      const { type, draft } = run.outward
+      const done = action.decision === 'done'
+      let office365 = state.office365
+      let rowNo
+      if (done && type === 'excel') {
+        const rows = [...office365.excel.rows, draft.row]
+        rowNo = rows.length
+        office365 = { ...office365, excel: { ...office365.excel, rows } }
+      }
+      const entry = {
+        id: uid('log'), time: clock(action.now), user: userById(run.owner).name,
+        action: done ? `${OUTWARD[type].label} (จำลอง): ${draft.subject ?? draft.file}` : `ไม่${OUTWARD[type].label}: ผู้ใช้เลือกไม่ทำ`,
+        result: done ? (action.via === 'auto' ? 'ทำเองตามที่ตั้งไว้' : 'ผู้ใช้ยืนยัน') : 'ยกเลิก', tone: done ? 'success' : 'neutral',
+      }
+      return {
+        ...state, office365, auditLog: [entry, ...state.auditLog],
+        runs: state.runs.map((r) => (r.id === run.id ? { ...r, outward: { ...r.outward, status: action.decision, via: action.via, rowNo } } : r)),
+      }
     }
     case 'toggleFavorite':
       return { ...state, favorites: state.favorites.includes(action.id) ? state.favorites.filter((f) => f !== action.id) : [...state.favorites, action.id] }
@@ -182,7 +209,7 @@ export function AppStoreProvider({ children }) {
         const owner = VIEW_PERSONAS[viewRef.current]
         // The Personal agent uses only the Memories that bear on this request, and the Run records which.
         const memoryUsed = relevantMemories(ctx.personal?.[owner]?.memories ?? [], prompt).map((m) => m.text)
-        const run = { ...createRun({ prompt, plan, owner, threadId }), attachments, memoryUsed }
+        const run = { ...createRun({ prompt, plan, owner, threadId }), attachments, memoryUsed, outward: outwardFor(prompt, userById(owner).name) }
         const start = typeof autoStart === 'function' ? autoStart(plan) : autoStart
         dispatch({ type: 'addRun', run: start ? startRun(run) : run })
         return run.id
@@ -205,6 +232,8 @@ export function AppStoreProvider({ children }) {
       attachSkill: (skillId, agentIds) => dispatch({ type: 'attachSkill', skillId, agentIds }),
       /** Merge `patch` (name, setup, memories) into the signed-in User's Personal agent. */
       savePersonal: (patch) => dispatch({ type: 'savePersonal', userId: VIEW_PERSONAS[viewRef.current], patch }),
+      /** The User answers an Outward action their Personal agent asked about: `decision` is 'done' or 'declined'; `via` 'auto' when it needed no asking. */
+      resolveOutward: (runId, decision, via = 'user') => dispatch({ type: 'resolveOutward', runId, decision, via, now: Date.now() }),
       toggleFavorite: (id) => dispatch({ type: 'toggleFavorite', id }),
       /** Record (or change) the user's Feedback on a Run's Artifact; `reason` is optional and only kept with 👎. */
       giveFeedback: (runId, verdict, reason) => dispatch({ type: 'giveFeedback', runId, feedback: reason ? { verdict, reason } : { verdict } }),
