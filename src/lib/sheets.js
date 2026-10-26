@@ -33,7 +33,8 @@ export function buildWorkbook(ExcelJS, artifact) {
  * (they can decline, which is not a failure); anywhere else, or if the frame cannot, the page downloads it itself.
  */
 export async function downloadExcel(artifact) {
-  const mod = await import('exceljs')
+  // A host page may supply the library as a global (a published Artifact cannot load our own chunk); otherwise it is fetched only now.
+  const mod = window.ExcelJS ? { default: window.ExcelJS } : await import('exceljs')
   const wb = buildWorkbook(mod.default ?? mod, artifact)
   const buffer = await wb.xlsx.writeBuffer()
   const filename = /\.xlsx$/i.test(artifact.title) ? artifact.title : `${artifact.title}.xlsx`

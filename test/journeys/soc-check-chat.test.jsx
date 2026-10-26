@@ -8,6 +8,7 @@ import { captureDownloads, lastWorkbook } from '../downloads'
 afterEach(() => {
   vi.restoreAllMocks()
   delete window.claude
+  delete window.ExcelJS
 })
 
 async function openSocChat() {
@@ -63,6 +64,16 @@ describe('Example chat: SOC check against a datasheet', () => {
     await vi.waitFor(() => expect(save).toHaveBeenCalledTimes(2))
     expect(files).toHaveLength(0) // the page started no download of its own
     expect(screen.queryByText('ดาวน์โหลดไม่สำเร็จ ลองอีกครั้ง')).toBeNull()
+  })
+
+  it('uses an ExcelJS the host page supplies instead of fetching its own copy', async () => {
+    let used = false
+    window.ExcelJS = { Workbook: class { constructor() { used = true; throw new Error('stop here') } } }
+    const app = await openSocChat()
+    captureDownloads()
+
+    await app.click(screen.getByRole('button', { name: 'ดาวน์โหลด Excel' }))
+    await vi.waitFor(() => expect(used).toBe(true))
   })
 
   it('the Agent behind it is in the library as a single Agent', async () => {
