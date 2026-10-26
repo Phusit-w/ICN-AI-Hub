@@ -34,12 +34,14 @@ function seedRuns() {
   const background = (run) => ({ ...run, speed: 0.04 })
   // Scripted Threads: finished one-Agent Runs whose Artifacts are written out, not the generic mock.
   const example = ({ agentId, title, runs }) => {
-    const plan = planRequest(runs[0].prompt, { ...ctx, agentId })
-    const [step] = plan.steps
+    const planned = planRequest(runs[0].prompt, { ...ctx, agentId })
     const threadId = uid('thread')
-    return runs.map(({ prompt, attachments, output, ago, scheduleLabel, scheduleSet }) => {
-      const run = replayRun(createRun({ prompt, plan: { ...plan, steps: [step], reason: `ใช้ Agent "${step.name}" ที่คุณเลือก` }, owner: CURRENT_USER_ID, threadId, createdAt: Date.now() - ago }), ago)
-      return { ...run, title, attachments, scheduleLabel, scheduleSet, steps: [{ ...run.steps[0], id: uid('step'), output }] }
+    return runs.map(({ prompt, attachments, outputs, ago, scheduleLabel, scheduleSet }) => {
+      // One Step per output. An Agent without Steps is planned with a Review after it, which the example leaves out.
+      const steps = planned.steps.slice(0, outputs.length)
+      const reason = steps.length > 1 ? planned.reason : `ใช้ Agent "${steps[0].name}" ที่คุณเลือก`
+      const run = replayRun(createRun({ prompt, plan: { ...planned, steps, reason }, owner: CURRENT_USER_ID, threadId, createdAt: Date.now() - ago }), ago)
+      return { ...run, title, attachments, scheduleLabel, scheduleSet, steps: run.steps.map((s, i) => ({ ...s, id: uid('step'), output: outputs[i] })) }
     })
   }
   return [

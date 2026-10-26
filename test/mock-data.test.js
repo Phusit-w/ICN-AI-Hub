@@ -127,17 +127,22 @@ describe('Mock data: Agents with Steps instead of Workflows', () => {
 const exampleRuns = EXAMPLE_CHATS.flatMap((chat) => chat.runs.map((run) => ({ ...run, chat })))
 
 describe('Mock data: example chats from real work', () => {
-  it('every example chat is by an existing Agent without Steps', () => {
+  it('every example chat is by an existing Agent; its Steps, if any, are existing Agents without Steps', () => {
     for (const chat of EXAMPLE_CHATS) {
       const agent = AGENTS.find((a) => a.id === chat.agentId)
       expect(agent, chat.title).toBeDefined()
-      expect(agent.steps, chat.title).toHaveLength(0)
+      for (const id of agent.steps) {
+        const step = AGENTS.find((a) => a.id === id)
+        expect(step, `${chat.title}: ${id}`).toBeDefined()
+        expect(step.steps, `${chat.title}: ${id}`).toHaveLength(0)
+      }
+      for (const run of chat.runs) expect(run.outputs, chat.title).toHaveLength(Math.max(agent.steps.length, 1))
     }
   })
 
   it('every table Artifact has columns and rows, each row as wide as its columns', () => {
-    for (const { output, chat } of exampleRuns) {
-      for (const sheet of sheetsOf(output)) {
+    for (const { outputs, chat } of exampleRuns) {
+      for (const sheet of outputs.flatMap(sheetsOf)) {
         const where = `${chat.title}: ${sheet.name}`
         expect(sheet.columns.length, where).toBeGreaterThan(0)
         expect(sheet.rows.length, where).toBeGreaterThan(0)

@@ -42,6 +42,12 @@ function finalStep(run) {
   return outputs.find((s) => s.output.type === 'doc') ?? outputs.filter((s) => s.output.type !== 'checklist').at(-1) ?? outputs.at(-1)
 }
 
+/** The Steps whose Artifacts a Run hands over: those marked as delivered (a team's, one per Step), else just the final one. */
+function deliverables(run) {
+  const delivered = run.steps.filter((s) => s.output?.deliverable)
+  return delivered.length ? delivered : [finalStep(run)].filter(Boolean)
+}
+
 function Composer({ onSend, pick, onPickChange, large, typing, ...props }) {
   const [text, setText] = useState('')
   const [files, setFiles] = useState([])
@@ -124,9 +130,9 @@ function useDownload(output) {
  * Under a finished Artifact, for chat and multi-Agent Runs alike: "ดาวน์โหลด" first, "บันทึกไว้ใช้ซ้ำ" beside it,
  * the rest in "⋯", then 👍/👎 Feedback. Only the latest Run's download is brand-coloured, so the page keeps one primary button.
  */
-function ArtifactActions({ run, latest, onShowSteps }) {
+function ArtifactActions({ run, step = finalStep(run), latest, onShowSteps }) {
   const { actions } = useStore()
-  const download = useDownload(finalStep(run)?.output)
+  const download = useDownload(step?.output)
   return (
     <div role="group" aria-label="การทำงานกับผลงาน" className="flex flex-wrap items-center gap-1.5">
       <Button size="sm" variant={latest ? 'primary' : 'secondary'} icon={Download} onClick={download.run}>{download.label}</Button>
@@ -182,8 +188,8 @@ function ArtifactCard({ run, final, latest, onShowSteps, onOpen, opened }) {
 }
 
 /** Variant A: a finished file opens as a document down the right of the page; only this panel scrolls. */
-function DocPanel({ run, onClose }) {
-  const final = finalStep(run)
+function DocPanel({ run, stepId, onClose }) {
+  const final = run.steps.find((s) => s.id === stepId)
   if (!final) return null
   return (
     <section aria-label="เอกสาร" className="rise fixed inset-0 z-40 flex flex-col bg-white lg:static lg:z-auto lg:w-[min(46rem,52%)] lg:shrink-0 lg:rounded-2xl lg:border lg:border-slate-200 lg:shadow-xs">
@@ -191,7 +197,7 @@ function DocPanel({ run, onClose }) {
         <ArtifactHeader output={final.output} />
         <button type="button" onClick={onClose} aria-label="ปิดเอกสาร" className="rounded-full p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700"><X className="size-5" /></button>
       </header>
-      <div className="shrink-0 border-b border-slate-100 px-5 py-2.5 lg:px-7"><ArtifactActions run={run} latest /></div>
+      <div className="shrink-0 border-b border-slate-100 px-5 py-2.5 lg:px-7"><ArtifactActions run={run} step={final} latest /></div>
       <div className="min-h-0 flex-1 overflow-y-auto p-5 lg:p-7"><ArtifactView artifact={final.output} /></div>
     </section>
   )
@@ -210,10 +216,10 @@ function Typing() {
 }
 
 /** Variant A: the whole Run in the Thread: Plan card, then progress in the same card, then the result card. */
-function AssistantMessage({ run, latest, onShowSteps, docRunId, onOpenDoc }) {
+function AssistantMessage({ run, latest, onShowSteps, docStepId, onOpenDoc }) {
   const { actions } = useStore()
   const chat = isChatRun(run)
-  const final = run.status === 'completed' ? finalStep(run) : null
+  const finals = run.status === 'completed' ? deliverables(run) : []
   const loops = run.steps.reduce((n, s) => n + (s.kind === 'review' ? s.loops : 0), 0)
 
   return (
@@ -237,7 +243,7 @@ function AssistantMessage({ run, latest, onShowSteps, docRunId, onOpenDoc }) {
             <p className="text-[15px] text-slate-700">
               เสร็จแล้ว{run.steps.length > 1 && ` — Agent ${run.steps.length} ตัวช่วยกันทำ`}{loops > 0 && ` (ระหว่างทางตรวจพบข้อมูลไม่ครบ จึงส่งกลับไปแก้ ${loops} ครั้ง)`}
             </p>
-            {final && <ArtifactCard run={run} final={final} latest={latest} onShowSteps={onShowSteps} onOpen={onOpenDoc} opened={docRunId === run.id} />}
+            {finals.map((final) => <ArtifactCard key={final.id} run={run} final={final} latest={latest} onShowSteps={onShowSteps} onOpen={() => onOpenDoc(run.id, final.id)} opened={docStepId === final.id} />)}
           </>
         )}
       </div>
@@ -253,7 +259,7 @@ function DeskNote({ run, selected, onOpen, onClose }) {
   // the Agent speaking: the one the Run was started with, else the step now under way (a plain chat has none)
   const step = run.steps[Math.min(run.current, run.steps.length - 1)]
   const agent = state.agents.find((a) => a.id === (run.agentId ?? step?.agentId)) ?? { id: 'icn-assistant', kind: step?.kind }
-  const final = run.status === 'completed' ? finalStep(run) : null
+  const finals = run.status === 'completed' ? deliverables(run) : []
   return (
     <div className="flex gap-3">
       {cubeOn
@@ -268,7 +274,7 @@ function DeskNote({ run, selected, onOpen, onClose }) {
             <p className="text-[15px] text-slate-700">
               {run.status === 'planned' && `ผมวางแผนไว้ ${run.steps.length} ขั้นตอน ดูแผนที่พื้นที่ทำงาน แล้วกด “เริ่มทำงาน” ได้เลย`}
               {run.status === 'running' && `กำลังทำงาน ขั้นตอน ${Math.min(run.current + 1, run.steps.length)} จาก ${run.steps.length} · ${truncate(step.task, 26)}`}
-              {run.status === 'completed' && `เสร็จแล้ว — “${final?.output.title ?? 'ผลงาน'}” อยู่ที่พื้นที่ทำงาน`}
+              {run.status === 'completed' && `เสร็จแล้ว — ${finals.length > 1 ? `ได้ ${finals.length} ไฟล์` : `“${finals[0]?.output.title ?? 'ผลงาน'}”`} อยู่ที่พื้นที่ทำงาน`}
             </p>
             {run.status === 'running' ? (
               <button type="button" onClick={selected ? onClose : onOpen} aria-expanded={selected} className="inline-flex items-center gap-1 text-[13px] text-slate-500 hover:text-brand-700">
@@ -285,7 +291,9 @@ function DeskNote({ run, selected, onOpen, onClose }) {
 /** Variant B's work area: the strongest object on the page, whichever stage the Run is at. */
 function Desk({ run, onClose }) {
   const { actions } = useStore()
-  const final = run.status === 'completed' ? finalStep(run) : null
+  const finals = run.status === 'completed' ? deliverables(run) : []
+  const several = finals.length > 1
+  const final = several ? null : finals[0] // with several Artifacts the header is the Run's, and each Artifact carries its own actions
   const loops = run.steps.reduce((n, s) => n + (s.kind === 'review' ? s.loops : 0), 0)
   return (
     <section aria-label="พื้นที่ทำงาน" className="rise flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs">
@@ -317,9 +325,15 @@ function Desk({ run, onClose }) {
             <LiveActivity run={run} />
           </>
         )}
-        {final && (
+        {several && finals.map((f) => (
+          <section key={f.id} aria-label={f.output.title} className="space-y-3">
+            <div className="flex flex-wrap items-center gap-3"><ArtifactHeader output={f.output} /><ArtifactActions run={run} step={f} latest /></div>
+            <ArtifactView artifact={f.output} />
+          </section>
+        ))}
+        {finals.length > 0 && (
           <>
-            <ArtifactView artifact={final.output} />
+            {final && <ArtifactView artifact={final.output} />}
             <details className="rounded-lg border border-slate-200 bg-slate-50/60 px-4 py-3">
               <summary className="flex cursor-pointer items-center gap-1.5 text-sm font-medium text-slate-700">
                 <ListChecks className="size-4 text-slate-500" aria-hidden />ดูขั้นตอนที่ทำ{loops > 0 && ` · ส่งกลับไปแก้ ${loops} ครั้ง`}
@@ -359,7 +373,7 @@ function ScheduleCard({ agentId }) {
   )
 }
 
-function ChatView({ thread, onShowSteps, variant, deskRunId, onOpenDesk, onCloseDesk, docRunId, onOpenDoc }) {
+function ChatView({ thread, onShowSteps, variant, deskRunId, onOpenDesk, onCloseDesk, docStepId, onOpenDoc }) {
   const bottom = useRef(null)
   const last = thread.at(-1)
   const progressKey = last ? `${last.id}:${last.status}:${last.current}` : ''
@@ -374,7 +388,7 @@ function ChatView({ thread, onShowSteps, variant, deskRunId, onOpenDesk, onClose
             : <UserMessage prompt={run.prompt} attachments={run.attachments} />}
           {variant === 'B'
             ? <DeskNote run={run} selected={run.id === deskRunId} onOpen={() => onOpenDesk(run.id)} onClose={onCloseDesk} />
-            : <AssistantMessage run={run} latest={run === last} onShowSteps={() => onShowSteps(run.id)} docRunId={docRunId} onOpenDoc={() => onOpenDoc(run.id)} />}
+            : <AssistantMessage run={run} latest={run === last} onShowSteps={() => onShowSteps(run.id)} docStepId={docStepId} onOpenDoc={onOpenDoc} />}
           {run.scheduleSet && (
             <>
               <UserMessage prompt={run.scheduleSet.prompt} />
@@ -507,7 +521,7 @@ export default function Workspace() {
   const location = useLocation()
   const [variant] = useVariant() // PROTOTYPE: A = one column, B = chat + work area
   const [stepsRunId, setStepsRunId] = useState(null) // the Run whose steps are open in the side panel
-  const [docRunId, setDocRunId] = useState(null) // A: the Run whose file is open as a document on the right
+  const [doc, setDoc] = useState(null) // A: { runId, stepId } of the Artifact open as a document on the right
   const [deskOpen, setDeskOpen] = useState(false) // B: a running Run's work area is shown only once the user expands it
   const [deskClosed, setDeskClosed] = useState(false) // B: the user closed the work area
   const [deskPick, setDeskPick] = useState(null) // B: the Run the user chose to look at in the work area
@@ -527,10 +541,10 @@ export default function Workspace() {
     setParams({ run: id, variant })
   }
   const stepsRun = variant === 'A' ? thread.find((r) => r.id === stepsRunId) : null // closes by itself when the user leaves the Thread
-  const docRun = variant === 'A' ? thread.find((r) => r.id === docRunId) : null
+  const docRun = variant === 'A' ? thread.find((r) => r.id === doc?.runId) : null
   // one side panel at a time: opening the document closes the steps and the other way round
-  const openDoc = (id) => { setStepsRunId(null); setDocRunId(id) }
-  const openSteps = (id) => { setDocRunId(null); setStepsRunId(id) }
+  const openDoc = (runId, stepId) => { setStepsRunId(null); setDoc({ runId, stepId }) }
+  const openSteps = (id) => { setDoc(null); setStepsRunId(id) }
   // B: the work area follows the newest multi-step Run unless the user picked an older one. A chat answer needs no work area.
   const deskRuns = thread.filter((r) => !isChatRun(r))
   const deskRun = deskRuns.find((r) => r.id === deskPick) ?? deskRuns.at(-1) ?? null
@@ -560,7 +574,7 @@ export default function Workspace() {
                 <p className="hidden min-w-0 truncate text-sm font-medium text-slate-700 sm:block">{thread[0]?.title}</p>
               </div>
               <div className="min-h-0 flex-1 overflow-y-auto">
-                <ChatView thread={thread} onShowSteps={openSteps} variant={variant} deskRunId={split ? deskRun.id : null} onOpenDesk={(id) => { setDeskPick(id); setDeskOpen(true); setDeskClosed(false) }} onCloseDesk={closeDesk} docRunId={docRun?.id ?? null} onOpenDoc={openDoc} />
+                <ChatView thread={thread} onShowSteps={openSteps} variant={variant} deskRunId={split ? deskRun.id : null} onOpenDesk={(id) => { setDeskPick(id); setDeskOpen(true); setDeskClosed(false) }} onCloseDesk={closeDesk} docStepId={docRun ? doc.stepId : null} onOpenDoc={openDoc} />
               </div>
               <div className="pt-3">
                 <Composer pick={pick} onPickChange={setPick} onSend={(p, pk, files) => send(p, pk, run.threadId, files)} />
@@ -571,7 +585,7 @@ export default function Workspace() {
           <NewChat variant={variant} pick={pick} onPickChange={setPick} onSend={(p, pk, files) => send(p, pk, undefined, files)} />
         )}
       </section>
-      {docRun && <DocPanel key={docRun.id} run={docRun} onClose={() => setDocRunId(null)} />}
+      {docRun && <DocPanel key={doc.stepId} run={docRun} stepId={doc.stepId} onClose={() => setDoc(null)} />}
       {stepsRun && <StepsPanel key={stepsRun.id} run={stepsRun} onClose={() => setStepsRunId(null)} />}
     </div>
   )

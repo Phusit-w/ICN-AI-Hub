@@ -146,6 +146,33 @@ export const AGENTS = [
   }),
   // Department agents, drafted from docs/department-agents.md.
   agent({
+    id: 'agent-site-report', name: 'Site Report Agent', kind: 'document', dept: 'project',
+    description: 'เปลี่ยนข้อความสรุปงานออกไซต์สั้นๆ เป็นตารางรายงานหน้างาน: ไซต์ วันที่ งานที่ทำ ผลที่ได้ ปัญหา และงานค้าง',
+    instruction: 'Turn a short note about a site visit into a site report table: site, date, work done, result, problems, pending work. Use only what the note says.',
+    model: 'icn-local', share: 'department',
+    output: { format: 'Excel table', language: 'TH', template: 'Site Report' },
+    owner: 'u-wichai', feedback: { up: 5, down: 1 }, uses: 12, version: '1.0', updated: '2026-10-09',
+    examples: ['ไปไซต์ลูกค้าวันนี้ ติดตั้งสวิตช์เสร็จ 2 จาก 3 ตัว'],
+  }),
+  agent({
+    id: 'agent-travel-claim', name: 'Travel Claim Agent', kind: 'accounting', dept: 'project',
+    description: 'ทำใบเบิกค่าเดินทางจากรายงานหน้างาน: วันที่ จาก-ถึง พาหนะ ระยะทาง จำนวนเงิน และใบเสร็จ คิดค่าน้ำมันจากอัตราต่อกิโลเมตรที่ระบุในหมายเหตุ',
+    instruction: 'From a site report, list each trip of the visit with distance, vehicle and amount. Work out mileage from the rate written in the note and show the total.',
+    model: 'icn-local', share: 'department',
+    output: { format: 'Excel table', language: 'TH', template: 'Travel Claim' },
+    owner: 'u-wichai', feedback: { up: 6, down: 1 }, uses: 12, version: '1.0', updated: '2026-10-09',
+    examples: ['ทำใบเบิกค่าเดินทางจากรายงานหน้างานนี้'],
+  }),
+  agent({
+    id: 'agent-site-report-claim', name: 'รายงานหน้างาน + ใบเบิกค่าเดินทาง', kind: 'document', dept: 'project',
+    description: 'หลังออกไซต์: เขียนรายงานหน้างานจากข้อความสั้นๆ แล้วทำใบเบิกค่าเดินทางต่อให้ ได้สองไฟล์แยกกัน',
+    instruction: 'Write the site report, then make the travel claim from it. Hand over both as separate files.',
+    model: 'icn-local', share: 'department', steps: ['agent-site-report', 'agent-travel-claim'],
+    output: { format: 'Excel table', language: 'TH', template: 'Site Report + Travel Claim' },
+    owner: 'u-wichai', feedback: { up: 6, down: 1 }, uses: 12, version: '1.0', updated: '2026-10-09',
+    examples: ['ไปไซต์วันนี้ ติดตั้งเสร็จบางส่วน ไปกลับด้วยรถส่วนตัว'],
+  }),
+  agent({
     id: 'agent-step-log', name: 'บันทึกก้าวเดิน Agent', kind: 'data', dept: 'hr',
     description: 'อ่านข้อความ LINE และรูปตัวนับก้าวของกลุ่มเดิน แล้วบันทึกยอดก้าวรายคนลง Excel แถวไหนอ่านรูปไม่ชัดจะติด “ตรวจสอบ” ไม่เดาตัวเลข',
     instruction: 'Read each member message: name, department code and the step total in the picture. One row per member. If a number cannot be read in full, leave it empty and flag the row with the reason. Never guess digits.',

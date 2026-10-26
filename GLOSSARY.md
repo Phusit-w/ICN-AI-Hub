@@ -26,7 +26,7 @@ _Avoid_: Pinned agent, bookmark
 ### Doing work
 
 **Run** (งาน):
-One request carried out by one or more Agents, producing an Artifact.
+One request carried out by one or more Agents, producing one or more Artifacts (a team gives each Step's Artifact).
 _Avoid_: Task, job, execution
 
 **Plan** (แผนงาน):
@@ -36,6 +36,10 @@ _Avoid_: Workflow, workflow mode (a Plan is not saved; Save for reuse turns it i
 **Thread** (แชต):
 A conversation made of one or more Runs that follow on from each other.
 _Avoid_: Session, conversation
+
+**Schedule** (ตั้งเวลา):
+A rule on an Agent that it does its job at a set time, such as every Monday 20:00; each time it fires, a new Run is added to the same Thread, covering the period since the last one.
+_Avoid_: Cron, automation, trigger
 
 **Artifact** (ผลงาน):
 The deliverable a Run produces, such as a document, table or image.
