@@ -30,15 +30,16 @@ async function finishedChatRun() {
   return app
 }
 
+// The sales Agent's Artifact is a table, which downloads as a real .xlsx and says so; a chat answer is plain "ดาวน์โหลด".
 describe.each([
-  ['a multi-Agent Run', finishedMultiAgentRun],
-  ['a chat Run', finishedChatRun],
-])('Actions under the Artifact of %s', (_, finishRun) => {
-  it('"ดาวน์โหลด" is the one primary button, and "บันทึกไว้ใช้ซ้ำ" is visible beside it', async () => {
+  ['a multi-Agent Run', finishedMultiAgentRun, 'ดาวน์โหลด Excel'],
+  ['a chat Run', finishedChatRun, 'ดาวน์โหลด'],
+])('Actions under the Artifact of %s', (_, finishRun, DOWNLOAD) => {
+  it('the download is the one primary button, and "บันทึกไว้ใช้ซ้ำ" is visible beside it', async () => {
     await finishRun()
 
     const row = actionRow()
-    expect(primaries(row).map((b) => b.textContent)).toEqual(['ดาวน์โหลด'])
+    expect(primaries(row).map((b) => b.textContent)).toEqual([DOWNLOAD])
     expect(within(row).getByRole('button', { name: 'บันทึกไว้ใช้ซ้ำ' })).toBeVisible()
     for (const name of ['คัดลอก', 'แชร์', 'ดูขั้นตอน']) expect(within(row).queryByRole('button', { name })).toBeNull()
   })
@@ -57,7 +58,7 @@ describe.each([
 
     await app.click(within(actionRow()).getByRole('button', { name: 'บันทึกไว้ใช้ซ้ำ' }))
 
-    expect(primaries().map((b) => b.textContent)).toEqual(['ดาวน์โหลด'])
+    expect(primaries().map((b) => b.textContent)).toEqual([DOWNLOAD])
     await app.click(screen.getByRole('button', { name: 'บันทึก' }))
     expect(screen.getByRole('link', { name: /บันทึกเป็น Agent แล้ว/ })).toBeVisible()
   })
