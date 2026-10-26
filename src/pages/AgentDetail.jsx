@@ -83,7 +83,6 @@ export default function AgentDetail() {
               <span>{fmt(agent.uses)} ครั้งที่ใช้งาน</span>
               <span className="flex items-center gap-1.5"><Avatar name={owner.name} size="sm" /> {owner.name}</span>
               <span>อัปเดต {agent.updated}</span>
-              {agent.schedule && <span className="flex items-center gap-1"><CalendarClock className="size-3.5" aria-hidden />ตั้งเวลา · {agent.schedule.when} · ครอบ{agent.schedule.covers}</span>}
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-2">

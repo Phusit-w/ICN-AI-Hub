@@ -4,6 +4,7 @@ import { SKILLS } from '../src/data/skills'
 import { KNOWLEDGE, MODELS, TOOLS, USERS } from '../src/data/catalog'
 import { EXAMPLE_CHATS } from '../src/data/exampleChats'
 import { sheetsOf } from '../src/lib/sheets'
+import { seedPersonal } from '../src/lib/personal'
 import { AUDIT_LOG, DEPT_USAGE, KPIS, LAUNCH_DATE, MODEL_USAGE, MONTHLY_COST } from '../src/data/governance'
 
 // Ticket 05, seam 2: the mock data tells one story, ICN about 3 months after launch with ~25 Users of ~60 staff.
@@ -152,11 +153,13 @@ describe('Mock data: example chats from real work', () => {
     }
   })
 
-  it('a Schedule belongs to an existing Agent, and a Run started by one is of an Agent that has it', () => {
+  it('a Schedule is a rule of a Personal agent for an existing Agent’s job, and a Run started by one has such a rule; no library Agent holds one', () => {
+    const rules = Object.values(seedPersonal()).flatMap((p) => p.schedules)
+    for (const rule of rules) expect(AGENTS.find((a) => a.id === rule.agentId), rule.id).toBeDefined()
     for (const { chat, scheduleLabel, scheduleSet } of exampleRuns) {
       if (!scheduleLabel && !scheduleSet) continue
-      const agent = AGENTS.find((a) => a.id === chat.agentId)
-      expect(agent.schedule, chat.title).toBeDefined()
+      expect(rules.some((r) => r.agentId === chat.agentId), chat.title).toBe(true)
     }
+    for (const agent of AGENTS) expect(agent.schedule, agent.name).toBeUndefined()
   })
 })

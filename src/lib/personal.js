@@ -1,4 +1,4 @@
-// The Personal agent: one per User, shown in the composer in place of "อัตโนมัติ". What it keeps about its User is its Memory
+// The Personal agent: one per User, with the Schedules that run jobs for them (ADR 0002), shown in the composer in place of "อัตโนมัติ". What it keeps about its User is its Memory
 // (private to them, never copied onto an Agent they share). Pure data and helpers; the store holds the state.
 
 export const DEFAULT_NAME = 'Agent ของคุณ'
@@ -9,16 +9,18 @@ const memory = (id, text, keys) => ({ id, text, keys })
 export const seedPersonal = () => ({
   'u-kanya': {
     name: DEFAULT_NAME, setup: 'done',
+    // A Schedule is a rule of the Personal agent: at `when` it does the job of `agentId` and adds a Run to the Thread.
+    schedules: [{ id: 'sch-step-log', agentId: 'agent-step-log', when: 'ทุกวันจันทร์ 20:00', covers: 'สัปดาห์ก่อนหน้า (จันทร์–อาทิตย์)' }],
     memories: [
       memory('m-kanya-1', 'งานประจำ: ทำ Proposal และสรุปข้อมูลให้ลูกค้ากลุ่มค้าปลีกและโลจิสติกส์', ['proposal', 'ลูกค้า', 'เสนอ']),
       memory('m-kanya-2', 'ชอบรายงานสั้น ขึ้นต้นด้วยข้อสรุป ไม่เกินหนึ่งหน้า', ['รายงาน', 'สรุป']),
     ],
   },
   // The Admin persona has not met their Personal agent yet, so switching to the Admin view shows the first-use invitation.
-  'u-kittipong': { name: DEFAULT_NAME, setup: 'pending', memories: [] },
+  'u-kittipong': { name: DEFAULT_NAME, setup: 'pending', schedules: [], memories: [] },
 })
 
-const NONE = { name: DEFAULT_NAME, setup: 'pending', memories: [] }
+const NONE = { name: DEFAULT_NAME, setup: 'pending', schedules: [], memories: [] }
 
 /** The signed-in User's Personal agent (a brand-new User has one that is not set up yet). */
 export const personalOf = (state) => state.personal?.[state.userId] ?? NONE

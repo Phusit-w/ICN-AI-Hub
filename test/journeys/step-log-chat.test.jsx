@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { screen, within } from '@testing-library/react'
+import { cleanup, screen, within } from '@testing-library/react'
 import { startJourney } from '../journey'
 import { captureDownloads, lastWorkbook } from '../downloads'
 
@@ -29,7 +29,9 @@ describe('Example chat: step log with a Schedule', () => {
     const card = within(screen.getByRole('region', { name: 'ตั้งเวลา' }))
     expect(card.getByText(/ทุกวันจันทร์ 20:00/)).toBeVisible()
     expect(card.getByText(/สัปดาห์ก่อนหน้า \(จันทร์–อาทิตย์\)/)).toBeVisible()
-    expect(card.getByRole('link', { name: 'บันทึกก้าวเดิน Agent' })).toHaveAttribute('href', '/agents/agent-step-log')
+    // The rule is the Personal agent's, so the card points there, not at the library Agent that does the job.
+    expect(card.getByRole('link', { name: 'Agent ของคุณ' })).toHaveAttribute('href', '/agent')
+    expect(card.getByText(/สำหรับงาน บันทึกก้าวเดิน Agent/)).toBeVisible()
   })
 
   it('the second Run flags the blurry row with its reason and leaves the unreadable total empty', async () => {
@@ -64,9 +66,13 @@ describe('Example chat: step log with a Schedule', () => {
     expect(summary.getRow(3).values.slice(1)[2]).toBe('229,643')
   })
 
-  it('the Agent page shows its Schedule', async () => {
-    startJourney('/agents/agent-step-log')
+  it('the Schedule is listed on the Personal agent’s page, and the library Agent has none', () => {
+    startJourney('/agent')
+    const list = within(screen.getByRole('region', { name: 'ตั้งเวลา' }))
+    expect(list.getByText(/บันทึกก้าวเดิน Agent · ทุกวันจันทร์ 20:00 · ครอบสัปดาห์ก่อนหน้า/)).toBeVisible()
 
-    expect(screen.getByText(/ตั้งเวลา · ทุกวันจันทร์ 20:00/)).toBeVisible()
+    cleanup()
+    startJourney('/agents/agent-step-log')
+    expect(screen.queryByText(/ตั้งเวลา ·/)).toBeNull()
   })
 })

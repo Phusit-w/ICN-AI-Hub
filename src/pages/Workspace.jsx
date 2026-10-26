@@ -273,18 +273,20 @@ function UserMessage({ prompt, attachments }) {
   )
 }
 
-/** Confirms a Schedule the User asked for in the chat. The rule lives on the Agent; the card only reads it. */
+/** Confirms a Schedule the User asked for in the chat. The rule lives on the Personal agent; the card only reads it. */
 function ScheduleCard({ agentId }) {
   const { state } = useStore()
-  const agent = state.agents.find((a) => a.id === agentId)
-  if (!agent?.schedule) return null
+  const personal = personalOf(state)
+  const schedule = personal.schedules.find((s) => s.agentId === agentId)
+  const job = state.agents.find((a) => a.id === agentId)
+  if (!schedule) return null
   return (
     <section aria-label="ตั้งเวลา" className="flex items-start gap-3 rounded-2xl border border-brand-200 bg-brand-50/50 p-4">
       <CalendarClock className="mt-0.5 size-5 shrink-0 text-brand-600" aria-hidden />
       <div className="min-w-0 text-sm text-slate-700">
-        <p className="font-semibold text-slate-900">ตั้งเวลาแล้ว · {agent.schedule.when}</p>
-        <p className="mt-0.5">แต่ละรอบครอบ{agent.schedule.covers} และเพิ่มเป็น Run ใหม่ในแชตนี้</p>
-        <p className="mt-1 text-xs text-slate-500">ตั้งไว้ที่ <Link to={`/agents/${agent.id}`} className="font-medium text-brand-700 hover:underline">{agent.name}</Link> · ในเดโมนี้ยังไม่ทำงานเอง</p>
+        <p className="font-semibold text-slate-900">ตั้งเวลาแล้ว · {schedule.when}</p>
+        <p className="mt-0.5">แต่ละรอบครอบ{schedule.covers} และเพิ่มเป็น Run ใหม่ในแชตนี้</p>
+        <p className="mt-1 text-xs text-slate-500">ตั้งไว้ที่ <Link to="/agent" className="font-medium text-brand-700 hover:underline">{personal.name}</Link> สำหรับงาน {job?.name} · ในเดโมนี้ยังไม่ทำงานเอง</p>
       </div>
     </section>
   )

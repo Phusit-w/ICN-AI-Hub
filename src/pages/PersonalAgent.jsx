@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Pencil, Plus, Trash2 } from 'lucide-react'
+import { CalendarClock, Pencil, Plus, Trash2 } from 'lucide-react'
 import { useStore } from '../store/AppStore'
 import { personalOf } from '../lib/personal'
 import { uid } from '../lib/utils'
@@ -76,6 +76,20 @@ export default function PersonalAgent() {
           <Button icon={Plus} onClick={add}>เพิ่ม</Button>
         </div>
       </section>
+
+      {personal.schedules.length > 0 && (
+        <section aria-label="ตั้งเวลา" className="space-y-2">
+          <h2 className="text-sm font-medium text-slate-800">ตั้งเวลา ({personal.schedules.length})</h2>
+          <ul className="divide-y divide-slate-100 rounded-xl border border-slate-200 bg-white px-4">
+            {personal.schedules.map((s) => (
+              <li key={s.id} className="flex items-center gap-3 py-2.5 text-sm text-slate-700">
+                <CalendarClock className="size-4 shrink-0 text-slate-400" aria-hidden />
+                <span className="min-w-0">{state.agents.find((a) => a.id === s.agentId)?.name} · {s.when} · ครอบ{s.covers}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <p className="text-sm text-slate-500">
         อยากให้ถามใหม่ตั้งแต่ต้น <Link to="/agent/setup" className="font-medium text-brand-700 hover:underline">ตั้งค่าใหม่</Link>

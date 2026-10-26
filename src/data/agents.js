@@ -179,7 +179,6 @@ export const AGENTS = [
     model: 'icn-local', classification: 'internal', share: 'department',
     output: { format: 'Excel table', language: 'TH', template: 'Step Log Weekly' },
     owner: 'u-arisa', feedback: { up: 8, down: 1 }, uses: 11, version: '1.0', updated: '2026-10-12',
-    schedule: { when: 'ทุกวันจันทร์ 20:00', covers: 'สัปดาห์ก่อนหน้า (จันทร์–อาทิตย์)' },
     examples: ['บันทึกก้าวเดินกลุ่มเดินสัปดาห์นี้จากข้อความ LINE'],
   }),
   agent({
