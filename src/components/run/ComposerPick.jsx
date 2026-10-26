@@ -3,6 +3,7 @@ import { Bot, Check, ChevronDown, X } from 'lucide-react'
 import { useStore } from '../../store/AppStore'
 import { DEPARTMENTS, deptById, userById } from '../../data/catalog'
 import { cn } from '../../lib/utils'
+import { personalOf } from '../../lib/personal'
 
 // A pick is what the user chose for a request: { agentId } (with or without Steps), or {} when the system chooses.
 
@@ -31,12 +32,12 @@ const GAP = 8 // between the composer and the open panel
 const EDGE = 12 // the panel keeps this far from the window's edge
 
 /**
- * The "อัตโนมัติ" dropdown, a listbox that opens below the composer, or above it when the composer sits at the bottom of the window, and never
+ * The dropdown whose first choice is the User's Personal agent (it chooses), a listbox that opens below the composer, or above it when the composer sits at the bottom of the window, and never
  * over the composer's own text or buttons. `groups` is [{ id, name, list: [agent] }].
  * Keys: ↑/↓ open it; inside, ↑/↓ move (stopping at the ends), Home/End jump, Enter or Space picks, Escape closes
  * and returns focus, Tab closes.
  */
-function AgentPicker({ value, label, groups, onChange, menuDir }) {
+function AgentPicker({ value, label, autoName, groups, onChange, menuDir }) {
   const [open, setOpen] = useState(false)
   const [sink, setSink] = useState(false)
   const [active, setActive] = useState(0)
@@ -46,7 +47,7 @@ function AgentPicker({ value, label, groups, onChange, menuDir }) {
   const beat = useRef(0)
   const listId = useId()
 
-  // Option 0 is "อัตโนมัติ"; the agents follow in department order, numbered so the keyboard can walk them.
+  // Option 0 is the Personal agent; the agents follow in department order, numbered so the keyboard can walk them.
   const { rows, count } = useMemo(() => {
     let n = 1
     return { rows: groups.map((g) => ({ ...g, list: g.list.map((a) => ({ id: a.id, name: a.name, i: n++ })) })), count: n }
@@ -154,7 +155,7 @@ function AgentPicker({ value, label, groups, onChange, menuDir }) {
           id={listId} role="listbox" aria-label="เลือก Agent" onKeyDown={onListKey} style={{ height: place.h }}
           className={cn('absolute right-0 w-72 overflow-y-auto p-2', place.dir === 'up' ? 'bottom-0' : 'top-0')}
         >
-          {option(0, '', 'อัตโนมัติ — ระบบเลือกให้ (แนะนำ)')}
+          {option(0, '', `${autoName} — เลือกให้ (แนะนำ)`)}
           {rows.map((g) => (
             <div key={g.id} role="group" aria-label={g.name}>
               <p aria-hidden className="px-3 pt-3 pb-1 text-[11px] font-medium text-slate-400">{g.name}</p>
@@ -169,16 +170,17 @@ function AgentPicker({ value, label, groups, onChange, menuDir }) {
 
 /**
  * Shows the picked Agent inside a composer, with a one-click clear.
- * `chooseAgent` adds a quiet "อัตโนมัติ" dropdown for picking any Agent when nothing is picked; `menuDir` ('up' | 'down') pins which way it opens.
+ * `chooseAgent` adds a quiet dropdown (the Personal agent's name when nothing is picked) for picking any Agent when nothing is picked; `menuDir` ('up' | 'down') pins which way it opens.
  */
 export default function ComposerPick({ pick, onChange, chooseAgent = false, menuDir }) {
   const { state } = useStore()
   const agent = pick.agentId && state.agents.find((a) => a.id === pick.agentId)
   const clear = () => onChange({})
   const myDept = userById(state.userId).dept
+  const autoName = personalOf(state).name
 
   const clearAgent = agent && (
-    <button type="button" onClick={clear} aria-label="กลับไปเลือก Agent อัตโนมัติ" title="กลับไปเลือกอัตโนมัติ" className={clearClass}><X className="size-3" /></button>
+    <button type="button" onClick={clear} aria-label={`กลับไปใช้ ${autoName}`} title={`กลับไปใช้ ${autoName}`} className={clearClass}><X className="size-3" /></button>
   )
   if (!chooseAgent) {
     return agent ? (
@@ -195,7 +197,7 @@ export default function ComposerPick({ pick, onChange, chooseAgent = false, menu
     .filter((g) => g.list.length > 0)
   return (
     <span className={cn('flex min-w-0 items-center rounded-full', agent && 'bg-brand-50 pr-1')}>
-      <AgentPicker value={pick.agentId ?? ''} label={agent ? agent.name : 'อัตโนมัติ'} groups={groups} menuDir={menuDir} onChange={(v) => onChange(toPick(v))} />
+      <AgentPicker value={pick.agentId ?? ''} label={agent ? agent.name : autoName} autoName={autoName} groups={groups} menuDir={menuDir} onChange={(v) => onChange(toPick(v))} />
       {clearAgent}
     </span>
   )

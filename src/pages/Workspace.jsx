@@ -20,6 +20,7 @@ import SaveForReuse from '../components/run/SaveForReuse'
 import Feedback from '../components/run/Feedback'
 import ComposerPick, { pickFromParams, usePick } from '../components/run/ComposerPick'
 import { userById } from '../data/catalog'
+import { personalOf } from '../lib/personal'
 import PlanCard from '../components/run/PlanCard'
 import { useCube } from '../lib/useCube'
 import AgentCube from '../components/agents/AgentCube'
@@ -135,6 +136,12 @@ function SensitiveNote({ run }) {
   return <p className="flex items-center gap-1.5 text-xs text-emerald-700"><ShieldCheck className="size-3.5" /> พบข้อมูล{run.status === 'running' && ' · กำลังประมวลผล'}</p>
 }
 
+/** Under a finished Run: the Memories the Personal agent used for it (only those that bear on the request). */
+function MemoryUsed({ run }) {
+  if (run.status !== 'completed' || !run.memoryUsed?.length) return null
+  return <p className="text-xs text-slate-500">ใช้ความจำ: {run.memoryUsed.join(' · ')}</p>
+}
+
 function Typing() {
   return (
     <span className="inline-flex gap-1 py-2" aria-label="กำลังพิมพ์">
@@ -164,12 +171,13 @@ function DeskNote({ run, latest, selected, onOpen, onClose }) {
             <>
               <ArtifactView artifact={run.steps[0].output} />
               <ArtifactActions run={run} latest={latest} />
+              <MemoryUsed run={run} />
             </>
           ) : <Typing />
         ) : (
           <>
             <p className="text-[15px] text-slate-700">
-              {run.status === 'planned' && `ผมวางแผนไว้ ${run.steps.length} ขั้นตอน ดูแผนที่พื้นที่ทำงาน แล้วกด “เริ่มทำงาน” ได้เลย`}
+              {run.status === 'planned' && `${personalOf(state).name}วางแผนไว้ ${run.steps.length} ขั้นตอน ดูแผนที่พื้นที่ทำงาน แล้วกด “เริ่มทำงาน” ได้เลย`}
               {run.status === 'running' && `กำลังทำงาน ขั้นตอน ${Math.min(run.current + 1, run.steps.length)} จาก ${run.steps.length} · ${truncate(step.task, 26)}`}
               {run.status === 'completed' && `เสร็จแล้ว — ${finals.length > 1 ? `ได้ ${finals.length} ผลงาน` : `“${finals[0]?.output.title ?? 'ผลงาน'}”`} อยู่ที่พื้นที่ทำงาน`}
             </p>
@@ -178,6 +186,7 @@ function DeskNote({ run, latest, selected, onOpen, onClose }) {
                 {selected ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}{selected ? 'ย่อ' : 'ดูขั้นตอนทั้งหมด'}
               </button>
             ) : !selected && <Button size="sm" variant="secondary" icon={Eye} onClick={onOpen}>{run.status === 'completed' ? 'เปิดดูผลงาน' : 'ดูแผนงาน'}</Button>}
+            <MemoryUsed run={run} />
           </>
         )}
       </div>
@@ -352,6 +361,12 @@ function NewChat({ pick, onPickChange, onSend }) {
     <div className="flex min-h-0 flex-1 flex-col items-center justify-center px-1 pb-16">
       <h1 className="mb-8 text-center text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">สวัสดี คุณ {greetingName}</h1>
       <Composer large typing data-tour="home-command" pick={pick} onPickChange={onPickChange} onSend={onSend} />
+      {personalOf(state).setup === 'pending' && (
+        <p className="mt-4 text-center text-sm text-slate-500">
+          ให้ {personalOf(state).name} รู้จักงานของคุณก่อนไหม ใช้เวลาไม่ถึงนาที{' '}
+          <Link to="/agent/setup" className="font-medium text-brand-700 hover:underline">เริ่มตั้งค่า</Link>
+        </p>
+      )}
     </div>
   )
 }

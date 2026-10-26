@@ -6,6 +6,8 @@ import AgentDetail from './pages/AgentDetail'
 import CreateAgent from './pages/CreateAgent'
 import CreateSkill from './pages/CreateSkill'
 import Governance from './pages/Governance'
+import PersonalAgent from './pages/PersonalAgent'
+import PersonalSetup from './pages/PersonalSetup'
 import { skillLink } from './lib/routes'
 import { isAdminView, useStore } from './store/AppStore'
 
@@ -29,6 +31,9 @@ export default function App() {
         {/* New chat is the home screen, as in ChatGPT, Claude or Gemini. */}
         <Route index element={<Navigate to="/workspace" replace />} />
         <Route path="workspace" element={<Workspace />} />
+        {/* The Personal agent: what it knows about the User, and its first chat. */}
+        <Route path="agent" element={<PersonalAgent />} />
+        <Route path="agent/setup" element={<PersonalSetup />} />
         <Route path="agents" element={<AgentLibrary />} />
         <Route path="agents/new" element={<CreateAgent />} />
         <Route path="agents/:id" element={<AgentDetail />} />

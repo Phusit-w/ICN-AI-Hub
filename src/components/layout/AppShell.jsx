@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Link, NavLink, Outlet, useLocation, useSearchParams } from 'react-router-dom'
+import { Link, NavLink, Outlet, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import {
   Bot, Box, Menu, PanelLeftClose, PanelLeftOpen, ShieldCheck, SquarePen, X,
 } from 'lucide-react'
 import { isAdminView, useStore } from '../../store/AppStore'
 import { userById, VIEW_PERSONAS } from '../../data/catalog'
+import { personalOf } from '../../lib/personal'
 import { cn, isToday } from '../../lib/utils'
 import { isChatRun, threadsOf } from '../../lib/runs'
 import usePersistentState from '../../lib/usePersistentState'
@@ -33,11 +34,15 @@ const VIEWS = [
 /** The user at the bottom of the sidebar, as in ChatGPT, Claude or Gemini; clicking it switches the presenter's view. */
 function ProfileMenu({ collapsed }) {
   const { state, actions } = useStore()
+  const navigate = useNavigate()
   const me = userById(VIEW_PERSONAS[state.view])
   return (
     <MenuButton
       label={`โปรไฟล์และมุมมอง: ${me.name}`} className="mt-3 border-t border-slate-200 pt-3"
-      items={VIEWS.map((v) => ({ label: v.label, checked: state.view === v.id, onSelect: () => actions.setView(v.id) }))}
+      items={[
+        { label: personalOf(state).name, onSelect: () => navigate('/agent') },
+        ...VIEWS.map((v) => ({ label: v.label, checked: state.view === v.id, onSelect: () => actions.setView(v.id) })),
+      ]}
       triggerClassName={cn(itemClass(false), 'w-full gap-2.5 py-1.5 text-left', collapsed ? 'justify-center' : 'px-2')}
     >
       <Avatar name={me.name} />

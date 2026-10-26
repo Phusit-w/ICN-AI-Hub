@@ -7,6 +7,7 @@ import { CURRENT_USER_ID, userById, VIEW_PERSONAS } from '../data/catalog'
 import { advanceRun, createRun, planRequest, replayRun, startRun } from '../lib/runs'
 import { uid } from '../lib/utils'
 import usePersistentState from '../lib/usePersistentState'
+import { relevantMemories, seedPersonal } from '../lib/personal'
 
 const TICK_MS = 400
 const MIN = 60000
@@ -73,6 +74,8 @@ const initialState = () => ({
   // Feedback on Artifacts, keyed by Run: { verdict: 'up' | 'down', reason? }.
   feedback: {},
   auditLog: AUDIT_LOG,
+  // Each User's Personal agent: { name, setup: 'pending' | 'skipped' | 'done', memories }, keyed by user id.
+  personal: seedPersonal(),
 })
 
 function reducer(state, action) {
@@ -118,6 +121,10 @@ function reducer(state, action) {
         auditLog: [entry, ...state.auditLog],
         [key]: action.approve ? state[key].map((x) => (x.id === req.itemId ? { ...x, share: 'company' } : x)) : state[key],
       }
+    }
+    case 'savePersonal': {
+      const current = state.personal[action.userId] ?? { name: 'Agent ของคุณ', setup: 'pending', memories: [] }
+      return { ...state, personal: { ...state.personal, [action.userId]: { ...current, ...action.patch } } }
     }
     case 'toggleFavorite':
       return { ...state, favorites: state.favorites.includes(action.id) ? state.favorites.filter((f) => f !== action.id) : [...state.favorites, action.id] }
@@ -172,7 +179,10 @@ export function AppStoreProvider({ children }) {
        */
       planRun: (prompt, opts, ctx, { threadId, autoStart = false, attachments = [] } = {}) => {
         const plan = planRequest(prompt, { ...ctx, ...opts })
-        const run = { ...createRun({ prompt, plan, owner: VIEW_PERSONAS[viewRef.current], threadId }), attachments }
+        const owner = VIEW_PERSONAS[viewRef.current]
+        // The Personal agent uses only the Memories that bear on this request, and the Run records which.
+        const memoryUsed = relevantMemories(ctx.personal?.[owner]?.memories ?? [], prompt).map((m) => m.text)
+        const run = { ...createRun({ prompt, plan, owner, threadId }), attachments, memoryUsed }
         const start = typeof autoStart === 'function' ? autoStart(plan) : autoStart
         dispatch({ type: 'addRun', run: start ? startRun(run) : run })
         return run.id
@@ -193,6 +203,8 @@ export function AppStoreProvider({ children }) {
       addAgent: (agent) => { const a = holdForAdmin('agent', agent); dispatch({ type: 'addAgent', agent: a }); return a },
       addSkill: (skill) => { const sk = holdForAdmin('skill', skill); dispatch({ type: 'addSkill', skill: sk }); return sk },
       attachSkill: (skillId, agentIds) => dispatch({ type: 'attachSkill', skillId, agentIds }),
+      /** Merge `patch` (name, setup, memories) into the signed-in User's Personal agent. */
+      savePersonal: (patch) => dispatch({ type: 'savePersonal', userId: VIEW_PERSONAS[viewRef.current], patch }),
       toggleFavorite: (id) => dispatch({ type: 'toggleFavorite', id }),
       /** Record (or change) the user's Feedback on a Run's Artifact; `reason` is optional and only kept with 👎. */
       giveFeedback: (runId, verdict, reason) => dispatch({ type: 'giveFeedback', runId, feedback: reason ? { verdict, reason } : { verdict } }),

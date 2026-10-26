@@ -67,9 +67,9 @@ describe('Journey 2: use an Agent you already have', () => {
     const app = startJourney()
 
     await pickAgentFromMenu(app, 'Sales Proposal Agent')
-    await app.click(within(homeCommandBox(app)).getByRole('button', { name: 'กลับไปเลือก Agent อัตโนมัติ' }))
+    await app.click(within(homeCommandBox(app)).getByRole('button', { name: 'กลับไปใช้ Agent ของคุณ' }))
 
-    expect(screen.getByRole('button', { name: 'เลือก Agent' })).toHaveTextContent('อัตโนมัติ')
+    expect(screen.getByRole('button', { name: 'เลือก Agent' })).toHaveTextContent('Agent ของคุณ')
   })
 
   it('choosing another Agent replaces the picked one: one pick at a time', async () => {
